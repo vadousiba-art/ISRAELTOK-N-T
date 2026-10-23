@@ -1,0 +1,240 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ---------- Tokens ---------------------------------------------------- */
+
+:root {
+  --bg: #f4f6fb;
+  --bg-2: #e9edf6;
+  --card: #ffffff;
+  --card-2: #f3f5fa;
+  --line: #dde3ef;
+  --ink: #0b1020;
+  --ink-2: #2a3247;
+  --muted: #5c667d;
+  --brand: #1f5fff;
+  --brand-2: #4f86ff;
+  --ring-a: #2a63ff;
+  --ring-b: #8b3dff;
+  --heart: #ff2e74;
+  --roast: #ff2d8f;
+  --roast-label: #b13cff;
+  --online: #21c55d;
+  --lime: #8bc300;
+  --hot: #ff2d95;
+  --volt: #8b3dff;
+  --shadow: 0 1px 2px rgb(10 16 40 / 0.06), 0 8px 24px rgb(10 16 40 / 0.06);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #04060d;
+  --bg-2: #070a14;
+  --card: #0a0e1a;
+  --card-2: #0d1322;
+  --line: #1a2138;
+  --ink: #f4f6fb;
+  --ink-2: #cfd5e4;
+  --muted: #8a92a7;
+  --brand: #1f6bff;
+  --brand-2: #3d82ff;
+  --ring-a: #2a63ff;
+  --ring-b: #8b3dff;
+  --heart: #ff3d7f;
+  --roast: #ff2d8f;
+  --roast-label: #c04cff;
+  --online: #22c55e;
+  --lime: #c6ff00;
+  --hot: #ff2d95;
+  --volt: #9d4dff;
+  --shadow: none;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-card: var(--card);
+  --color-card-2: var(--card-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-brand: var(--brand);
+  --color-brand-2: var(--brand-2);
+  --color-heart: var(--heart);
+  --color-roast: var(--roast);
+  --color-roast-label: var(--roast-label);
+  --color-online: var(--online);
+  --color-lime: var(--lime);
+  --color-hot: var(--hot);
+  --color-volt: var(--volt);
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-meme: "Bangers", "Impact", ui-sans-serif, system-ui;
+  --font-marker: "Permanent Marker", ui-sans-serif, system-ui;
+}
+
+/* ---------- Base ------------------------------------------------------ */
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+::selection {
+  background: var(--hot);
+  color: white;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand-2);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 1.1rem;
+  box-shadow: var(--shadow);
+}
+
+.ring-gradient {
+  background: conic-gradient(from 200deg, var(--ring-a), var(--ring-b), var(--ring-a));
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Roast-of-the-day box: hot pink frame */
+.roast-box {
+  border: 1.5px solid var(--roast);
+  border-radius: 0.8rem;
+  box-shadow: 0 0 0 1px rgb(255 45 143 / 0.08), 0 0 24px -8px rgb(255 45 143 / 0.55);
+}
+
+/* ---------- Chaos effects --------------------------------------------- */
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee {
+  animation: marquee 40s linear infinite;
+}
+
+@keyframes glitch-a {
+  0%, 100% { clip-path: inset(0 0 85% 0); transform: translate(-2px, 0); }
+  25% { clip-path: inset(40% 0 35% 0); transform: translate(2px, 1px); }
+  50% { clip-path: inset(70% 0 10% 0); transform: translate(-1px, -1px); }
+  75% { clip-path: inset(15% 0 60% 0); transform: translate(1px, 2px); }
+}
+.glitch {
+  position: relative;
+}
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.glitch::before {
+  color: var(--hot);
+  animation: glitch-a 0.9s steps(2) infinite;
+}
+.glitch::after {
+  color: var(--lime);
+  animation: glitch-a 1.3s steps(3) infinite reverse;
+}
+
+@keyframes wobble {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+.wobble {
+  animation: wobble 2.4s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+.spin-slow {
+  animation: spin-slow 9s linear infinite;
+}
+
+@keyframes float-up {
+  0% { transform: translateY(0) rotate(0); opacity: 0; }
+  10% { opacity: 0.55; }
+  90% { opacity: 0.55; }
+  100% { transform: translateY(-110vh) rotate(40deg); opacity: 0; }
+}
+.float-meme {
+  animation: float-up linear infinite;
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--card-2) 25%, var(--line) 50%, var(--card-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 0.6rem;
+}
+
+.sticker {
+  font-family: var(--font-meme);
+  letter-spacing: 0.04em;
+  text-shadow: 2px 2px 0 rgb(0 0 0 / 0.35);
+}
+
+/* ---------- Reduced motion -------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) *,
+  :root:not([data-motion="full"]) *::before,
+  :root:not([data-motion="full"]) *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  :root:not([data-motion="full"]) .float-meme {
+    display: none;
+  }
+}
+
+:root[data-motion="reduce"] *,
+:root[data-motion="reduce"] *::before,
+:root[data-motion="reduce"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+:root[data-motion="reduce"] .float-meme {
+  display: none;
+}
