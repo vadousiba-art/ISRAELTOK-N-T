@@ -7,6 +7,9 @@ import { getUserDb, serviceRpc, type Db } from "@/lib/server/db";
 import { AppError, handle } from "@/lib/server/errors";
 import type { Me, Message, Post } from "@/lib/types";
 
+// Claude calls can take a while; give serverless hosts (e.g. Vercel) room.
+export const maxDuration = 60;
+
 const level = z.union([z.literal(1), z.literal(2), z.literal(3)]).optional();
 const line = (min: number, max: number) => z.string().trim().min(min).max(max);
 
