@@ -1,0 +1,7 @@
+.data*
+.next
+node_modules
+test-results
+playwright-report
+.pgtest
+*.tsbuildinfo
