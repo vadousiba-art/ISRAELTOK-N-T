@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone trailer project (browser + Node render scripts).
+    "trailer/**",
   ]),
 ]);
 

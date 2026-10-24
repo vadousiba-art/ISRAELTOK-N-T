@@ -1,0 +1,37 @@
+{
+  "_comment": "Shared timeline for picture and sound. 140 BPM, beat = 0.428571 s, beat grid starts at the first impact (3.0 s).",
+  "fps": 30,
+  "duration": 20.0,
+  "bpm": 140,
+  "grid": 3.0,
+  "signal": [0.45, 0.95, 1.3],
+  "rush": [1.35, 3.0],
+  "impact1": 3.0,
+  "cuts2": [3.0, 3.4286, 3.8571, 4.2857, 4.7143, 5.1429, 5.5714, 6.0, 6.4286],
+  "words2": [
+    { "t": 3.4286, "text": "THE", "style": "slam" },
+    { "t": 3.8571, "text": "INTERNET", "style": "slam" },
+    { "t": 4.7143, "text": "AFTER", "style": "slam" },
+    { "t": 5.1429, "text": "DARK.", "style": "giant" },
+    { "t": 6.0, "text": "夜", "style": "kanji" }
+  ],
+  "section3": 6.8571,
+  "words3": [
+    { "t": 7.2857, "text": "ANIME" },
+    { "t": 7.7143, "text": "MANGA" },
+    { "t": 8.1429, "text": "VOCALOID" },
+    { "t": 8.5714, "text": "GAMING" },
+    { "t": 9.0, "text": "ART" }
+  ],
+  "yoruWord": [9.8571, 11.1429],
+  "findPeople": [11.1429, 12.0],
+  "collapse": 12.0,
+  "roll": [12.0, 12.8571, 13.2857, 13.7143, 13.9286, 14.1429, 14.3571, 14.4643, 14.5714, 14.6786, 14.7857, 14.8393, 14.8929, 14.9464, 15.0, 15.0536, 15.1071, 15.1607],
+  "silence": [15.2, 16.0],
+  "impactFinal": 16.0,
+  "assemble": [16.05, 17.45],
+  "lock": 17.45,
+  "tagline": 17.9,
+  "url": [18.25, 18.9],
+  "fadeOut": [19.2, 20.0]
+}
