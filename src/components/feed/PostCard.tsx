@@ -10,6 +10,8 @@ import {
   Bot,
   Flag,
   Heart,
+  Pin,
+  Sparkles,
   Link2,
   MessageCircle,
   MoreHorizontal,
@@ -30,7 +32,8 @@ import { burst } from "@/components/ui/EmojiBurst";
 import { useApp } from "@/components/providers/AppProvider";
 import { useShell } from "@/components/shell/AppShell";
 import { ai, mediaSrc, rpc } from "@/lib/client/api";
-import { byFn, refreshFeeds } from "@/lib/client/hooks";
+import { byFn, refreshFeeds, useProgress, useRpc } from "@/lib/client/hooks";
+import { LevelChip } from "@/components/yoru/Progression";
 import { pickLine, REACTION_EMOJI, REACTIONS, SUCCESS_TOASTS, AWARD_INFO } from "@/lib/jokes";
 import type { Post, PostCore, ReactionKind } from "@/lib/types";
 import { PollView } from "./PollView";
@@ -135,6 +138,11 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
   const heartRef = useRef<HTMLButtonElement>(null);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressed = useRef(false);
+  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [bigHeart, setBigHeart] = useState(0);
+  const { data: progress, mutate: mutateProgress } = useProgress();
+  const isStaff = me.role === "owner" || me.role === "admin";
+  const { data: featured, mutate: mutateFeatured } = useRpc<{ id: string }[]>(isStaff ? "get_featured" : null);
 
   // Reset local optimistic state when the server copy changes.
   const [prevInitial, setPrevInitial] = useState(initial);
@@ -148,7 +156,7 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
   const shown: PostCore = isRepost ? post.repost_of! : post;
   const liked = shown.my_reactions.includes("heart");
   const mine = post.author.id === me.id;
-  const canModerate = me.role === "owner" || me.role === "admin";
+  const canModerate = isStaff;
 
   const patchShown = (fn: (p: PostCore) => PostCore) =>
     setPost((p) => (isRepost ? { ...p, repost_of: fn(p.repost_of!) } : (fn(p) as Post)));
@@ -264,6 +272,46 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
     if (!detail) router.push(`/post/${shown.id}`);
   };
 
+  // Double-tap media to like (single tap still opens the post).
+  const onMediaTap = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (tapTimer.current) {
+      clearTimeout(tapTimer.current);
+      tapTimer.current = null;
+      setBigHeart((n) => n + 1);
+      if (!liked) react("heart");
+      return;
+    }
+    tapTimer.current = setTimeout(() => {
+      tapTimer.current = null;
+      open();
+    }, 260);
+  };
+
+  const pinned = progress?.pinned_post_id === shown.id;
+  async function togglePin() {
+    try {
+      await rpc("pin_post", { p_post_id: pinned ? null : shown.id });
+      toast(pinned ? "Unpinned from your profile." : "Pinned to your profile.", "success", "📌");
+      mutateProgress();
+      mutate(byFn("get_profile_extras"));
+    } catch (err) {
+      toastError(err);
+    }
+  }
+
+  const isFeatured = !!featured?.some((f) => f.id === shown.id);
+  async function toggleFeature() {
+    try {
+      await rpc("admin_feature_post", { p_post_id: shown.id, p_featured: !isFeatured });
+      toast(isFeatured ? "Removed from tonight's picks." : "Added to tonight's picks.", "success", "✨");
+      mutateFeatured();
+      mutate(byFn("get_featured"));
+    } catch (err) {
+      toastError(err);
+    }
+  }
+
   const menuItems: MenuItem[] = [
                 {
                   label: shown.reposted ? "Undo repost" : "Repost",
@@ -282,6 +330,18 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
                 { label: "React...", icon: <SmilePlus size={16} />, onSelect: () => setPicker(true) },
                 { label: "Give an award", icon: <Trophy size={16} />, onSelect: () => setAwardOpen(true), hidden: shown.author.id === me.id },
                 { label: "Quote post", icon: <Quote size={16} />, onSelect: () => setQuoteOpen(true) },
+                {
+                  label: pinned ? "Unpin from profile" : "Pin to profile",
+                  icon: <Pin size={16} />,
+                  onSelect: togglePin,
+                  hidden: shown.author.id !== me.id || post.kind === "repost",
+                },
+                {
+                  label: isFeatured ? "Remove from tonight's picks" : "Feature in tonight's picks",
+                  icon: <Sparkles size={16} />,
+                  onSelect: toggleFeature,
+                  hidden: !isStaff,
+                },
                 { label: "Report", icon: <Flag size={16} />, onSelect: () => setReportOpen(true), hidden: mine },
                 {
                   label: `Block @${shown.author.username}`,
@@ -332,6 +392,8 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
               </NameLink>
               {shown.author.badge && <span className="text-[15px] leading-none">{shown.author.badge !== "🤖" && shown.author.badge}</span>}
               {shown.author.verified && <VerifiedBadge size={17} />}
+              {!shown.author.is_bot && <LevelChip level={shown.author.level} />}
+              {shown.author.flair && <span className="hidden shrink-0 text-xs text-brand-2 sm:inline">{shown.author.flair}</span>}
               <span className="min-w-0 truncate text-muted">@{shown.author.username}</span>
               <span className="text-muted">·</span>
               <TimeAgo iso={shown.created_at} className="shrink-0 text-muted" />
@@ -355,7 +417,26 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
           <EmbeddedPost post={post.repost_of} />
         </div>
       )}
-      {shown.media_url && <PostMedia post={shown} className="mt-3" />}
+      {shown.media_url && (
+        <div className="relative" onClick={shown.media_type === "video" ? undefined : onMediaTap}>
+          <PostMedia post={shown} className="mt-3" />
+          <AnimatePresence>
+            {bigHeart > 0 && (
+              <motion.span
+                key={bigHeart}
+                className="pointer-events-none absolute inset-0 mt-3 flex items-center justify-center"
+                initial={{ opacity: 0, scale: 0.3 }}
+                animate={{ opacity: [0, 1, 1, 0], scale: [0.3, 1.15, 1, 1.1] }}
+                transition={{ duration: 0.8, times: [0, 0.25, 0.7, 1] }}
+                onAnimationComplete={() => setBigHeart(0)}
+                aria-hidden
+              >
+                <Heart size={96} className="fill-brand text-brand drop-shadow-[0_0_24px_var(--brand)]" />
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
       {shown.roast && (
         <div className="mt-3">
           <RoastBox label={shown.roast_label} roast={shown.roast} />

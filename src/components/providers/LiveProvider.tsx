@@ -6,6 +6,7 @@ import { useApp } from "./AppProvider";
 import { byFn } from "@/lib/client/hooks";
 import { rpc } from "@/lib/client/api";
 import type { LiveEvent } from "@/lib/types";
+import { celebrateLevelUp } from "@/lib/progress";
 
 type Listener = (e: LiveEvent) => void;
 type LiveCtx = { subscribe: (l: Listener) => () => void };
@@ -15,18 +16,29 @@ const Ctx = createContext<LiveCtx | null>(null);
 // (RLS decides what each user receives). Demo mode: the /api/live SSE stream.
 // Events only carry ids; components refetch through the RPCs.
 export function LiveProvider({ userId, children }: { userId: string; children: React.ReactNode }) {
-  const { config, supabase } = useApp();
+  const { config, supabase, toast } = useApp();
   const listeners = useRef(new Set<Listener>());
   const { mutate } = useSWRConfig();
 
   const emit = useCallback(
     (e: LiveEvent) => {
-      if (e.type === "notification") mutate(byFn("get_me", "get_notifications"));
+      if (e.type === "notification") {
+        mutate(byFn("get_me", "get_notifications"));
+        if (e.kind === "level_up") {
+          mutate(byFn("get_my_progress"));
+          celebrateLevelUp(Number(e.body));
+        }
+        if (e.kind === "announcement") toast(e.body ?? "New announcement", "info", "📣");
+        if (e.kind === "system") {
+          mutate(byFn("get_my_progress"));
+          toast(e.body ?? "Notice from the admins", "info", "🛡️");
+        }
+      }
       if (e.type === "message") mutate(byFn("get_me", "get_channels"));
       if (e.type === "story") mutate(byFn("get_stories"));
       for (const l of listeners.current) l(e);
     },
-    [mutate],
+    [mutate, toast],
   );
 
   useEffect(() => {
@@ -70,7 +82,10 @@ export function LiveProvider({ userId, children }: { userId: string; children: R
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
-        (p) => emit({ type: "notification", id: (p.new as { id: string }).id }),
+        (p) => {
+          const n = p.new as { id: string; kind: string; body: string };
+          emit({ type: "notification", id: n.id, kind: n.kind, body: n.body });
+        },
       )
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts" }, (p) => {
         const row = p.new as { id: string; author_id: string; kind: string };

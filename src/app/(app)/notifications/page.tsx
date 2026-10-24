@@ -12,6 +12,7 @@ import { useLive } from "@/components/providers/LiveProvider";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button, ChaosLoader, Empty, PageTitle, TimeAgo } from "@/components/ui/bits";
 import { AWARD_INFO, EMPTY_LINES, NOTIFICATION_TEXT, REACTION_EMOJI } from "@/lib/jokes";
+import { levelTitle } from "@/lib/progress";
 import type { AppNotification, AwardKind, ReactionKind } from "@/lib/types";
 
 const ICON: Record<string, string> = {
@@ -24,9 +25,13 @@ const ICON: Record<string, string> = {
   message: "✉️",
   friend_post: "🆕",
   roast: "🔥",
+  level_up: "⬆️",
+  announcement: "📣",
+  system: "🛡️",
 };
 
 function href(n: AppNotification) {
+  if (n.kind === "level_up") return "/leaderboard";
   if (n.post_id) return `/post/${n.post_id}`;
   if (n.channel_id) return `/chat/${n.channel_id}`;
   if (n.actor) return `/u/${n.actor.username}`;
@@ -57,7 +62,7 @@ export default function NotificationsPage() {
   return (
     <div>
       <div className="flex items-start justify-between">
-        <PageTitle emoji="🔔" sub="People who thought about you (rare).">
+        <PageTitle sub="What happened while you were away.">
           Notifications
         </PageTitle>
         {unread > 0 && (
@@ -80,15 +85,25 @@ export default function NotificationsPage() {
                 className={clsx("card flex items-start gap-3 p-3 transition hover:border-brand", !n.read && "border-brand/60 bg-brand/5")}
               >
                 <div className="relative">
-                  <Avatar src={n.actor?.avatar_url} name={n.actor?.display_name ?? "?"} size={44} />
+                  {n.kind === "level_up" ? (
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand text-xl font-bold text-white">昇</span>
+                  ) : (
+                    <Avatar src={n.actor?.avatar_url} name={n.actor?.display_name ?? "?"} size={44} />
+                  )}
                   <span className="absolute -bottom-1 -right-1 rounded-full bg-card px-0.5 text-base leading-none">{ICON[n.kind] ?? "📢"}</span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[15px]">
-                    <b>{n.actor?.display_name ?? "Someone"}</b> {NOTIFICATION_TEXT[n.kind] ?? n.kind}
-                    {n.kind === "reaction" && ` ${detail}`}
-                  </p>
-                  {detail && n.kind !== "reaction" && n.kind !== "like" && (
+                  {n.kind === "level_up" ? (
+                    <p className="text-[15px]">
+                      <b>Level up!</b> You reached level {n.body} · {levelTitle(Number(n.body)).en}
+                    </p>
+                  ) : (
+                    <p className="text-[15px]">
+                      <b>{n.actor?.display_name ?? "Someone"}</b> {NOTIFICATION_TEXT[n.kind] ?? n.kind}
+                      {n.kind === "reaction" && ` ${detail}`}
+                    </p>
+                  )}
+                  {detail && n.kind !== "reaction" && n.kind !== "like" && n.kind !== "level_up" && (
                     <p className="mt-0.5 line-clamp-2 text-sm text-muted">{detail}</p>
                   )}
                   <TimeAgo iso={n.created_at} className="text-xs text-muted" />

@@ -16,9 +16,13 @@ import { SideNav } from "./SideNav";
 import { RightRail } from "./RightRail";
 import { ComposerModal, type ComposerTab } from "@/components/feed/ComposerModal";
 import { StoryComposer } from "@/components/stories/StoryComposer";
+import { Ambience } from "@/components/fx/Ambience";
+import { Celebrations } from "@/components/fx/Celebrations";
+import { CommandPalette } from "@/components/fx/CommandPalette";
+import { AccentStyle, AnnouncementBanner } from "@/components/yoru/Progression";
 import type { Me } from "@/lib/types";
 
-type ComposerOpts = { tab?: ComposerTab; file?: File | null };
+type ComposerOpts = { tab?: ComposerTab; file?: File | null; text?: string };
 type ShellCtx = {
   me: Me;
   openComposer: (opts?: ComposerOpts) => void;
@@ -37,7 +41,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { data: me, error } = useMe();
   const router = useRouter();
   const pathname = usePathname();
-  const { config } = useApp();
+  const { config, ambience } = useApp();
   const [composer, setComposer] = useState<ComposerOpts | null>(null);
   const [storyOpen, setStoryOpen] = useState(false);
   const [drawer, setDrawer] = useState(false);
@@ -71,6 +75,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <Ctx.Provider value={{ me, openComposer, openStoryComposer, openDrawer }}>
       <LiveProvider userId={me.id}>
+        <AccentStyle />
+        <Ambience mode={ambience} />
         {config.mode === "demo" && (
           <div className="relative z-30 border-b border-line bg-bg-2 px-3 py-1 text-center text-[11px] font-medium tracking-wide text-muted">
             DEMO MODE · local embedded database · anyone can log in as anyone ·{" "}
@@ -79,10 +85,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </a>
           </div>
         )}
-        <div className="relative mx-auto flex w-full max-w-[1280px] justify-center gap-6 lg:px-4">
+        <div className="relative z-[1] mx-auto flex w-full max-w-[1280px] justify-center gap-6 lg:px-4">
           <SideNav />
           <div className="w-full min-w-0 max-w-[640px]">
             <Header />
+            <div className="px-3 sm:px-4">
+              <AnnouncementBanner />
+            </div>
             <AnimatePresence mode="wait" initial={false}>
               <motion.main
                 key={pathname}
@@ -104,10 +113,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           open={composer !== null}
           initialTab={composer?.tab}
           initialFile={composer?.file ?? null}
+          initialText={composer?.text}
           onClose={() => setComposer(null)}
         />
         <StoryComposer open={storyOpen} onClose={() => setStoryOpen(false)} />
         <EmojiBurstLayer />
+        <Celebrations />
+        <CommandPalette />
       </LiveProvider>
     </Ctx.Provider>
   );

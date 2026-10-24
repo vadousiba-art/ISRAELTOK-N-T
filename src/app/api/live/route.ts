@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
             : null;
         }
         case "notifications":
-          return row.user_id === userId ? { type: "notification", id: String(row.id) } : null;
+          return row.user_id === userId ? { type: "notification", id: String(row.id), kind: String(row.kind), body: String(row.body ?? "") } : null;
         case "posts":
           return row.kind === "repost" ? null : { type: "post", id: String(row.id), author_id: String(row.author_id) };
         case "stories":

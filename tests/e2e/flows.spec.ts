@@ -1,6 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
 
+// The login route allows 10 attempts per IP per minute; give each test login
+// its own address so the suite does not trip that limit.
+let ipSeq = 1;
 async function loginAs(page: Page, name: RegExp) {
+  await page.context().setExtraHTTPHeaders({ "x-forwarded-for": `10.0.0.${ipSeq++}` });
   await page.goto("/login");
   await page.getByRole("button", { name }).first().click();
   await page.waitForURL("**/");
@@ -115,6 +119,7 @@ test("chaos tools work without an API key (Menace Lite)", async ({ page }) => {
 test("admin invites a new member who can join and post", async ({ page, browser }) => {
   await loginAs(page, /Ari/);
   await page.goto("/admin");
+  await page.getByRole("tab", { name: "Invites" }).click();
   await expect(page.locator("code")).toHaveCount(1); // the revoked seed invite
   await page.getByRole("button", { name: "Create & copy link" }).click();
   await expect(page.locator("code")).toHaveCount(2);
@@ -137,7 +142,64 @@ test("admin invites a new member who can join and post", async ({ page, browser 
   await ctx.close();
 
   await page.reload();
+  await page.getByRole("tab", { name: "Invites" }).click();
   await expect(page.getByText("1/5 used")).toBeVisible();
+});
+
+test("nightly check-in grows the streak and XP", async ({ page }) => {
+  await loginAs(page, /Lucas/);
+  await page.getByRole("button", { name: "Check in for tonight" }).click();
+  await expect(page.getByText(/Night 1 · \+20 XP/)).toBeVisible();
+  await expect(page.getByRole("button", { name: /Checked in, 1 night streak/ })).toBeDisabled();
+});
+
+test("spoilers stay hidden until tapped", async ({ page }) => {
+  await loginAs(page, /Zach/);
+  await page.getByRole("button", { name: "Create post" }).click();
+  await page.getByLabel("Post text").fill(`ending recap ||the villain wins ${Date.now()}||`);
+  await page.getByRole("button", { name: "Post", exact: true }).click();
+  const spoiler = page.getByRole("button", { name: "Spoiler, tap to reveal" }).first();
+  await expect(spoiler).toBeVisible();
+  await spoiler.click();
+  await expect(page.locator(".spoiler[data-open=true]").first()).toContainText("the villain wins");
+});
+
+test("admins run announcements and quiet mode from site controls", async ({ page, browser }) => {
+  await loginAs(page, /Ari/);
+  await page.goto("/admin");
+  await expect(page.getByText("Active today")).toBeVisible();
+  await page.getByRole("tab", { name: "Controls" }).click();
+  await page.getByLabel("Announcement text").fill("Movie night Friday 9pm");
+  await page.getByRole("button", { name: "event" }).click();
+  await page.getByRole("button", { name: "Publish banner" }).click();
+  await expect(page.getByText("Announcement is live.")).toBeVisible();
+  await page.getByRole("switch", { name: /Quiet mode/ }).click();
+  await expect(page.getByText("Quiet mode on. Only admins can post.")).toBeVisible();
+
+  const ctx = await browser.newContext();
+  const member = await ctx.newPage();
+  await loginAs(member, /Tyler/);
+  await expect(member.getByRole("status").filter({ hasText: "Movie night Friday 9pm" })).toBeVisible();
+  await expect(member.getByText(/Quiet mode: only admins can post/)).toBeVisible();
+  await member.getByRole("button", { name: "Create post" }).click();
+  await member.getByLabel("Post text").fill("can I post?");
+  await member.getByRole("button", { name: "Post", exact: true }).click();
+  await expect(member.getByText(/YORU is in quiet mode right now/)).toBeVisible();
+  await ctx.close();
+
+  await page.getByRole("switch", { name: /Quiet mode/ }).click();
+  await expect(page.getByText("Quiet mode off.")).toBeVisible();
+  await page.getByRole("tab", { name: "Audit log" }).click();
+  await expect(page.getByText("changed quiet mode").first()).toBeVisible();
+});
+
+test("command palette jumps anywhere", async ({ page }) => {
+  await loginAs(page, /Ari/);
+  await page.keyboard.press("Control+k");
+  await page.getByLabel("Search commands").fill("Leader");
+  await page.keyboard.press("Enter");
+  await page.waitForURL("**/leaderboard");
+  await expect(page.getByRole("button", { name: /Top Levels/ })).toBeVisible();
 });
 
 test("invalid invite codes are rejected", async ({ page }) => {

@@ -102,6 +102,10 @@ body {
   outline-offset: 2px;
   border-radius: 6px;
 }
+/* The command palette's search box sits inside its own framed dialog. */
+.palette-input:focus-visible {
+  outline: none;
+}
 
 .card {
   background: var(--card);
@@ -160,8 +164,8 @@ body {
 }
 
 @keyframes ring-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgb(242 13 47 / 0); }
-  50% { box-shadow: 0 0 0 3px rgb(242 13 47 / 0.18); }
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 0%, transparent); }
+  50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent); }
 }
 .story-ring-new {
   animation: ring-pulse 2.8s ease-in-out infinite;
@@ -176,6 +180,46 @@ body {
   background-size: 200% 100%;
   animation: shimmer 1.6s ease-in-out infinite;
   border-radius: 0.6rem;
+}
+
+/* A slow sheen across event banners and featured cards. */
+@keyframes sheen {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(220%); }
+}
+.shimmer {
+  overflow: hidden;
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.07), transparent);
+  animation: sheen 3.6s ease-in-out infinite;
+}
+
+/* ||spoilers||: blurred until tapped. */
+.spoiler {
+  border-radius: 0.3rem;
+  padding: 0 0.15rem;
+  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  filter: blur(5px);
+  cursor: pointer;
+  transition: filter 180ms ease, background-color 180ms ease;
+  user-select: none;
+}
+.spoiler[data-open="true"] {
+  filter: none;
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+  cursor: text;
+  user-select: text;
+}
+
+/* Level ring around profile avatars (progress set via --p, 0–1). */
+.level-ring {
+  background: conic-gradient(var(--brand) calc(var(--p, 0) * 360deg), var(--line) 0);
+  border-radius: 9999px;
 }
 
 /* Small uppercase label (replaces the old meme-font stickers). */

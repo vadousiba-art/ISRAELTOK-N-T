@@ -133,6 +133,8 @@ export const NOTIFICATION_TEXT: Record<string, string> = {
   message: "sent you a message",
   friend_post: "posted something",
   roast: "roasted you",
+  announcement: "posted an announcement",
+  system: "sent you a notice",
 };
 
 export const ERROR_TITLES = ["Something went wrong.", "Lost in the dark.", "That didn't load."];

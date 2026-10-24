@@ -24,3 +24,12 @@ export const FEED_REFRESH_EVENT = "itn:feeds";
 export function refreshFeeds() {
   window.dispatchEvent(new Event(FEED_REFRESH_EVENT));
 }
+
+// YORU (migration 0003): site state and the signed-in member's progression.
+export function useSite() {
+  return useRpc<import("@/lib/types").SiteState>("get_site", {}, { refreshInterval: 60_000 });
+}
+
+export function useProgress() {
+  return useRpc<import("@/lib/types").Progress>("get_my_progress", { p_offset_minutes: -new Date().getTimezoneOffset() });
+}

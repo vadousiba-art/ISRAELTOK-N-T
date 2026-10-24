@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { Ban, Check, Copy, Shield, Trash2, X } from "lucide-react";
+import { Ban, Check, Copy, Shield, SlidersHorizontal, Trash2, X } from "lucide-react";
 import clsx from "clsx";
 import { useRpc } from "@/lib/client/hooks";
 import { rpc } from "@/lib/client/api";
@@ -11,13 +11,22 @@ import { useApp } from "@/components/providers/AppProvider";
 import { useShell } from "@/components/shell/AppShell";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button, ChaosLoader, Empty, PageTitle, TimeAgo } from "@/components/ui/bits";
-import type { AdminOverview } from "@/lib/types";
+import { AdminOverviewPanel } from "@/components/admin/Overview";
+import { SiteControls } from "@/components/admin/SiteControls";
+import { AuditLog } from "@/components/admin/AuditLog";
+import { MemberToolsDialog } from "@/components/admin/MemberTools";
+import { LevelChip } from "@/components/yoru/Progression";
+import type { AdminOverview, MemberExtras, ProfileLite } from "@/lib/types";
+
+type Tab = "overview" | "controls" | "members" | "invites" | "reports" | "log";
 
 export default function AdminPage() {
   const { me } = useShell();
   const { toast, toastError } = useApp();
   const { data, error, mutate } = useRpc<AdminOverview>(me.role === "member" ? null : "admin_overview");
-  const [tab, setTab] = useState<"invites" | "members" | "reports">("invites");
+  const [tab, setTab] = useState<Tab>("overview");
+  const [tools, setTools] = useState<ProfileLite | null>(null);
+  const { data: extras } = useRpc<Record<string, MemberExtras>>(me.role === "member" ? null : "admin_member_extras");
   const [maxUses, setMaxUses] = useState(5);
   const [hours, setHours] = useState(168);
   const [note, setNote] = useState("");
@@ -59,15 +68,18 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-4">
-      <PageTitle emoji="🛡️" sub="Invite links, members and moderation. With great power comes great pettiness.">
+      <PageTitle sub="Run the night: stats, site controls, members, invites, reports and the audit log.">
         Admin
       </PageTitle>
-      <div className="flex gap-1 rounded-full border border-line bg-card p-1" role="tablist">
+      <div className="no-scrollbar -mx-1 flex gap-1.5 overflow-x-auto px-1" role="tablist">
         {(
           [
-            ["invites", `🎟️ Invites`],
-            ["members", `👥 Members (${data.members.length})`],
-            ["reports", `🚩 Reports${openReports ? ` (${openReports})` : ""}`],
+            ["overview", "Overview"],
+            ["controls", "Controls"],
+            ["members", `Members (${data.members.length})`],
+            ["invites", "Invites"],
+            ["reports", `Reports${openReports ? ` (${openReports})` : ""}`],
+            ["log", "Audit log"],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -75,12 +87,19 @@ export default function AdminPage() {
             role="tab"
             aria-selected={tab === id}
             onClick={() => setTab(id)}
-            className={clsx("flex-1 rounded-full py-2 text-xs font-bold sm:text-sm", tab === id ? "bg-brand text-white" : "text-muted")}
+            className={clsx(
+              "relative shrink-0 rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors duration-150",
+              tab === id ? "border-brand bg-brand text-white" : "border-line bg-card text-muted hover:text-ink",
+            )}
           >
             {label}
           </button>
         ))}
       </div>
+
+      {tab === "overview" && <AdminOverviewPanel onGoto={setTab} />}
+      {tab === "controls" && <SiteControls />}
+      {tab === "log" && <AuditLog />}
 
       {tab === "invites" && (
         <>
@@ -178,13 +197,19 @@ export default function AdminPage() {
                 <Avatar src={m.avatar_url} name={m.display_name} size={42} online={m.online} />
               </Link>
               <div className="min-w-0 flex-1">
-                <div className="truncate font-bold">
-                  {m.display_name} {m.verified && "✅"} {m.banned && <span className="text-xs text-hot">BANNED</span>}
+                <div className="flex items-center gap-1.5 truncate font-bold">
+                  {m.display_name} {m.verified && "✅"} <LevelChip level={extras?.[m.id]?.level} />
+                  {extras?.[m.id]?.flair && <span className="text-xs font-normal text-brand-2">{extras[m.id].flair}</span>}
+                  {m.banned && <span className="text-xs text-hot">BANNED</span>}
+                  {extras?.[m.id]?.muted_until && <span className="text-xs font-normal text-muted">muted</span>}
                 </div>
                 <div className="truncate text-xs text-muted">
                   @{m.username} · {m.role} · {m.posts} posts · seen {m.last_seen_at ? <TimeAgo iso={m.last_seen_at} /> : "never"}
                 </div>
               </div>
+              <Button variant="outline" className="py-1.5 text-xs" onClick={() => setTools(m)} aria-label={`More tools for ${m.display_name}`}>
+                <SlidersHorizontal size={14} /> Tools
+              </Button>
               {m.role !== "owner" && m.id !== me.id && (
                 <div className="flex flex-wrap gap-1.5">
                   {data.my_role === "owner" && (
@@ -282,6 +307,13 @@ export default function AdminPage() {
           ))}
         </div>
       )}
+      <MemberToolsDialog
+        key={tools?.id ?? "none"}
+        member={tools}
+        extras={tools ? extras?.[tools.id] : undefined}
+        canModerate={!!tools && tools.id !== me.id && tools.role !== "owner" && (tools.role !== "admin" || data.my_role === "owner")}
+        onClose={() => setTools(null)}
+      />
     </div>
   );
 }

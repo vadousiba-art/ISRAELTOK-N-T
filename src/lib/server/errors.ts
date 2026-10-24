@@ -22,6 +22,9 @@ const STATUS: Record<string, number> = {
   USERNAME_TAKEN: 409,
   AI_UNAVAILABLE: 503,
   NOT_CONFIGURED: 503,
+  MUTED: 403,
+  LOCKDOWN: 403,
+  SLOW_MODE: 429,
 };
 
 // Postgres functions raise 'CODE|Human message'. Map those (and raw driver

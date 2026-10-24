@@ -36,6 +36,7 @@ Demo mode lets anyone log in as anyone. It turns itself off in production unless
 2. **Apply the schema.** Open the SQL editor and run, in order:
    - `supabase/migrations/0001_core.sql` (tables, RLS, functions, triggers, realtime)
    - `supabase/migrations/0002_storage.sql` (the private `media` bucket and its read policy)
+   - `supabase/migrations/0003_yoru_features.sql` (levels, streaks, site controls, mutes, audit log). Additive only: new columns with defaults, new tables and functions. It can be run twice safely and does not change existing rows.
 
    Or use the Supabase CLI: `supabase init` (once; it keeps the existing migrations), then `supabase link --project-ref <ref>` and `supabase db push`.
 3. **Configure the environment:** `cp .env.example .env.local`, then fill in `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY`. Add `ANTHROPIC_API_KEY` to enable the full AI Menace.
@@ -71,7 +72,10 @@ Demo mode lets anyone log in as anyone. It turns itself off in production unless
 | **Profiles** | Avatar upload, bio, status, flair, inside jokes, stats, 11 achievement badges, posts and media tabs |
 | **Leaderboards** | Opt-in only: most liked, biggest menace, most awarded, most roasted, top yapper |
 | **Notifications** | Likes, reactions, comments, replies, mentions, reposts, awards, DMs, roasts, optional friend activity. Each one can be toggled, and they update live |
-| **Admin** | Invite links with max uses and expiry, revoke, promote or demote admins (owner only), verify, ban or unban, report queue (dismiss, delete content, delete and ban) |
+| **Levels & streaks** | XP for posts (+10), comments (+4), likes received (+2, taken back on unlike) and awards (+15); nightly check-in (+20, up to +35 streak bonus) with a streak counter; levels with Japanese titles (新人 → 夜の王); full-screen level-up animation; Levels and Night Streaks leaderboards |
+| **Style** | Six accent colors (紅 桜 菫 氷 金 翠) that recolor the app and your profile, "Currently watching / reading / listening / playing", pinned post on your profile, admin-given flair |
+| **Effects** | Ambient background (stars, sakura, rain, fireflies or off), double-tap media to like, `||spoilers||` that blur until tapped, category chips in the composer, Ctrl/Cmd+K command palette, and a hidden 夜 mode (Konami code or tap the logo five times). All respect reduced motion |
+| **Admin** | Overview with 14-day activity chart and top posters/tags; announcement banner; broadcast notification to everyone; quiet mode (pause member posts); slow mode; word filter; tonight's prompt; feature posts in "Tonight's picks"; mute members (10 min to 7 days), flair, grant XP, rebuild XP from history; full audit log of admin actions. Plus invites, roles, verify, ban and the report queue |
 | **UX** | Dark, light and system themes; reduced-motion support (system, reduced, or full); mobile-first layout with a desktop 3-column view; absurd loading, empty, 404 and error screens |
 
 ---

@@ -9,6 +9,8 @@ const text = (max: number) => z.string().max(max);
 const mediaUrl = z.string().max(300).nullable().optional();
 const mediaType = z.enum(["image", "video", "gif"]).nullable().optional();
 const none = z.object({});
+const offset = z.number().int().min(-840).max(840).optional();
+export const ACCENTS = ["crimson", "sakura", "violet", "ice", "gold", "jade"] as const;
 
 export const REACTIONS = ["heart", "skull", "fire", "clown", "cap", "crying", "salute", "w", "l"] as const;
 export const AWARDS = ["menace", "war_crime", "touch_grass", "galaxy_brain", "skill_issue", "ratio"] as const;
@@ -44,6 +46,15 @@ export const RPC_SCHEMAS = {
   get_blocked: none,
   get_ai_history: z.object({ p_limit: z.number().int().min(1).max(100).optional() }),
   admin_overview: none,
+  get_site: none,
+  get_my_progress: z.object({ p_offset_minutes: offset }),
+  get_profile_extras: z.object({ p_username: text(20) }),
+  get_featured: none,
+  get_level_board: none,
+  admin_get_site: none,
+  admin_stats: none,
+  admin_audit: z.object({ p_limit: z.number().int().min(1).max(200).optional() }),
+  admin_member_extras: none,
 
   // writes
   touch_presence: none,
@@ -118,6 +129,17 @@ export const RPC_SCHEMAS = {
     p_reason: text(500),
   }),
   clear_ai_history: none,
+  daily_checkin: z.object({ p_offset_minutes: offset }),
+  update_my_style: z.object({
+    p: z
+      .object({
+        accent: z.enum(ACCENTS).optional(),
+        currently_kind: z.enum(["watching", "reading", "listening", "playing", ""]).optional(),
+        currently_title: text(60).optional(),
+      })
+      .strict(),
+  }),
+  pin_post: z.object({ p_post_id: id.nullable() }),
 
   // admin (the functions re-check the caller's role)
   admin_create_invite: z.object({
@@ -130,6 +152,23 @@ export const RPC_SCHEMAS = {
   admin_set_banned: z.object({ p_user_id: id, p_banned: z.boolean() }),
   admin_set_verified: z.object({ p_user_id: id, p_verified: z.boolean() }),
   admin_resolve_report: z.object({ p_report_id: id, p_action: z.enum(["dismiss", "delete", "ban"]) }),
+  admin_update_site: z.object({
+    p: z
+      .object({
+        announcement: z.object({ text: text(280), tone: z.enum(["info", "event", "alert"]) }).nullable().optional(),
+        lockdown: z.boolean().optional(),
+        slow_mode: z.number().int().min(0).max(3600).optional(),
+        word_filter: z.array(text(30)).max(100).optional(),
+        nightly_prompt: text(200).nullable().optional(),
+      })
+      .strict(),
+  }),
+  admin_broadcast: z.object({ p_body: z.string().min(1).max(280) }),
+  admin_feature_post: z.object({ p_post_id: id, p_featured: z.boolean() }),
+  admin_mute: z.object({ p_user_id: id, p_minutes: z.number().int().min(0).max(43200) }),
+  admin_set_flair: z.object({ p_user_id: id, p_flair: text(24) }),
+  admin_grant_xp: z.object({ p_user_id: id, p_amount: z.number().int().min(-5000).max(5000) }),
+  admin_recalculate_xp: none,
 } as const;
 
 export type RpcName = keyof typeof RPC_SCHEMAS;

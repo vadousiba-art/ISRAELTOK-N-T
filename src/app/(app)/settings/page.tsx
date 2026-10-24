@@ -1,16 +1,20 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Check } from "lucide-react";
 import clsx from "clsx";
 import { useSWRConfig } from "swr";
-import { byFn, useRpc } from "@/lib/client/hooks";
+import { byFn, useProgress, useRpc } from "@/lib/client/hooks";
 import { post, rpc } from "@/lib/client/api";
 import { useApp, type MotionPref, type ThemePref } from "@/components/providers/AppProvider";
 import { useShell } from "@/components/shell/AppShell";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button, PageTitle, Toggle } from "@/components/ui/bits";
 import { IntensityPicker } from "@/components/menace/IntensityPicker";
-import type { Me, NotificationPrefs, ProfileLite } from "@/lib/types";
+import { AMBIENCE_MODES } from "@/components/fx/Ambience";
+import { ACCENT_COLORS, CURRENTLY, PALETTE_EVENT } from "@/lib/progress";
+import type { Accent, CurrentlyKind, Me, NotificationPrefs, ProfileLite } from "@/lib/types";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -54,7 +58,23 @@ const NOTIF: [keyof NotificationPrefs, string, string][] = [
 
 export default function SettingsPage() {
   const { me } = useShell();
-  const { theme, setTheme, motionPref, setMotionPref, sound, setSound, toastError, toast, config } = useApp();
+  const { theme, setTheme, motionPref, setMotionPref, sound, setSound, ambience, setAmbience, toastError, toast, config } = useApp();
+  const { data: progress, mutate: mutateProgress } = useProgress();
+  const [currently, setCurrently] = useState<{ kind: CurrentlyKind | ""; title: string }>({ kind: "", title: "" });
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (progress) setCurrently({ kind: progress.currently_kind ?? "", title: progress.currently_title ?? "" });
+  }, [progress]);
+
+  async function saveStyle(p: { accent?: Accent; currently_kind?: CurrentlyKind | ""; currently_title?: string }) {
+    try {
+      await rpc("update_my_style", { p });
+      mutateProgress();
+      mutate(byFn("get_me", "get_profile_extras"));
+    } catch (err) {
+      toastError(err);
+    }
+  }
   const { mutate } = useSWRConfig();
   const router = useRouter();
   const { data: blocked, mutate: mutateBlocked } = useRpc<ProfileLite[]>("get_blocked");
@@ -96,6 +116,82 @@ export default function SettingsPage() {
           options={[["system", "System"], ["reduce", "Reduced"], ["full", "Full"]]}
         />
         <Toggle checked={sound} onChange={setSound} label="Sound effects" description="Pops and fanfares on likes, posts and awards" />
+      </Section>
+
+      <Section title="Style">
+        <div className="py-3">
+          <div className="mb-2 text-sm font-semibold">Accent color</div>
+          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Accent color">
+            {(Object.keys(ACCENT_COLORS) as Accent[]).map((a) => {
+              const c = ACCENT_COLORS[a];
+              const on = (progress?.accent ?? "crimson") === a;
+              return (
+                <button
+                  key={a}
+                  role="radio"
+                  aria-checked={on}
+                  aria-label={c.label}
+                  onClick={() => saveStyle({ accent: a })}
+                  className={clsx("flex items-center gap-2 rounded-full border px-2.5 py-1.5 text-sm transition-colors duration-150", on ? "border-ink" : "border-line hover:border-muted")}
+                >
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full" style={{ background: c.brand }}>
+                    {on && <Check size={12} className="text-white" />}
+                  </span>
+                  {c.label} <span className="text-xs text-muted">{c.jp}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-1.5 text-xs text-muted">Recolors YORU for you and tints your profile for everyone.</p>
+        </div>
+        <div className="py-3">
+          <div className="mb-2 text-sm font-semibold">Currently</div>
+          <form
+            className="flex flex-col gap-2 sm:flex-row"
+            onSubmit={(e) => {
+              e.preventDefault();
+              saveStyle({ currently_kind: currently.kind, currently_title: currently.title.trim() });
+              toast("Saved.", "success", "📺");
+            }}
+          >
+            <select
+              value={currently.kind}
+              onChange={(e) => setCurrently((c) => ({ ...c, kind: e.target.value as CurrentlyKind | "" }))}
+              className="rounded-xl border border-line bg-card-2 px-3 py-2 text-sm outline-none focus:border-brand"
+              aria-label="Activity"
+            >
+              <option value="">Nothing</option>
+              {(Object.keys(CURRENTLY) as CurrentlyKind[]).map((k) => (
+                <option key={k} value={k}>
+                  {CURRENTLY[k].emoji} {CURRENTLY[k].verb}
+                </option>
+              ))}
+            </select>
+            <input
+              value={currently.title}
+              onChange={(e) => setCurrently((c) => ({ ...c, title: e.target.value.slice(0, 60) }))}
+              placeholder="Frieren, Chainsaw Man, Ado, Persona 5..."
+              className="min-w-0 flex-1 rounded-xl border border-line bg-card-2 px-3 py-2 text-sm outline-none focus:border-brand"
+              aria-label="Title"
+            />
+            <Button type="submit" className="py-2">
+              Save
+            </Button>
+          </form>
+        </div>
+        <Segmented
+          label="Ambience"
+          value={ambience}
+          onChange={setAmbience}
+          options={AMBIENCE_MODES.map((m) => [m.id, `${m.label} ${m.jp}`] as [typeof m.id, string])}
+        />
+        <div className="py-3 text-xs text-muted">
+          Tip: press <kbd className="rounded border border-line px-1">Ctrl</kbd> + <kbd className="rounded border border-line px-1">K</kbd> anywhere (or{" "}
+          <button className="text-brand underline" onClick={() => window.dispatchEvent(new Event(PALETTE_EVENT))}>
+            tap here
+          </button>
+          ) for quick jump.
+        </div>
       </Section>
 
       <Section title="The AI Menace">

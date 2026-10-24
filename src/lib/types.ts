@@ -13,6 +13,87 @@ export interface ProfileLite {
   role: Role;
   status: string;
   online: boolean;
+  // Added in migration 0003; optional so older cached data still type-checks.
+  level?: number;
+  accent?: Accent;
+  flair?: string;
+}
+
+export type Accent = "crimson" | "sakura" | "violet" | "ice" | "gold" | "jade";
+export type CurrentlyKind = "watching" | "reading" | "listening" | "playing";
+
+export interface Progress {
+  xp: number;
+  level: number;
+  level_floor: number;
+  next_level_at: number;
+  streak: number;
+  best_streak: number;
+  checked_in_today?: boolean;
+  accent: Accent;
+  flair: string;
+  currently_kind: CurrentlyKind | null;
+  currently_title: string | null;
+  pinned_post_id?: string | null;
+  muted_until?: string | null;
+}
+
+export interface ProfileExtras extends Progress {
+  muted: boolean;
+  pinned: Post | null;
+}
+
+export interface CheckinResult {
+  already: boolean;
+  streak: number;
+  gained: number;
+  xp: number;
+  level: number;
+  leveled_up?: boolean;
+}
+
+export interface Announcement {
+  id: string;
+  text: string;
+  tone: "info" | "event" | "alert";
+  created_at: string;
+}
+
+export interface SiteState {
+  announcement: Announcement | null;
+  lockdown: boolean;
+  slow_mode: number;
+  nightly_prompt: string | null;
+}
+
+export interface AdminSite extends SiteState {
+  word_filter: string[];
+  updated: Record<string, { at: string; by: string | null }>;
+}
+
+export interface AdminStats {
+  totals: Record<"members" | "posts" | "comments" | "messages" | "active_24h" | "active_7d" | "open_reports" | "muted" | "banned", number>;
+  daily: { day: string; posts: number; comments: number; messages: number; joins: number }[];
+  top_posters: { profile: ProfileLite; score: number }[];
+  top_tags: { tag: string; count: number }[];
+}
+
+export interface AuditEntry {
+  id: string;
+  action: string;
+  target_id: string | null;
+  details: Record<string, unknown>;
+  created_at: string;
+  actor: ProfileLite | null;
+  target: ProfileLite | null;
+}
+
+export interface MemberExtras {
+  xp: number;
+  level: number;
+  streak: number;
+  flair: string;
+  muted_until: string | null;
 }
 
 export interface NotificationPrefs {
@@ -242,7 +323,7 @@ export interface AiMessage {
 export type LiveEvent =
   | { type: "hello" }
   | { type: "message"; channel_id: string; id: string; op: string }
-  | { type: "notification"; id: string }
+  | { type: "notification"; id: string; kind?: string; body?: string }
   | { type: "post"; id: string; author_id: string }
   | { type: "story"; id: string }
   | { type: "typing"; channel_id: string; user_id: string; name: string };

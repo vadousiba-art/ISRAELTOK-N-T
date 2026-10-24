@@ -11,9 +11,12 @@ import { useApp } from "@/components/providers/AppProvider";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button, ChaosLoader, Empty, PageTitle } from "@/components/ui/bits";
 import { EMPTY_LINES } from "@/lib/jokes";
-import type { Leaderboard } from "@/lib/types";
+import type { LeaderEntry, Leaderboard } from "@/lib/types";
+import { LevelChip } from "@/components/yoru/Progression";
 
 const BOARDS = [
+  { id: "levels", label: "Top Levels", emoji: "⬆️", unit: "XP", blurb: "Experience from posting, comments, likes received and nightly check-ins" },
+  { id: "streaks", label: "Night Streaks", emoji: "🔥", unit: "nights", blurb: "Current nightly check-in streaks" },
   { id: "likes", label: "Most Liked", emoji: "❤️", unit: "likes", blurb: "All-time hearts received" },
   { id: "chaos", label: "Biggest Menace", emoji: "🌀", unit: "chaos", blurb: "Chaos points from tools, awards & challenges" },
   { id: "awards", label: "Most Awarded", emoji: "🏆", unit: "awards", blurb: "Community awards received" },
@@ -27,9 +30,10 @@ export default function LeaderboardPage() {
   const { toastError, toast } = useApp();
   const { mutate } = useSWRConfig();
   const { data, mutate: refresh } = useRpc<Leaderboard>("get_leaderboard");
-  const [board, setBoard] = useState<(typeof BOARDS)[number]["id"]>("likes");
+  const { data: lv } = useRpc<{ levels: LeaderEntry[]; streaks: LeaderEntry[] }>("get_level_board");
+  const [board, setBoard] = useState<(typeof BOARDS)[number]["id"]>("levels");
   const info = BOARDS.find((b) => b.id === board)!;
-  const rows = data?.[board] ?? [];
+  const rows = (board === "levels" || board === "streaks" ? lv?.[board] : data?.[board]) ?? [];
 
   async function optIn() {
     try {
@@ -44,7 +48,7 @@ export default function LeaderboardPage() {
 
   return (
     <div>
-      <PageTitle emoji="🏆" sub="Opt-in comedy rankings. Glory is temporary. Screenshots are forever.">
+      <PageTitle sub="Opt-in rankings. Climb the night.">
         Leaderboards
       </PageTitle>
       {data && !data.opted_in && (
@@ -84,15 +88,16 @@ export default function LeaderboardPage() {
             <Link
               href={`/u/${r.profile.username}`}
               className={clsx(
-                "card flex items-center gap-3 p-3 transition hover:border-brand",
-                i === 0 && "border-lime/60 bg-gradient-to-r from-lime/10 to-transparent",
+                "card relative flex items-center gap-3 overflow-hidden p-3 transition hover:border-brand",
+                i === 0 && "shimmer border-brand/60 bg-gradient-to-r from-brand/15 to-transparent",
               )}
             >
               <span className={clsx("w-8 text-center font-bold", i < 3 ? "text-2xl" : "text-muted")}>{PODIUM[i] ?? i + 1}</span>
-              <Avatar src={r.profile.avatar_url} name={r.profile.display_name} size={44} ring={i === 0 ? "gradient" : "none"} />
+              <Avatar src={r.profile.avatar_url} name={r.profile.display_name} size={44} ring={i === 0 ? "brand" : "none"} />
               <div className="min-w-0 flex-1">
-                <div className="truncate font-bold">
+                <div className="flex items-center gap-1.5 truncate font-bold">
                   {r.profile.display_name} {r.profile.badge}
+                  <LevelChip level={r.profile.level} />
                 </div>
                 <div className="truncate text-xs text-muted">@{r.profile.username}</div>
               </div>

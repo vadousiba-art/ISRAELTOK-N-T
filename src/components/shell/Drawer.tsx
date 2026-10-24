@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import { useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { LogOut, X } from "lucide-react";
+import { LogOut, Search, X } from "lucide-react";
 import clsx from "clsx";
 import { Avatar } from "@/components/ui/Avatar";
 import { Logo } from "@/components/ui/Logo";
@@ -13,6 +13,8 @@ import { post } from "@/lib/client/api";
 import { AppDownload } from "@/components/auth/AppDownload";
 import { useShell } from "./AppShell";
 import { navItems } from "./navItems";
+import { LevelChip } from "@/components/yoru/Progression";
+import { PALETTE_EVENT } from "@/lib/progress";
 
 export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { me } = useShell();
@@ -72,8 +74,17 @@ export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }
                 </div>
                 <div className="truncate text-sm text-muted">@{me.username}</div>
               </div>
-              <div className="ml-auto text-xs text-muted">{me.chaos_points} pts</div>
+              {me.level ? <LevelChip level={me.level} className="ml-auto" /> : null}
             </Link>
+            <button
+              onClick={() => {
+                onClose();
+                setTimeout(() => window.dispatchEvent(new Event(PALETTE_EVENT)), 220);
+              }}
+              className="mb-3 flex items-center gap-3 rounded-xl border border-line bg-card px-3 py-2.5 text-sm text-muted transition-colors duration-150 hover:text-ink"
+            >
+              <Search size={18} /> Quick jump…
+            </button>
             <nav className="flex flex-col gap-0.5">
               {navItems(me).map(({ href, label, icon: Icon, badge }) => (
                 <Link

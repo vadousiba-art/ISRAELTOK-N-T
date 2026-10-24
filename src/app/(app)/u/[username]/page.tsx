@@ -3,7 +3,7 @@
 import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { Ban, Bot, CalendarDays, Flag, MessageCircle, MoreHorizontal, Pencil, Settings } from "lucide-react";
+import { Ban, Bot, CalendarDays, Flag, Flame, MessageCircle, MoreHorizontal, Pencil, Pin, Settings } from "lucide-react";
 import clsx from "clsx";
 import Link from "next/link";
 import { useSWRConfig } from "swr";
@@ -18,8 +18,11 @@ import { Modal } from "@/components/ui/Modal";
 import { Feed } from "@/components/feed/Feed";
 import { ReportDialog } from "@/components/feed/ReportDialog";
 import { EditProfileDialog } from "@/components/profile/EditProfileDialog";
+import { PostCard } from "@/components/feed/PostCard";
+import { XpBar } from "@/components/yoru/Progression";
+import { ACCENT_COLORS, CURRENTLY, levelProgress } from "@/lib/progress";
 import { BADGES } from "@/lib/jokes";
-import type { Profile } from "@/lib/types";
+import type { Profile, ProfileExtras } from "@/lib/types";
 
 export default function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = use(params);
@@ -28,6 +31,7 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
   const router = useRouter();
   const { mutate } = useSWRConfig();
   const { data: p, error, mutate: mutateProfile } = useRpc<Profile>("get_profile", { p_username: username });
+  const { data: x } = useRpc<ProfileExtras>("get_profile_extras", { p_username: username });
   const [tab, setTab] = useState<"user" | "media">("user");
   const [editing, setEditing] = useState(false);
   const [reporting, setReporting] = useState(false);
@@ -36,6 +40,7 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
 
   if (error) return <Empty emoji="👻" text={error.message} />;
   if (!p) return <ChaosLoader />;
+  const accent = ACCENT_COLORS[x?.accent ?? "crimson"]?.brand ?? ACCENT_COLORS.crimson.brand;
 
   async function dm() {
     try {
@@ -87,15 +92,42 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
   return (
     <div className="space-y-4">
       <div className="card overflow-hidden">
-        <div className="relative h-28 bg-[radial-gradient(ellipse_at_top_right,rgba(242,13,47,0.35),transparent_65%),linear-gradient(160deg,#1a1a1a,#080808)]">
+        <div
+          className="relative h-28 overflow-hidden"
+          style={{ background: `radial-gradient(ellipse at top right, ${accent}66, transparent 65%), linear-gradient(160deg, #1a1a1a, #080808)` }}
+        >
+          <span className="pointer-events-none absolute -left-2 -top-6 select-none text-[120px] font-bold leading-none text-white/[0.04]" aria-hidden>
+            夜
+          </span>
           <span className="sticker absolute right-3 top-3 rounded-full border border-white/20 px-2.5 py-0.5 text-white/80">
             {p.role === "owner" ? "FOUNDER" : p.role === "admin" ? "ADMIN" : p.is_bot ? "AI" : "MEMBER"}
           </span>
         </div>
         <div className="px-4 pb-4">
           <div className="-mt-12 flex items-end justify-between">
-            <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }}>
-              <Avatar src={p.avatar_url} name={p.display_name} size={96} online={p.online} />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.2 }}
+              className="relative"
+            >
+              {x && !p.is_bot ? (
+                <div className="level-ring p-[3px]" style={{ "--p": levelProgress(x.xp).pct, "--brand": accent } as React.CSSProperties}>
+                  <div className="rounded-full bg-card p-[3px]">
+                    <Avatar src={p.avatar_url} name={p.display_name} size={92} online={p.online} />
+                  </div>
+                </div>
+              ) : (
+                <Avatar src={p.avatar_url} name={p.display_name} size={96} online={p.online} />
+              )}
+              {x && !p.is_bot && (
+                <span
+                  className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full border-2 border-card px-2 py-0.5 text-[11px] font-bold text-white"
+                  style={{ background: accent }}
+                >
+                  Lv {x.level}
+                </span>
+              )}
             </motion.div>
             <div className="flex gap-2 pb-1">
               {p.is_me ? (
@@ -137,7 +169,23 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
               {p.display_name} {p.badge && !p.is_bot && <span>{p.badge}</span>}
               {p.verified && <VerifiedBadge size={20} />}
             </h1>
-            <div className="text-muted">@{p.username}</div>
+            <div className="flex flex-wrap items-center gap-x-2 text-muted">
+              @{p.username}
+              {x?.flair && <span className="rounded-full border border-brand/40 bg-brand/10 px-2 py-0.5 text-xs text-brand-2">{x.flair}</span>}
+              {!!x?.streak && (
+                <span className="flex items-center gap-0.5 text-xs" title={`Best streak: ${x.best_streak} nights`}>
+                  <Flame size={13} className="text-brand" /> {x.streak} night{x.streak === 1 ? "" : "s"}
+                </span>
+              )}
+              {x?.muted && <span className="rounded-full bg-card-2 px-2 py-0.5 text-xs">muted</span>}
+            </div>
+            {x?.currently_kind && x.currently_title && (
+              <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-line bg-card-2 px-3 py-1 text-sm">
+                <span aria-hidden>{CURRENTLY[x.currently_kind].emoji}</span>
+                <span className="text-muted">{CURRENTLY[x.currently_kind].verb}</span>
+                <span className="font-medium">{x.currently_title}</span>
+              </div>
+            )}
             {p.status && <div className="mt-1 text-sm font-semibold text-online">● {p.status}</div>}
             {p.bio && <p className="mt-2 whitespace-pre-wrap text-[15px]">{p.bio}</p>}
             <div className="mt-2 flex items-center gap-1 text-xs text-muted">
@@ -146,6 +194,7 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
               {p.banned && <span className="ml-2 rounded-full bg-hot px-2 py-0.5 font-bold text-white">BANNED</span>}
             </div>
           </div>
+          {x && !p.is_bot && <XpBar xp={x.xp} className="mt-4" />}
           <div className="mt-4 grid grid-cols-4 gap-2">
             {stats.map((s, i) => (
               <motion.div
@@ -198,6 +247,14 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
         <Empty emoji="🚫" text="You blocked this person. Their posts are hidden." />
       ) : (
         <>
+          {x?.pinned && (
+            <div>
+              <div className="mb-1.5 flex items-center gap-1.5 px-1 text-xs font-semibold uppercase tracking-widest text-muted">
+                <Pin size={13} className="text-brand" /> Pinned
+              </div>
+              <PostCard post={x.pinned} />
+            </div>
+          )}
           <div className="flex gap-1 rounded-full border border-line bg-card p-1" role="tablist">
             {(
               [

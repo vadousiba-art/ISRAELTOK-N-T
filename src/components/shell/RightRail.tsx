@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRpc } from "@/lib/client/hooks";
+import { useProgress, useRpc, useSite } from "@/lib/client/hooks";
+import { XpBar } from "@/components/yoru/Progression";
 import { CATEGORIES, todaysChallenge } from "@/lib/jokes";
 import { Avatar } from "@/components/ui/Avatar";
 import type { Leaderboard } from "@/lib/types";
@@ -10,11 +11,23 @@ import { useShell } from "./AppShell";
 // Desktop-only right rail: categories, nightly prompt, trending tags, mini leaderboard.
 export function RightRail() {
   const { openComposer } = useShell();
+  const { data: site } = useSite();
+  const { data: progress } = useProgress();
+  const prompt = site?.nightly_prompt || todaysChallenge();
   const { data: tags } = useRpc<{ tag: string; count: number }[]>("get_trending_tags", { p_limit: 8 });
   const { data: board } = useRpc<Leaderboard>("get_leaderboard");
 
   return (
     <aside className="no-scrollbar sticky top-0 hidden h-dvh w-[320px] shrink-0 flex-col gap-4 overflow-y-auto py-6 xl:flex [&>*]:shrink-0" aria-label="Trending">
+      {progress && (
+        <Link href="/leaderboard" className="card block p-4 transition-colors duration-150 hover:border-brand">
+          <XpBar xp={progress.xp} />
+          <div className="mt-2 text-xs text-muted">
+            🔥 {progress.streak} night streak · best {progress.best_streak}
+          </div>
+        </Link>
+      )}
+
       <div className="card p-4">
         <div className="mb-3 flex items-baseline justify-between">
           <span className="font-semibold">Find your people.</span>
@@ -36,9 +49,9 @@ export function RightRail() {
       <div className="card relative overflow-hidden p-4">
         <div className="sticker absolute right-4 top-4 text-muted">今夜</div>
         <div className="text-xs font-semibold uppercase tracking-widest text-brand">Tonight&apos;s prompt</div>
-        <p className="mt-2 font-medium">{todaysChallenge()}</p>
+        <p className="mt-2 font-medium">{prompt}</p>
         <button
-          onClick={() => openComposer({ tab: "text" })}
+          onClick={() => openComposer({ tab: "text", text: `${prompt}\n\n#dailychallenge` })}
           className="mt-3 rounded-full bg-card-2 px-3 py-1.5 text-sm font-bold text-brand hover:bg-line"
         >
           Drop a post

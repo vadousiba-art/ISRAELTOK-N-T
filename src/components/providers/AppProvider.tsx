@@ -7,6 +7,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AppMode } from "@/lib/config";
 import { ApiError, rpc } from "@/lib/client/api";
+import type { AmbienceMode } from "@/components/fx/Ambience";
 
 export type PublicConfig = { mode: AppMode; supabaseUrl: string | null; supabaseAnonKey: string | null };
 export type ThemePref = "dark" | "light" | "system";
@@ -25,6 +26,8 @@ type AppCtx = {
   setMotionPref: (m: MotionPref) => void;
   sound: boolean;
   setSound: (on: boolean) => void;
+  ambience: AmbienceMode;
+  setAmbience: (m: AmbienceMode) => void;
 };
 
 const Ctx = createContext<AppCtx | null>(null);
@@ -60,6 +63,7 @@ export function AppProvider({ config, children }: { config: PublicConfig; childr
   const [theme, setThemeState] = useState<ThemePref>("dark");
   const [motionPref, setMotionState] = useState<MotionPref>("system");
   const [sound, setSoundState] = useState(false);
+  const [ambience, setAmbienceState] = useState<AmbienceMode>("off");
 
   useEffect(() => {
     // Hydrate preferences saved by the boot script / previous visits.
@@ -67,6 +71,7 @@ export function AppProvider({ config, children }: { config: PublicConfig; childr
     setThemeState(readPref<ThemePref>("itn-theme", "dark"));
     setMotionState(readPref<MotionPref>("itn-motion", "system"));
     setSoundState(readPref<string>("itn-sound", "off") === "on");
+    setAmbienceState(readPref<AmbienceMode>("yoru-ambience", "stars"));
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
@@ -104,6 +109,11 @@ export function AppProvider({ config, children }: { config: PublicConfig; childr
     writePref("itn-sound", on ? "on" : "off");
   }, []);
 
+  const setAmbience = useCallback((m: AmbienceMode) => {
+    setAmbienceState(m);
+    writePref("yoru-ambience", m);
+  }, []);
+
   const toast = useCallback((message: string, kind: ToastKind = "success", emoji?: string) => {
     const id = nextId.current++;
     setToasts((t) => [...t.slice(-3), { id, kind, message, emoji }]);
@@ -125,8 +135,8 @@ export function AppProvider({ config, children }: { config: PublicConfig; childr
   }, [config]);
 
   const value = useMemo<AppCtx>(
-    () => ({ config, supabase, toast, toastError, theme, setTheme, motionPref, setMotionPref, sound, setSound }),
-    [config, supabase, toast, toastError, theme, setTheme, motionPref, setMotionPref, sound, setSound],
+    () => ({ config, supabase, toast, toastError, theme, setTheme, motionPref, setMotionPref, sound, setSound, ambience, setAmbience }),
+    [config, supabase, toast, toastError, theme, setTheme, motionPref, setMotionPref, sound, setSound, ambience, setAmbience],
   );
 
   const reducedMotion = motionPref === "reduce" ? "always" : motionPref === "full" ? "never" : "user";

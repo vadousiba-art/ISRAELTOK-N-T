@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { BarChart3, Dices, Film, ImageIcon, Link2, Loader2, Plus, Target, Type, X } from "lucide-react";
+import { BarChart3, Dices, EyeOff, Film, ImageIcon, Link2, Loader2, Plus, Target, Type, X } from "lucide-react";
 import clsx from "clsx";
 import { useSWRConfig } from "swr";
 import { Modal } from "@/components/ui/Modal";
@@ -11,8 +11,8 @@ import { Button } from "@/components/ui/bits";
 import { useApp } from "@/components/providers/AppProvider";
 import { useShell } from "@/components/shell/AppShell";
 import { rpc, uploadFile } from "@/lib/client/api";
-import { byFn, refreshFeeds } from "@/lib/client/hooks";
-import { pickLine, SUCCESS_TOASTS, todaysChallenge } from "@/lib/jokes";
+import { byFn, refreshFeeds, useSite } from "@/lib/client/hooks";
+import { CATEGORIES, pickLine, SUCCESS_TOASTS, todaysChallenge } from "@/lib/jokes";
 import { burst } from "@/components/ui/EmojiBurst";
 import { playSound } from "@/lib/client/sounds";
 
@@ -36,11 +36,13 @@ export function ComposerModal({
   onClose,
   initialTab,
   initialFile,
+  initialText,
 }: {
   open: boolean;
   onClose: () => void;
   initialTab?: ComposerTab;
   initialFile?: File | null;
+  initialText?: string;
 }) {
   const { me } = useShell();
   const { toast, toastError, supabase } = useApp();
@@ -54,11 +56,15 @@ export function ComposerModal({
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const submitRef = useRef<HTMLButtonElement>(null);
+  const textRef = useRef<HTMLTextAreaElement>(null);
+  const { data: site } = useSite();
+  const prompt = site?.nightly_prompt || todaysChallenge();
 
   useEffect(() => {
     if (!open) return;
     /* eslint-disable react-hooks/set-state-in-effect */
     setTab(initialTab ?? "text");
+    if (initialText) setBody((b) => b || initialText);
     if (initialFile) void attach(initialFile);
     /* eslint-enable react-hooks/set-state-in-effect */
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -106,10 +112,10 @@ export function ComposerModal({
         p_link_url: tab === "link" ? link.trim() : null,
         p_poll_options: tab === "poll" ? options.map((o) => o.trim()).filter(Boolean) : null,
       });
-      burst("🚀", submitRef.current);
+      burst("🌸", submitRef.current);
       playSound("victory");
-      toast(pickLine(SUCCESS_TOASTS.post), "success", "🚀");
-      mutate(byFn("get_trending_tags", "get_me", "get_profile"));
+      toast(pickLine(SUCCESS_TOASTS.post), "success", "🌸");
+      mutate(byFn("get_trending_tags", "get_me", "get_profile", "get_my_progress"));
       refreshFeeds();
       reset();
       onClose();
@@ -150,6 +156,7 @@ export function ComposerModal({
         <Avatar src={me.avatar_url} name={me.display_name} size={44} ring="brand" />
         <div className="min-w-0 flex-1">
           <textarea
+            ref={textRef}
             data-autofocus
             value={body}
             onChange={(e) => setBody(e.target.value.slice(0, 2000))}
@@ -188,7 +195,7 @@ export function ComposerModal({
                   >
                     {uploading ? (
                       <>
-                        <Loader2 className="animate-spin" /> Uploading your crimes...
+                        <Loader2 className="animate-spin" /> Uploading...
                       </>
                     ) : (
                       <>
@@ -259,7 +266,29 @@ export function ComposerModal({
         }}
       />
 
-      <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-3">
+      <div className="no-scrollbar mt-3 flex gap-1.5 overflow-x-auto" aria-label="Categories">
+        {CATEGORIES.map((c) => {
+          const tag = `#${c.tag}`;
+          const on = new RegExp(`(^|\\s)${tag}(?=$|\\s)`, "i").test(body);
+          return (
+            <button
+              key={c.tag}
+              onClick={() =>
+                setBody((b) => (on ? b.replace(new RegExp(`(^|\\s)${tag}(?=$|\\s)`, "ig"), "").trim() : `${b}${b && !b.endsWith(" ") ? " " : ""}${tag}`).slice(0, 2000))
+              }
+              aria-pressed={on}
+              className={clsx(
+                "shrink-0 rounded-full border px-2.5 py-1 text-xs transition-colors duration-150",
+                on ? "border-brand bg-brand/15 text-brand-2" : "border-line text-muted hover:text-ink",
+              )}
+            >
+              {c.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3">
         <button
           onClick={() => fileRef.current?.click()}
           className="rounded-full p-2 text-brand hover:bg-card-2"
@@ -276,11 +305,25 @@ export function ComposerModal({
           <Dices size={22} />
         </button>
         <button
-          onClick={() => setBody((b) => (b.includes("#dailychallenge") ? b : `${todaysChallenge()}\n\n${b}${b ? " " : ""}#dailychallenge`))}
-          className="flex items-center gap-1 rounded-full px-2 py-1.5 text-sm font-bold text-hot hover:bg-card-2"
-          title="Daily challenge (+5 chaos points)"
+          onClick={() => {
+            const el = textRef.current;
+            const start = el?.selectionStart ?? body.length;
+            const end = el?.selectionEnd ?? body.length;
+            const picked = body.slice(start, end) || "spoiler";
+            setBody((b) => `${b.slice(0, start)}||${picked}||${b.slice(end)}`.slice(0, 2000));
+          }}
+          className="rounded-full p-2 text-muted hover:bg-card-2 hover:text-ink"
+          aria-label="Hide selected text as a spoiler"
+          title="Spoiler: ||hidden until tapped||"
         >
-          <Target size={18} /> Daily challenge
+          <EyeOff size={22} />
+        </button>
+        <button
+          onClick={() => setBody((b) => (b.includes("#dailychallenge") ? b : `${prompt}\n\n${b}${b ? " " : ""}#dailychallenge`))}
+          className="flex items-center gap-1 rounded-full px-2 py-1.5 text-sm font-semibold text-brand hover:bg-card-2"
+          title={prompt}
+        >
+          <Target size={18} /> Tonight&apos;s prompt
         </button>
         <span className={clsx("ml-auto text-xs tabular-nums", body.length > 1900 ? "text-hot" : "text-muted")}>{body.length}/2000</span>
         <Button ref={submitRef} onClick={submit} disabled={!canPost} className="px-6">
