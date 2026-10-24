@@ -2,17 +2,16 @@
 
 import { useRef } from "react";
 import { motion } from "motion/react";
-import { ImageIcon, SquarePlay, SquarePlus } from "lucide-react";
+import { Ellipsis, ImageIcon, SquarePlay } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { useShell } from "@/components/shell/AppShell";
 
-// The "What's on your mind, soldier?" card from the home screen.
+// The "What's on your mind?" card at the top of the home feed.
 export function InlineComposer() {
   const { me, openComposer } = useShell();
   const imageRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
 
-  const pick = (input: HTMLInputElement | null) => input?.click();
   const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -20,35 +19,39 @@ export function InlineComposer() {
   };
 
   return (
-    <div className="card flex items-center gap-2 px-3 py-3 sm:gap-3 sm:px-5">
-      <Avatar src={me.avatar_url} name={me.display_name} size={42} ring="brand" />
+    <div className="card flex items-center gap-2.5 px-3 py-3 sm:gap-3 sm:px-4">
+      <Avatar src={me.avatar_url} name={me.display_name} size={40} />
       <button
         onClick={() => openComposer({ tab: "text" })}
-        className="min-w-0 flex-1 truncate rounded-2xl border border-line bg-card-2/60 px-2.5 py-2.5 text-left text-[13px] text-muted transition hover:border-brand/50"
+        className="min-w-0 flex-1 py-2 text-left text-[14.5px] leading-snug text-muted sm:text-[15px] transition-colors duration-150 hover:text-ink-2"
       >
-        What&apos;s on your mind, soldier?
+        What&apos;s on your mind?
       </button>
-      <div className="flex items-center gap-1.5 text-brand">
-        <motion.button whileTap={{ scale: 0.8 }} whileHover={{ y: -2 }} onClick={() => pick(imageRef.current)} className="px-0.5 py-1" aria-label="Post a photo">
-          <ImageIcon size={23} strokeWidth={1.8} />
-        </motion.button>
-        <span className="h-7 w-px bg-line" aria-hidden />
-        <motion.button whileTap={{ scale: 0.8 }} whileHover={{ y: -2 }} onClick={() => pick(videoRef.current)} className="px-0.5 py-1" aria-label="Post a video">
-          <SquarePlay size={23} strokeWidth={1.8} />
-        </motion.button>
-        <span className="h-7 w-px bg-line" aria-hidden />
-        <motion.button
-          whileTap={{ scale: 0.8, rotate: 90 }}
-          whileHover={{ y: -2 }}
-          onClick={() => openComposer({ tab: "poll" })}
-          className="py-1 pl-0.5"
-          aria-label="More post types (poll, link)"
-        >
-          <SquarePlus size={23} strokeWidth={1.8} />
-        </motion.button>
+      <span className="h-10 w-px shrink-0 bg-line" aria-hidden />
+      <div className="flex shrink-0 items-center">
+        <Action label="Image" icon={<ImageIcon size={21} strokeWidth={1.7} />} onClick={() => imageRef.current?.click()} aria="Post an image" />
+        <span className="h-8 w-px bg-line" aria-hidden />
+        <Action label="Video" icon={<SquarePlay size={21} strokeWidth={1.7} />} onClick={() => videoRef.current?.click()} aria="Post a video" />
+        <span className="h-8 w-px bg-line" aria-hidden />
+        <Action label="More" icon={<Ellipsis size={21} strokeWidth={1.7} />} onClick={() => openComposer({ tab: "poll" })} aria="More post types (poll, link)" />
       </div>
       <input ref={imageRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden onChange={onFile} />
       <input ref={videoRef} type="file" accept="video/mp4,video/webm,video/quicktime" hidden onChange={onFile} />
     </div>
+  );
+}
+
+function Action({ label, icon, onClick, aria }: { label: string; icon: React.ReactNode; onClick: () => void; aria: string }) {
+  return (
+    <motion.button
+      whileTap={{ scale: 0.92 }}
+      transition={{ duration: 0.12 }}
+      onClick={onClick}
+      className="flex w-[46px] flex-col items-center gap-1 rounded-xl py-1 text-ink-2 transition-colors duration-150 hover:text-ink sm:w-[70px]"
+      aria-label={aria}
+    >
+      {icon}
+      <span className="text-[11px] text-muted">{label}</span>
+    </motion.button>
   );
 }

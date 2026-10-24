@@ -14,7 +14,6 @@ import { BottomNav } from "./BottomNav";
 import { Drawer } from "./Drawer";
 import { SideNav } from "./SideNav";
 import { RightRail } from "./RightRail";
-import { FloatingMemes } from "./FloatingMemes";
 import { ComposerModal, type ComposerTab } from "@/components/feed/ComposerModal";
 import { StoryComposer } from "@/components/stories/StoryComposer";
 import type { Me } from "@/lib/types";
@@ -58,8 +57,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-dvh items-center justify-center">
         {error && !(error instanceof ApiError && error.status === 401) ? (
           <div className="max-w-sm px-6 text-center">
-            <div className="mb-3 text-5xl">🛰️</div>
-            <p className="font-bold">Can&apos;t reach the mothership.</p>
+            
+            <p className="font-bold">Can&apos;t connect right now.</p>
             <p className="mt-1 text-sm text-muted">{error instanceof ApiError ? error.message : "Unknown error."}</p>
           </div>
         ) : (
@@ -72,11 +71,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <Ctx.Provider value={{ me, openComposer, openStoryComposer, openDrawer }}>
       <LiveProvider userId={me.id}>
-        <FloatingMemes />
         {config.mode === "demo" && (
-          <div className="relative z-30 bg-gradient-to-r from-volt via-hot to-volt px-3 py-1 text-center text-[11px] font-bold tracking-wide text-white">
+          <div className="relative z-30 border-b border-line bg-bg-2 px-3 py-1 text-center text-[11px] font-medium tracking-wide text-muted">
             DEMO MODE · local embedded database · anyone can log in as anyone ·{" "}
-            <a href="/setup" className="underline">
+            <a href="/setup" className="text-brand underline">
               connect Supabase
             </a>
           </div>
@@ -88,9 +86,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <AnimatePresence mode="wait" initial={false}>
               <motion.main
                 key={pathname}
-                initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -6 }}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
                 transition={{ duration: 0.18 }}
                 className="px-3 pb-32 sm:px-4 lg:pb-12"
               >

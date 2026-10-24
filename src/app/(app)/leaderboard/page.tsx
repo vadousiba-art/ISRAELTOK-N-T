@@ -77,9 +77,9 @@ export default function LeaderboardPage() {
         {rows.map((r, i) => (
           <motion.div
             key={`${board}-${r.profile.id}`}
-            initial={{ opacity: 0, x: -20, rotate: i < 3 ? -2 : 0 }}
-            animate={{ opacity: 1, x: 0, rotate: 0 }}
-            transition={{ delay: i * 0.04, type: "spring", stiffness: 300, damping: 22 }}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.04, duration: 0.2, ease: "easeOut" }}
           >
             <Link
               href={`/u/${r.profile.username}`}
@@ -88,7 +88,7 @@ export default function LeaderboardPage() {
                 i === 0 && "border-lime/60 bg-gradient-to-r from-lime/10 to-transparent",
               )}
             >
-              <span className={clsx("w-8 text-center font-black", i < 3 ? "text-2xl" : "text-muted")}>{PODIUM[i] ?? i + 1}</span>
+              <span className={clsx("w-8 text-center font-bold", i < 3 ? "text-2xl" : "text-muted")}>{PODIUM[i] ?? i + 1}</span>
               <Avatar src={r.profile.avatar_url} name={r.profile.display_name} size={44} ring={i === 0 ? "gradient" : "none"} />
               <div className="min-w-0 flex-1">
                 <div className="truncate font-bold">
@@ -97,7 +97,7 @@ export default function LeaderboardPage() {
                 <div className="truncate text-xs text-muted">@{r.profile.username}</div>
               </div>
               <div className="text-right">
-                <div className="text-lg font-black">{r.score}</div>
+                <div className="text-lg font-bold">{r.score}</div>
                 <div className="text-[10px] font-bold uppercase text-muted">{info.unit}</div>
               </div>
             </Link>

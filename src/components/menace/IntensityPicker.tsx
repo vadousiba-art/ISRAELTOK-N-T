@@ -24,7 +24,7 @@ export function IntensityPicker({ value, onChange }: { value: 1 | 2 | 3; onChang
           )}
         >
           <div className="text-base leading-none">{lvl.emoji}</div>
-          <div className="mt-1 text-[12px] font-black leading-tight">{lvl.name}</div>
+          <div className="mt-1 text-[12px] font-bold leading-tight">{lvl.name}</div>
           <div className="text-[10.5px] text-muted">{lvl.blurb}</div>
         </motion.button>
       ))}

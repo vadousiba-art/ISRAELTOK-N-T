@@ -85,7 +85,7 @@ export default function AdminPage() {
       {tab === "invites" && (
         <>
           <div className="card space-y-3 p-4">
-            <div className="font-black">Create invite link</div>
+            <div className="font-bold">Create invite link</div>
             <div className="grid grid-cols-2 gap-2">
               <label className="text-xs font-bold text-muted">
                 Max uses
@@ -132,7 +132,7 @@ export default function AdminPage() {
                     <code className="rounded-lg bg-card-2 px-2 py-1 font-mono text-sm">{i.code}</code>
                     <span
                       className={clsx(
-                        "rounded-full px-2 py-0.5 text-[11px] font-black uppercase",
+                        "rounded-full px-2 py-0.5 text-[11px] font-bold uppercase",
                         state === "active" ? "bg-online/15 text-online" : "bg-hot/15 text-hot",
                       )}
                     >
@@ -210,7 +210,7 @@ export default function AdminPage() {
                     className="py-1.5 text-xs"
                     onClick={() => {
                       if (!m.banned && !confirm(`Ban @${m.username}? They lose all access immediately.`)) return;
-                      act("admin_set_banned", { p_user_id: m.id, p_banned: !m.banned }, m.banned ? "Unbanned. Second chances." : "Banned. The bunker door slams shut.", "🔨");
+                      act("admin_set_banned", { p_user_id: m.id, p_banned: !m.banned }, m.banned ? "Unbanned. Second chances." : "Member banned.", "🔨");
                     }}
                   >
                     <Ban size={14} /> {m.banned ? "Unban" : "Ban"}
@@ -228,7 +228,7 @@ export default function AdminPage() {
           {data.reports.map((r) => (
             <div key={r.id} className={clsx("card p-3", r.status !== "open" && "opacity-60")}>
               <div className="flex items-center gap-2 text-xs">
-                <span className="rounded-full bg-hot/15 px-2 py-0.5 font-black uppercase text-hot">{r.target_type}</span>
+                <span className="rounded-full bg-hot/15 px-2 py-0.5 font-bold uppercase text-hot">{r.target_type}</span>
                 <span className="text-muted">
                   reported by <b className="text-ink">{r.reporter.display_name}</b> · <TimeAgo iso={r.created_at} />
                 </span>

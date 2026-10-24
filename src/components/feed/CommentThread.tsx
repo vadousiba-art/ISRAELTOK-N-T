@@ -216,13 +216,12 @@ export function CommentThread({ postId }: { postId: string }) {
   return (
     <section className="card p-4" aria-label="Comments">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-black">Comments {data ? `(${data.filter((c) => !c.deleted).length})` : ""}</h2>
+        <h2 className="font-bold">Comments {data ? `(${data.filter((c) => !c.deleted).length})` : ""}</h2>
         <motion.button
-          whileHover={{ scale: 1.05, rotate: -2 }}
-          whileTap={{ scale: 0.95 }}
+          whileTap={{ scale: 0.96 }}
           onClick={summon}
           disabled={summoning}
-          className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-hot to-volt px-3 py-1.5 text-xs font-black text-white disabled:opacity-60"
+          className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-hot to-volt px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
         >
           {summoning ? <Loader2 size={14} className="animate-spin" /> : <Bot size={14} />}
           {summoning ? "Cooking..." : "Summon Menace"}

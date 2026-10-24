@@ -152,15 +152,15 @@ export function AppProvider({ config, children }: { config: PublicConfig; childr
               {toasts.map((t) => (
                 <motion.div
                   key={t.id}
-                  initial={{ opacity: 0, y: -30, scale: 0.8, rotate: -4 }}
-                  animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
-                  exit={{ opacity: 0, y: -20, scale: 0.9 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 24 }}
-                  className={`pointer-events-auto flex max-w-md items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-semibold shadow-2xl backdrop-blur ${
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className={`pointer-events-auto flex max-w-md items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium shadow-2xl backdrop-blur ${
                     t.kind === "error"
-                      ? "border-hot/50 bg-[#2a0716]/95 text-white"
+                      ? "border-brand/50 bg-[#1a0306]/95 text-white"
                       : t.kind === "chaos"
-                        ? "border-volt/50 bg-[#170a2e]/95 text-white"
+                        ? "border-line bg-card/95 text-ink"
                         : "border-line bg-card/95 text-ink"
                   }`}
                 >

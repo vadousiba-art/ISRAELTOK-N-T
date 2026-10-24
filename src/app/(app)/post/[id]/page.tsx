@@ -17,7 +17,7 @@ export default function PostPage({ params }: { params: Promise<{ id: string }> }
   return (
     <div className="space-y-4">
       <button onClick={() => router.back()} className="flex items-center gap-2 text-sm font-bold text-muted hover:text-ink">
-        <ArrowLeft size={18} /> Back to the chaos
+        <ArrowLeft size={18} /> Back
       </button>
       {error && <Empty emoji="🕳️" text={error.message} />}
       {!post && !error && <ChaosLoader />}

@@ -1,7 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/inter";
-import "@fontsource/bangers";
-import "@fontsource/permanent-marker";
 import "./globals.css";
 import { appMode, supabaseAnonKey, supabaseUrl } from "@/lib/config";
 import { AppProvider } from "@/components/providers/AppProvider";
@@ -10,8 +8,8 @@ import { AppProvider } from "@/components/providers/AppProvider";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: { default: "IsraelTokn't", template: "%s · IsraelTokn't" },
-  description: "The internet was a mistake. You made it worse. A private brainrot social network for the group chat.",
+  title: { default: "YORU — 夜", template: "%s · YORU" },
+  description: "The internet after dark. A private, Japanese-inspired network for anime, manga, Vocaloid, gaming and art fans.",
   robots: { index: false, follow: false },
 };
 
@@ -20,8 +18,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#04060d" },
-    { media: "(prefers-color-scheme: light)", color: "#f4f6fb" },
+    { media: "(prefers-color-scheme: dark)", color: "#080808" },
+    { media: "(prefers-color-scheme: light)", color: "#f5f5f5" },
   ],
 };
 

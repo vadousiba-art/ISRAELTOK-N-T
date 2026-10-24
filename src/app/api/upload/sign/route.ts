@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
     if (size > maxBytesFor(type)) {
       const mb = Math.round(maxBytesFor(type) / 1024 / 1024);
-      throw new AppError("INVALID", `Too big. Max ${mb}MB. Compress your chaos.`, 400);
+      throw new AppError("INVALID", `That file is too large. Max ${mb}MB.`, 400);
     }
     const db = await getUserDb();
     const quota = await db.rpc<{ allowed: boolean }>("consume_quota", {

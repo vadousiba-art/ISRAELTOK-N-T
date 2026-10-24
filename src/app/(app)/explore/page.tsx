@@ -10,7 +10,7 @@ import { useRpc } from "@/lib/client/hooks";
 import { Feed } from "@/components/feed/Feed";
 import { Avatar } from "@/components/ui/Avatar";
 import { ChaosLoader, Empty } from "@/components/ui/bits";
-import { EMPTY_LINES, TICKER } from "@/lib/jokes";
+import { CATEGORIES, EMPTY_LINES } from "@/lib/jokes";
 import type { ProfileLite } from "@/lib/types";
 
 function useDebounced<T>(value: T, ms: number) {
@@ -35,17 +35,9 @@ function ExploreInner() {
 
   return (
     <div className="space-y-4">
-      <div className="card overflow-hidden">
-        <div className="flex items-center gap-2 bg-hot px-3 py-1 text-[11px] font-black tracking-widest text-white">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-white" /> FAKE NEWS NETWORK · LIVE
-        </div>
-        <div className="overflow-hidden py-2">
-          <div className="marquee flex w-max gap-10 whitespace-nowrap text-sm font-semibold">
-            {[...TICKER, ...TICKER].map((t, i) => (
-              <span key={i}>{t}</span>
-            ))}
-          </div>
-        </div>
+      <div>
+        <h1 className="text-2xl font-semibold">Find your people.</h1>
+        <p className="mt-1 text-sm text-muted">Your next conversation starts here.</p>
       </div>
 
       <div className="relative">
@@ -53,7 +45,7 @@ function ExploreInner() {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value.slice(0, 40))}
-          placeholder="Search menaces, posts, #tags..."
+          placeholder="Search people, posts, #tags..."
           className="w-full rounded-full border border-line bg-card py-3 pl-12 pr-10 outline-none focus:border-brand"
           aria-label="Search"
           onKeyDown={(e) => {
@@ -71,7 +63,7 @@ function ExploreInner() {
         <div className="space-y-4">
           {(people ?? []).length > 0 && (
             <div className="card p-3">
-              <div className="mb-2 px-1 text-xs font-black uppercase tracking-widest text-muted">People</div>
+              <div className="mb-2 px-1 text-xs font-semibold uppercase tracking-widest text-muted">People</div>
               {people!.map((p) => (
                 <Link key={p.id} href={`/u/${p.username}`} className="flex items-center gap-3 rounded-xl p-2 hover:bg-card-2">
                   <Avatar src={p.avatar_url} name={p.display_name} size={40} online={p.online} />
@@ -90,23 +82,35 @@ function ExploreInner() {
       ) : tag ? (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h1 className="flex items-center gap-1 text-2xl font-black">
+            <h1 className="flex items-center gap-1 text-2xl font-semibold">
               <Hash className="text-brand" /> {tag}
             </h1>
             <Link href="/explore" className="text-sm font-bold text-brand">
               Clear
             </Link>
           </div>
-          <Feed mode="tag" arg={tag} emptyText={`Nobody has posted #${tag} yet. Start the movement.`} />
+          <Feed mode="tag" arg={tag} emptyText={`Nothing in #${tag} yet. Drop a post.`} />
         </div>
       ) : (
         <>
+          <div className="grid grid-cols-4 gap-2">
+            {CATEGORIES.map((c) => (
+              <Link
+                key={c.tag}
+                href={`/explore?tag=${c.tag}`}
+                className="card flex flex-col items-center gap-0.5 px-1 py-3 text-center transition-colors duration-150 hover:border-brand"
+              >
+                <span className="text-sm font-semibold">{c.label}</span>
+                <span className="text-[11px] text-muted">{c.jp}</span>
+              </Link>
+            ))}
+          </div>
           <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
             {(tags ?? []).map((t, i) => (
-              <motion.div key={t.tag} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
+              <motion.div key={t.tag} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18, delay: Math.min(i * 0.02, 0.2) }}>
                 <Link
                   href={`/explore?tag=${encodeURIComponent(t.tag)}`}
-                  className="block whitespace-nowrap rounded-full border border-line bg-card px-3 py-1.5 text-sm font-bold transition hover:border-brand hover:text-brand"
+                  className="block whitespace-nowrap rounded-full border border-line bg-card px-3 py-1.5 text-sm font-medium transition-colors duration-150 hover:border-brand hover:text-brand"
                 >
                   #{t.tag} <span className="text-xs text-muted">{t.count}</span>
                 </Link>
@@ -116,9 +120,9 @@ function ExploreInner() {
           <div className="flex gap-1 rounded-full border border-line bg-card p-1" role="tablist">
             {(
               [
-                ["trending", "🔥 Trending"],
-                ["latest", "🕒 Latest"],
-                ["squad", "🫡 The Squad"],
+                ["trending", "Trending"],
+                ["latest", "Latest"],
+                ["squad", "People"],
               ] as const
             ).map(([id, label]) => (
               <button
@@ -126,7 +130,7 @@ function ExploreInner() {
                 role="tab"
                 aria-selected={tab === id}
                 onClick={() => setTab(id)}
-                className={clsx("flex-1 rounded-full py-2 text-sm font-bold transition", tab === id ? "bg-brand text-white" : "text-muted hover:text-ink")}
+                className={clsx("flex-1 rounded-full py-2 text-sm font-semibold transition-colors duration-150", tab === id ? "bg-brand text-white" : "text-muted hover:text-ink")}
               >
                 {label}
               </button>
@@ -138,13 +142,13 @@ function ExploreInner() {
             (!members ? (
               <ChaosLoader />
             ) : members.length === 0 ? (
-              <Empty text="Nobody here. Spooky." />
+              <Empty text="It's quiet tonight." />
             ) : (
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {members.map((m, i) => (
-                  <motion.div key={m.id} initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: Math.min(i * 0.015, 0.3) }}>
+                  <motion.div key={m.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18, delay: Math.min(i * 0.015, 0.2) }}>
                     <Link href={`/u/${m.username}`} className="card flex flex-col items-center gap-1.5 p-3 text-center transition hover:border-brand">
-                      <Avatar src={m.avatar_url} name={m.display_name} size={56} online={m.online} ring={m.is_bot ? "gradient" : "none"} />
+                      <Avatar src={m.avatar_url} name={m.display_name} size={56} online={m.online}  />
                       <div className="w-full truncate text-sm font-bold">
                         {m.display_name} {m.badge}
                       </div>

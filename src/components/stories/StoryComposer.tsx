@@ -87,10 +87,10 @@ export function StoryComposer({ open, onClose }: { open: boolean; onClose: () =>
           data-autofocus
           value={text}
           onChange={(e) => setText(e.target.value.slice(0, 200))}
-          placeholder={media ? "Add a caption..." : "Type something unhinged"}
+          placeholder={media ? "Add a caption..." : "What's on your mind?"}
           className={clsx(
             "absolute inset-x-4 resize-none bg-transparent text-center outline-none",
-            media ? "bottom-4 h-16 rounded-xl bg-black/60 p-2 text-white placeholder:text-white/60" : "sticker inset-y-10 text-3xl text-black placeholder:text-black/40",
+            media ? "bottom-4 h-16 rounded-xl bg-black/60 p-2 text-white placeholder:text-white/60" : "inset-y-10 text-3xl font-semibold text-white placeholder:text-white/40",
           )}
           aria-label="Story text"
           dir="auto"

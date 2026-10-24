@@ -48,11 +48,10 @@ export function AwardDialog({
           return (
             <motion.button
               key={a.kind}
-              initial={{ opacity: 0, scale: 0.8, rotate: i % 2 ? 4 : -4 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              transition={{ delay: i * 0.04, type: "spring", stiffness: 400, damping: 20 }}
-              whileHover={{ scale: 1.04, rotate: i % 2 ? 1.5 : -1.5 }}
-              whileTap={{ scale: 0.94 }}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04, duration: 0.2, ease: "easeOut" }}
+              whileTap={{ scale: 0.97 }}
               disabled={given || busy !== null}
               onClick={() => give(a.kind)}
               className={clsx(
@@ -61,7 +60,7 @@ export function AwardDialog({
               )}
             >
               <span className="text-3xl">{a.emoji}</span>
-              <span className="text-sm font-black">{a.label}</span>
+              <span className="text-sm font-bold">{a.label}</span>
               <span className="text-xs text-muted">{given ? "Already given" : busy === a.kind ? "Awarding..." : a.blurb}</span>
             </motion.button>
           );

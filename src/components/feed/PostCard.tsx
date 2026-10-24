@@ -15,7 +15,7 @@ import {
   MoreHorizontal,
   Quote,
   Repeat2,
-  Forward,
+  SquareArrowOutUpRight,
   SmilePlus,
   Trash2,
   Trophy,
@@ -25,7 +25,7 @@ import { useSWRConfig } from "swr";
 import { Avatar } from "@/components/ui/Avatar";
 import { NameLink, TimeAgo, VerifiedBadge } from "@/components/ui/bits";
 import { RichText } from "@/components/ui/RichText";
-import { Menu } from "@/components/ui/Menu";
+import { Menu, type MenuItem } from "@/components/ui/Menu";
 import { burst } from "@/components/ui/EmojiBurst";
 import { useApp } from "@/components/providers/AppProvider";
 import { useShell } from "@/components/shell/AppShell";
@@ -202,7 +202,7 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
     const url = `${location.origin}/post/${shown.id}`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: "IsraelTokn't", text: shown.body.slice(0, 100), url });
+        await navigator.share({ title: "YORU", text: shown.body.slice(0, 100), url });
         return;
       }
     } catch {
@@ -264,49 +264,12 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
     if (!detail) router.push(`/post/${shown.id}`);
   };
 
-  const otherReactions = Object.entries(shown.reactions)
-    .filter(([k, n]) => k !== "heart" && (n ?? 0) > 0)
-    .sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0));
-  const awards = Object.entries(shown.awards).filter(([, n]) => (n ?? 0) > 0);
-
-  return (
-    <motion.article
-      layout="position"
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: "spring", stiffness: 260, damping: 26 }}
-      className={clsx("card relative px-4 pb-2 pt-4", !detail && "cursor-pointer")}
-      onClick={open}
-    >
-      {isRepost && (
-        <div className="-mt-1 mb-2 flex items-center gap-2 pl-1 text-[13px] font-semibold text-muted">
-          <Repeat2 size={15} />
-          <NameLink username={post.author.username}>{post.author.id === me.id ? "You" : post.author.display_name}</NameLink>
-          reposted
-        </div>
-      )}
-      <div className="flex gap-3">
-        <Link href={`/u/${shown.author.username}`} onClick={(e) => e.stopPropagation()} aria-label={shown.author.display_name}>
-          <Avatar src={shown.author.avatar_url} name={shown.author.display_name} size={detail ? 54 : 52} ring="gradient" />
-        </Link>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start gap-2">
-            <div className="flex min-w-0 flex-1 items-center gap-x-1.5 whitespace-nowrap text-[14px]">
-              <NameLink username={shown.author.username} className="shrink-0 text-[15.5px] font-bold text-ink">
-                {shown.author.display_name}
-              </NameLink>
-              {shown.author.badge && <span className="text-[15px] leading-none">{shown.author.badge !== "🤖" && shown.author.badge}</span>}
-              {shown.author.verified && <VerifiedBadge size={17} />}
-              <span className="min-w-0 truncate text-muted">@{shown.author.username}</span>
-              <span className="text-muted">·</span>
-              <TimeAgo iso={shown.created_at} className="shrink-0 text-muted" />
-              {shown.kind === "news" && (
-                <span className="sticker ml-1 rotate-[-4deg] rounded bg-hot px-1.5 text-xs text-white">BREAKING</span>
-              )}
-            </div>
-            <Menu
-              trigger={<MoreHorizontal size={22} />}
-              items={[
+  const menuItems: MenuItem[] = [
+                {
+                  label: shown.reposted ? "Undo repost" : "Repost",
+                  icon: <Repeat2 size={16} />,
+                  onSelect: repost,
+                },
                 {
                   label: "Copy link",
                   icon: <Link2 size={16} />,
@@ -334,8 +297,49 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
                   hidden: !(mine || canModerate),
                   danger: true,
                 },
-              ]}
-            />
+              ];
+
+  const otherReactions = Object.entries(shown.reactions)
+    .filter(([k, n]) => k !== "heart" && (n ?? 0) > 0)
+    .sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0));
+  const awards = Object.entries(shown.awards).filter(([, n]) => (n ?? 0) > 0);
+
+  return (
+    <motion.article
+      layout="position"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className={clsx("card relative px-4 pb-2 pt-4", !detail && "cursor-pointer")}
+      onClick={open}
+    >
+      {isRepost && (
+        <div className="-mt-1 mb-2 flex items-center gap-2 pl-1 text-[13px] font-semibold text-muted">
+          <Repeat2 size={15} />
+          <NameLink username={post.author.username}>{post.author.id === me.id ? "You" : post.author.display_name}</NameLink>
+          reposted
+        </div>
+      )}
+      <div className="flex gap-3">
+        <Link href={`/u/${shown.author.username}`} onClick={(e) => e.stopPropagation()} aria-label={shown.author.display_name}>
+          <Avatar src={shown.author.avatar_url} name={shown.author.display_name} size={detail ? 52 : 50} />
+        </Link>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start gap-2">
+            <div className="flex min-w-0 flex-1 items-center gap-x-1.5 whitespace-nowrap text-[14px]">
+              <NameLink username={shown.author.username} className="shrink-0 text-[16px] font-semibold text-ink">
+                {shown.author.display_name}
+              </NameLink>
+              {shown.author.badge && <span className="text-[15px] leading-none">{shown.author.badge !== "🤖" && shown.author.badge}</span>}
+              {shown.author.verified && <VerifiedBadge size={17} />}
+              <span className="min-w-0 truncate text-muted">@{shown.author.username}</span>
+              <span className="text-muted">·</span>
+              <TimeAgo iso={shown.created_at} className="shrink-0 text-muted" />
+              {shown.kind === "news" && (
+                <span className="sticker ml-1 rounded bg-brand px-1.5 py-0.5 text-white">Breaking</span>
+              )}
+            </div>
+            <Menu trigger={<MoreHorizontal size={20} />} items={menuItems} />
           </div>
           {shown.body && (
             <RichText
@@ -386,18 +390,18 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
             </button>
           ))}
           {awards.map(([k, n]) => (
-            <span key={k} className="rounded-full border border-lime/40 bg-lime/10 px-2.5 py-1 text-sm font-bold" title={AWARD_INFO[k as keyof typeof AWARD_INFO]?.label}>
+            <span key={k} className="rounded-full border border-line bg-card-2 px-2.5 py-1 text-sm font-bold" title={AWARD_INFO[k as keyof typeof AWARD_INFO]?.label}>
               {AWARD_INFO[k as keyof typeof AWARD_INFO]?.emoji} {n}
             </span>
           ))}
         </div>
       )}
-      <div className="relative mt-2 flex items-center justify-between px-2 text-ink" onClick={(e) => e.stopPropagation()}>
+      <div className="relative mt-1.5 flex items-center gap-4 pl-1 text-ink-2 sm:gap-6" onClick={(e) => e.stopPropagation()}>
         <div className="relative">
           <motion.button
             ref={heartRef}
-            whileTap={{ scale: 1.35 }}
-            transition={{ type: "spring", stiffness: 700, damping: 12 }}
+            whileTap={{ scale: 0.88 }}
+            transition={{ duration: 0.12 }}
             onClick={() => {
               if (longPressed.current) return;
               react("heart");
@@ -409,14 +413,14 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
               e.preventDefault();
               setPicker(true);
             }}
-            className="flex items-center gap-2 rounded-full py-2 pr-2 text-[15.5px]"
+            className="flex items-center gap-2 rounded-full py-2 pr-1 text-[15px]"
             aria-label={liked ? "Unlike" : "Like (hold for reactions)"}
             aria-pressed={liked}
           >
-            <motion.span key={String(liked)} initial={liked ? { scale: 0.4, rotate: -30 } : false} animate={{ scale: 1, rotate: 0 }}>
-              <Heart size={24} strokeWidth={2} className={liked ? "fill-heart text-heart" : "text-heart"} />
+            <motion.span key={String(liked)} initial={liked ? { scale: 0.6 } : false} animate={{ scale: 1 }} transition={{ duration: 0.18 }}>
+              <Heart size={22} strokeWidth={1.9} className={liked ? "fill-heart text-heart" : "text-ink-2"} />
             </motion.span>
-            <span>{compact(shown.counts.likes)}</span>
+            <span className="text-ink-2">{compact(shown.counts.likes)}</span>
           </motion.button>
           <AnimatePresence>
             {picker && (
@@ -433,34 +437,33 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
         </div>
         <button
           onClick={open}
-          className="flex items-center gap-2 rounded-full py-2 pr-2 text-[15.5px] transition hover:text-brand"
+          className="flex items-center gap-2 rounded-full py-2 pr-1 text-[15px] transition-colors duration-150 hover:text-ink"
           aria-label={`${shown.counts.comments} comments`}
         >
-          <MessageCircle size={23} strokeWidth={1.9} className="-scale-x-100" />
+          <MessageCircle size={21} strokeWidth={1.8} className="-scale-x-100" />
           {compact(shown.counts.comments)}
         </button>
         <motion.button
-          whileTap={{ rotate: 180, scale: 0.9 }}
-          onClick={repost}
-          className={clsx("flex items-center gap-2 rounded-full py-2 pr-2 text-[15.5px] transition", shown.reposted ? "text-online" : "hover:text-online")}
-          aria-label={shown.reposted ? "Undo repost" : "Repost"}
-          aria-pressed={shown.reposted}
+          whileTap={{ scale: 0.88 }}
+          transition={{ duration: 0.12 }}
+          onClick={share}
+          className={clsx("rounded-full p-2 transition-colors duration-150 hover:text-ink", shown.reposted ? "text-brand" : "text-ink-2")}
+          aria-label="Share"
         >
-          <Repeat2 size={24} strokeWidth={1.9} />
-          {compact(shown.counts.reposts)}
+          <SquareArrowOutUpRight size={21} strokeWidth={1.8} />
         </motion.button>
         <motion.button
-          whileTap={{ scale: 0.8, y: 3 }}
+          whileTap={{ scale: 0.88 }}
+          transition={{ duration: 0.12 }}
           onClick={bookmark}
-          className={clsx("rounded-full p-2 transition", shown.bookmarked ? "text-brand" : "hover:text-brand")}
+          className={clsx("rounded-full p-2 transition-colors duration-150", shown.bookmarked ? "text-brand" : "text-ink-2 hover:text-ink")}
           aria-label={shown.bookmarked ? "Remove bookmark" : "Bookmark"}
           aria-pressed={shown.bookmarked}
         >
-          <Bookmark size={23} strokeWidth={1.9} className={shown.bookmarked ? "fill-brand" : undefined} />
+          <Bookmark size={21} strokeWidth={1.8} className={shown.bookmarked ? "fill-brand" : undefined} />
         </motion.button>
-        <motion.button whileTap={{ x: 6 }} onClick={share} className="rounded-full p-2 transition hover:text-brand" aria-label="Share">
-          <Forward size={25} strokeWidth={1.8} />
-        </motion.button>
+        <span className="flex-1" />
+        <Menu trigger={<MoreHorizontal size={20} />} items={menuItems} label="More actions" />
       </div>
 
       <ReportDialog open={reportOpen} onClose={() => setReportOpen(false)} targetType="post" targetId={post.id} />
@@ -491,7 +494,7 @@ function ReactionPicker({ mine, onPick, onClose }: { mine: ReactionKind[]; onPic
       initial={{ opacity: 0, y: 10, scale: 0.6 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 8, scale: 0.7 }}
-      transition={{ type: "spring", stiffness: 520, damping: 22 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       className="absolute bottom-12 left-0 z-30 flex origin-bottom-left gap-0.5 rounded-full border border-line bg-card p-1.5 shadow-2xl"
       role="menu"
       aria-label="Reactions"
@@ -501,7 +504,7 @@ function ReactionPicker({ mine, onPick, onClose }: { mine: ReactionKind[]; onPic
           key={r.kind}
           initial={{ y: 12, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: i * 0.025, type: "spring", stiffness: 600, damping: 18 }}
+          transition={{ delay: i * 0.025, duration: 0.2, ease: "easeOut" }}
           whileHover={{ scale: 1.45, y: -6 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => onPick(r.kind)}

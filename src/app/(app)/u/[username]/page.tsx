@@ -50,7 +50,7 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
     if (!p!.blocked && !confirm(`Block @${p!.username}? You won't see each other's posts, comments or messages.`)) return;
     try {
       const r = await rpc<{ blocked: boolean }>("toggle_block", { p_user_id: p!.id });
-      toast(r.blocked ? "Blocked. Peace and quiet." : "Unblocked. Chaos resumes.", "success", r.blocked ? "🚫" : "🕊️");
+      toast(r.blocked ? "Blocked. Peace and quiet." : "Unblocked.", "success", r.blocked ? "🚫" : "🕊️");
       mutateProfile();
       refreshFeeds();
     } catch (err) {
@@ -81,22 +81,21 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
     { label: "Posts", value: p.stats.posts },
     { label: "Likes", value: p.stats.likes },
     { label: "Awards", value: p.stats.awards },
-    { label: "Chaos", value: p.stats.chaos_points },
+    { label: "Points", value: p.stats.chaos_points },
   ];
 
   return (
     <div className="space-y-4">
       <div className="card overflow-hidden">
-        <div className="relative h-28 bg-gradient-to-br from-brand via-volt to-hot">
-          <div className="absolute inset-0 opacity-30 [background:repeating-linear-gradient(45deg,transparent_0_12px,rgba(0,0,0,.25)_12px_24px)]" />
-          <span className="sticker absolute right-3 top-3 rotate-6 rounded bg-lime px-2 py-0.5 text-sm text-black">
+        <div className="relative h-28 bg-[radial-gradient(ellipse_at_top_right,rgba(242,13,47,0.35),transparent_65%),linear-gradient(160deg,#1a1a1a,#080808)]">
+          <span className="sticker absolute right-3 top-3 rounded-full border border-white/20 px-2.5 py-0.5 text-white/80">
             {p.role === "owner" ? "FOUNDER" : p.role === "admin" ? "ADMIN" : p.is_bot ? "AI" : "MEMBER"}
           </span>
         </div>
         <div className="px-4 pb-4">
           <div className="-mt-12 flex items-end justify-between">
-            <motion.div initial={{ scale: 0.6, rotate: -10 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 300, damping: 14 }}>
-              <Avatar src={p.avatar_url} name={p.display_name} size={96} ring="gradient" online={p.online} />
+            <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }}>
+              <Avatar src={p.avatar_url} name={p.display_name} size={96} online={p.online} />
             </motion.div>
             <div className="flex gap-2 pb-1">
               {p.is_me ? (
@@ -134,7 +133,7 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
             </div>
           </div>
           <div className="mt-2">
-            <h1 className="flex items-center gap-1.5 text-2xl font-black">
+            <h1 className="flex items-center gap-1.5 text-2xl font-bold">
               {p.display_name} {p.badge && !p.is_bot && <span>{p.badge}</span>}
               {p.verified && <VerifiedBadge size={20} />}
             </h1>
@@ -151,26 +150,26 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
             {stats.map((s, i) => (
               <motion.div
                 key={s.label}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 * i }}
+                transition={{ duration: 0.18, delay: 0.03 * i }}
                 className="rounded-2xl bg-card-2 py-2 text-center"
               >
-                <div className="text-lg font-black">{s.value}</div>
+                <div className="text-lg font-semibold">{s.value}</div>
                 <div className="text-[11px] font-bold uppercase text-muted">{s.label}</div>
               </motion.div>
             ))}
           </div>
           {p.badges.length > 0 && (
             <div className="mt-4">
-              <div className="mb-1.5 text-xs font-black uppercase tracking-widest text-muted">Achievements</div>
+              <div className="mb-1.5 text-xs font-bold uppercase tracking-widest text-muted">Achievements</div>
               <div className="flex flex-wrap gap-1.5">
                 {p.badges.map((b, i) => (
                   <motion.span
                     key={b}
-                    initial={{ scale: 0, rotate: -20 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ delay: 0.04 * i, type: "spring", stiffness: 500, damping: 15 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.18, delay: 0.02 * i }}
                     title={BADGES[b]?.blurb}
                     className="rounded-full border border-line bg-card-2 px-2.5 py-1 text-xs font-bold"
                   >
@@ -182,10 +181,10 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
           )}
           {p.inside_jokes.length > 0 && (
             <div className="mt-3">
-              <div className="mb-1.5 text-xs font-black uppercase tracking-widest text-muted">Inside jokes</div>
+              <div className="mb-1.5 text-xs font-bold uppercase tracking-widest text-muted">Inside jokes</div>
               <div className="flex flex-wrap gap-1.5">
                 {p.inside_jokes.map((j) => (
-                  <span key={j} className="rounded-full bg-volt/15 px-2.5 py-1 text-xs font-bold text-ink">
+                  <span key={j} className="rounded-full bg-brand/10 px-2.5 py-1 text-xs font-medium text-ink">
                     🤫 {j}
                   </span>
                 ))}
@@ -217,7 +216,7 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
               </button>
             ))}
           </div>
-          <Feed key={tab} mode={tab} arg={p.username} emptyText={p.is_me ? "You haven't posted yet. The timeline awaits your nonsense." : "Nothing here yet."} />
+          <Feed key={tab} mode={tab} arg={p.username} emptyText={p.is_me ? "It's quiet here. Drop a post." : "Nothing here yet."} />
         </>
       )}
       {p.is_me && <EditProfileDialog me={me} open={editing} onClose={() => setEditing(false)} />}

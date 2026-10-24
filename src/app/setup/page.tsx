@@ -26,7 +26,7 @@ export default function SetupPage() {
         <Tagline size="lg" className="mt-2" />
       </div>
       <div className="card mt-8 p-6">
-        <h1 className="text-2xl font-black">Setup &amp; configuration</h1>
+        <h1 className="text-2xl font-bold">Setup &amp; configuration</h1>
         <p className="mt-1 text-sm text-muted">
           Current mode: <b className="text-ink">{mode}</b>
           {mode === "demo" && " — running on an embedded Postgres (PGlite) in .data/. Great for trying it out locally."}
@@ -53,7 +53,7 @@ export default function SetupPage() {
             }
           />
         </ul>
-        <h2 className="mt-6 font-black">Quick start</h2>
+        <h2 className="mt-6 font-bold">Quick start</h2>
         <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-ink-2">
           <li>Copy <code>.env.example</code> to <code>.env.local</code> and fill in the values.</li>
           <li>
@@ -65,7 +65,7 @@ export default function SetupPage() {
         <p className="mt-6 text-sm text-muted">Full instructions are in README.md.</p>
         {mode !== "unconfigured" && (
           <Link href="/" className="mt-6 inline-block rounded-full bg-brand px-5 py-2.5 font-bold text-white">
-            Back to the chaos
+            Back to YORU
           </Link>
         )}
       </div>

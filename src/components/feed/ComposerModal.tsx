@@ -19,17 +19,15 @@ import { playSound } from "@/lib/client/sounds";
 export type ComposerTab = "text" | "media" | "poll" | "link";
 
 const ABSURD_CAPTIONS = [
-  "This post is protected under the Geneva Convention (I checked).",
-  "Posting this before my lawyer wakes up.",
-  "Not a cry for help. A cry for attention. Different.",
-  "The economy made me post this.",
-  "Diplomatic relations with my sleep schedule have been severed.",
-  "If this flops I'm blaming Ohio.",
-  "Certified mid. Posted anyway. Growth.",
-  "Breaking: local menace does it again.",
-  "Three cats in sunglasses approved this message.",
-  "Sanction me. I dare you.",
-];
+  "Watching this at 3am. No regrets.",
+  "Hot take incoming.",
+  "This episode changed me.",
+  "Rate my latest pull.",
+  "Currently on loop.",
+  "Villain arc begins tonight.",
+  "Filler arc of my life, but the OST slaps.",
+  "Power scaling debate, go.",
+]
 
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime";
 
@@ -130,7 +128,7 @@ export function ComposerModal({
   ];
 
   return (
-    <Modal open={open} onClose={onClose} title="Drop some chaos" wide>
+    <Modal open={open} onClose={onClose} title="Drop a post" wide>
       <div className="mb-3 flex gap-1.5 overflow-x-auto no-scrollbar">
         {tabs.map((t) => (
           <button
@@ -158,7 +156,7 @@ export function ComposerModal({
             onKeyDown={(e) => {
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit();
             }}
-            placeholder={tab === "poll" ? "Ask the group a question..." : "What's on your mind, soldier?"}
+            placeholder={tab === "poll" ? "Ask the group a question..." : "What's on your mind?"}
             className="h-28 w-full resize-none bg-transparent text-[17px] outline-none placeholder:text-muted"
             aria-label="Post text"
             dir="auto"

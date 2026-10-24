@@ -21,7 +21,7 @@ const ROASTS: Record<Intensity, string[]> = {
     "{name}, the UN has a secret file on you labelled 'why'. It's empty. They just gave up.",
     "{name}, you're the human equivalent of a reply-all apology email.",
     "{name}, scientists studied your decision-making and the study got its funding pulled out of pity.",
-    "{name}, your browser history is a war crime and your takes are the cover-up.",
+    "{name}, your watchlist is a cry for help and your takes are the cover-up.",
   ],
 };
 
@@ -65,7 +65,7 @@ export function offlineGenerate(tool: ToolName, input: Record<string, string | n
         text: `${rating}/10`,
         data: {
           rating,
-          verdict: rating > 7 ? "Unfortunately based" : rating > 3 ? "Room temperature take" : "Geneva-level cursed",
+          verdict: rating > 7 ? "Unfortunately based" : rating > 3 ? "Room temperature take" : "Cursed take",
           reason: `"${subject.slice(0, 60)}" has been reviewed by a panel of three cats in sunglasses. They are concerned.`,
         },
       };

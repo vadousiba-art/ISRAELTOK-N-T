@@ -68,7 +68,7 @@ export function JoinForm({ code: initialCode }: { code: string }) {
           void check(code.trim());
         }}
       >
-        <h1 className="text-xl font-black">Got an invite code?</h1>
+        <h1 className="text-xl font-bold">Got an invite code?</h1>
         <p className="mt-1 text-sm text-muted">This place is invite-only. Ask a member for a link.</p>
         {invite && !invite.valid && (
           <p className="mt-3 rounded-xl bg-hot/15 p-2 text-sm font-semibold text-hot">{REASONS[invite.reason ?? "not_found"]}</p>
@@ -108,11 +108,11 @@ export function JoinForm({ code: initialCode }: { code: string }) {
 
   return (
     <form onSubmit={submit}>
-      <h1 className="text-xl font-black">{invite.first_user ? "Found the empire 👑" : "You've been summoned"}</h1>
+      <h1 className="text-xl font-bold">{invite.first_user ? "Start your community" : "You're invited"}</h1>
       <p className="mt-1 text-sm text-muted">
         {invite.first_user
-          ? "Nobody's here yet. The first account becomes the owner (admin of all chaos)."
-          : `${invite.inviter ?? "Someone"} vouched for you. Don't make them regret it (you will).`}
+          ? "Nobody's here yet. The first account becomes the owner."
+          : `${invite.inviter ?? "Someone"} invited you to YORU. Find your people.`}
       </p>
       {error && <p className="mt-3 rounded-xl bg-hot/15 p-2 text-sm font-semibold text-hot">{error}</p>}
       {field("display_name", "Display name", { required: true, maxLength: 40, placeholder: "Ethan", autoComplete: "nickname" })}
@@ -127,7 +127,7 @@ export function JoinForm({ code: initialCode }: { code: string }) {
       {config.mode === "supabase" &&
         field("password", "Password (8+ chars)", { required: true, type: "password", minLength: 8, autoComplete: "new-password" })}
       <Button type="submit" disabled={busy} variant="chaos" className="mt-5 w-full py-3">
-        {busy ? "Processing your paperwork..." : "Join IsraelTokn't"}
+        {busy ? "Creating your account..." : "Join YORU"}
       </Button>
     </form>
   );

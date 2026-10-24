@@ -17,7 +17,7 @@ import type { AiMessage } from "@/lib/types";
 
 const PROMPTS = [
   "Roast me. I can take it (I can't).",
-  "Rate my take: pineapple on pizza is a war crime",
+  "Rate my take: filler arcs are underrated",
   "Invent a diplomatic crisis between me and my alarm clock",
   "Write breaking news about my sleep schedule",
   "Explain the group chat like it's a UN security briefing",
@@ -86,11 +86,11 @@ export default function MenacePage() {
       <div className="card relative overflow-hidden p-4">
         <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-roast/20 blur-3xl" aria-hidden />
         <div className="flex items-center gap-3">
-          <motion.div animate={{ rotate: [0, -6, 6, 0] }} transition={{ repeat: Infinity, duration: 3 }}>
+          <motion.div>
             <Avatar src="/seed/avatar-menace.png" name="The AI Menace" size={60} ring="gradient" online />
           </motion.div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 text-lg font-black">
+            <div className="flex items-center gap-1.5 text-lg font-bold">
               The AI Menace <VerifiedBadge />
             </div>
             <div className="text-sm text-muted">@UNHatingAmbassador · online and unhinged</div>

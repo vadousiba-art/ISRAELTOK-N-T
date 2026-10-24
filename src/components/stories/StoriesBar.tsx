@@ -16,42 +16,38 @@ const SIZE = 70;
 
 function Bubble({ group, onOpen, index }: { group: StoryGroup; onOpen: () => void; index: number }) {
   const latest = group.items[group.items.length - 1];
-  const label = group.channel_id ? group.label.replace(/\b\w/g, (c) => c.toUpperCase()) : group.label.split(" ")[0];
+  const label = group.channel_id ? group.label : (group.author?.username ?? group.label);
+  // People are shown by their avatar (as in the reference); group stories by their latest media.
+  const thumb = !group.channel_id && group.author?.avatar_url ? group.author.avatar_url : latest.media_url;
   return (
     <motion.button
-      initial={{ opacity: 0, scale: 0.6, y: 10 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ delay: 0.04 * index, type: "spring", stiffness: 420, damping: 22 }}
-      whileTap={{ scale: 0.9 }}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: Math.min(0.03 * index, 0.2), duration: 0.2 }}
+      whileTap={{ scale: 0.94 }}
       onClick={onOpen}
       className="flex w-[80px] shrink-0 flex-col items-center gap-1"
       aria-label={`View ${group.label}'s story`}
     >
       <span
-        className={clsx("relative rounded-full p-[3px]", group.all_viewed ? "bg-line" : "bg-brand")}
+        className={clsx("relative rounded-full p-[2.5px]", group.all_viewed ? "bg-line" : "story-ring-new bg-brand")}
         style={{ width: SIZE, height: SIZE }}
       >
-        <span className="block h-full w-full overflow-hidden rounded-full border-[2.5px] border-bg bg-card-2">
-          {latest.media_url ? (
+        <span className="block h-full w-full overflow-hidden rounded-full border-[3px] border-bg bg-card-2">
+          {thumb ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={mediaSrc(latest.media_url)} alt="" className="h-full w-full object-cover" loading="lazy" />
-          ) : group.author?.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={mediaSrc(group.author.avatar_url)} alt="" className="h-full w-full object-cover" />
+            <img src={mediaSrc(thumb)} alt="" className="h-full w-full object-cover" loading="lazy" />
           ) : (
             <span
-              className="flex h-full w-full items-center justify-center p-2 text-center text-[11px] font-black leading-tight text-black"
+              className="flex h-full w-full items-center justify-center p-2 text-center text-[11px] font-bold leading-tight text-white"
               style={{ background: STORY_BG[latest.bg] }}
             >
               {latest.text.slice(0, 40)}
             </span>
           )}
         </span>
-        {group.online && (
-          <span className="absolute bottom-[3px] right-[3px] h-[16px] w-[16px] rounded-full border-[2.5px] border-bg bg-online" aria-label="online" />
-        )}
       </span>
-      <span className="max-w-full truncate text-[13.5px] font-medium text-ink">{label}</span>
+      <span className="max-w-full truncate text-[13px] text-muted">{label}</span>
     </motion.button>
   );
 }
@@ -66,21 +62,18 @@ export function StoriesBar() {
     <div className="-mx-3 sm:-mx-4">
       <div className="no-scrollbar flex gap-1 overflow-x-auto px-2 pb-1 pt-1 sm:px-3">
         <motion.button
-          whileTap={{ scale: 0.9 }}
+          whileTap={{ scale: 0.94 }}
           onClick={openStoryComposer}
           className="flex w-[80px] shrink-0 flex-col items-center gap-1"
           aria-label="Add story"
         >
-          <span className="relative rounded-full bg-brand p-[3px]" style={{ width: SIZE, height: SIZE }}>
-            <span className="block h-full w-full overflow-hidden rounded-full border-[2.5px] border-bg">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/seed/story-add.png" alt="" className="h-full w-full object-cover" />
-            </span>
-            <span className="absolute -bottom-[1px] -right-[1px] flex h-[24px] w-[24px] items-center justify-center rounded-full border-[2.5px] border-bg bg-brand text-white">
-              <Plus size={14} strokeWidth={3.5} />
-            </span>
+          <span
+            className="flex items-center justify-center rounded-full border-2 border-brand bg-card text-ink transition-colors duration-150 hover:bg-card-2"
+            style={{ width: SIZE, height: SIZE }}
+          >
+            <Plus size={30} strokeWidth={1.6} />
           </span>
-          <span className="text-[13.5px] font-medium text-ink">Add Story</span>
+          <span className="text-[13px] font-semibold text-ink">Add Story</span>
         </motion.button>
         {!data &&
           Array.from({ length: 4 }, (_, i) => (

@@ -1,8 +1,10 @@
-# ישראל טוקט׳ — IsraelTokn't
+# YORU (夜)
 
-> The internet was a mistake. You made it worse.
+> THE INTERNET AFTER DARK. 夜は、まだ終わらない。
 
-A private, invite-only brainrot social network for one friend group. It mixes a TikTok-style feed, Discord-style group chats, Reddit-style threads, political satire, and an unhinged AI comedian called **The AI Menace**.
+A private, invite-only, Japanese-inspired social network for anime, manga, Vocaloid, music, gaming and art fans. It mixes a feed, stories, group chats, threads, and an AI comedian called **The AI Menace**.
+
+> YORU is a visual rebrand of the app formerly called IsraelTokn't. The database, accounts, auth and Android package id (`com.israeltoknt.app`) are unchanged, so existing users keep everything.
 
 Built with **Next.js 16 (App Router) · TypeScript · Tailwind CSS 4 · Motion · Supabase (Postgres, Auth, Realtime, Storage) · Claude**.
 
@@ -59,7 +61,7 @@ Demo mode lets anyone log in as anyone. It turns itself off in production unless
 
 | Area | What works |
 | --- | --- |
-| **Brainrot feed** | Infinite scroll, text, images, GIFs, video, polls, links, quote posts, reposts, bookmarks, hashtags (including Hebrew and emoji), trending (score with time decay), live "new posts" pill |
+| **Feed** | Infinite scroll, text, images, GIFs, video, polls, links, quote posts, reposts, bookmarks, hashtags (including Hebrew and emoji), trending (score with time decay), live "new posts" pill |
 | **Reactions** | Like plus 8 custom reactions (💀 🔥 😭 🤡 🧢 🫡 W L). Hold or right-click the heart to pick one. Emoji burst animations |
 | **Comments** | Threaded replies up to 4 levels, comment likes, delete, report, "Summon Menace" roast replies |
 | **Group chats** | Realtime public and private groups and DMs, typing indicators, replies, emoji reactions, media, @mention autocomplete, unread counts, `/menace` command |

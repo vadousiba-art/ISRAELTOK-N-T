@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   try {
     requireConfigured();
     if (!limit(`login:${clientIp(req)}`, 10, 60_000)) {
-      throw new AppError("RATE_LIMIT", "Too many login attempts. Go touch grass for a minute.", 429);
+      throw new AppError("RATE_LIMIT", "Too many login attempts. Please wait a minute.", 429);
     }
     const body = await req.json().catch(() => ({}));
 

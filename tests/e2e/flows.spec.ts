@@ -4,7 +4,7 @@ async function loginAs(page: Page, name: RegExp) {
   await page.goto("/login");
   await page.getByRole("button", { name }).first().click();
   await page.waitForURL("**/");
-  await expect(page.getByText("What's on your mind, soldier?")).toBeVisible();
+  await expect(page.getByText("What's on your mind?")).toBeVisible();
 }
 
 test.describe.configure({ mode: "serial" });
@@ -12,7 +12,7 @@ test.describe.configure({ mode: "serial" });
 test("logged-out visitors are sent to login", async ({ page }) => {
   await page.goto("/chat");
   await expect(page).toHaveURL(/\/login/);
-  await expect(page.getByRole("heading", { name: "Pick a victim" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Choose an account" })).toBeVisible();
 });
 
 test("home feed matches the seeded mockup", async ({ page }) => {
@@ -124,14 +124,14 @@ test("admin invites a new member who can join and post", async ({ page, browser 
   const ctx = await browser.newContext();
   const guest = await ctx.newPage();
   await guest.goto(`/join/${code}`);
-  await expect(guest.getByRole("heading", { name: "You've been summoned" })).toBeVisible();
+  await expect(guest.getByRole("heading", { name: "You're invited" })).toBeVisible();
   const handle = `Newbie${Date.now() % 100000}`;
   await guest.getByLabel("Display name").fill("Newbie");
   await guest.getByLabel("Username").fill(handle);
   await guest.getByLabel("Email").fill(`${handle.toLowerCase()}@example.com`);
-  await guest.getByRole("button", { name: "Join IsraelTokn't" }).click();
+  await guest.getByRole("button", { name: "Join YORU" }).click();
   await guest.waitForURL("**/");
-  await expect(guest.getByText("What's on your mind, soldier?")).toBeVisible();
+  await expect(guest.getByText("What's on your mind?")).toBeVisible();
   await guest.goto(`/u/${handle}`);
   await expect(guest.getByRole("heading", { name: /Newbie/ })).toBeVisible();
   await ctx.close();

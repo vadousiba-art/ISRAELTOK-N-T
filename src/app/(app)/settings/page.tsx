@@ -15,7 +15,7 @@ import type { Me, NotificationPrefs, ProfileLite } from "@/lib/types";
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="card p-4">
-      <h2 className="mb-1 text-xs font-black uppercase tracking-widest text-muted">{title}</h2>
+      <h2 className="mb-1 text-xs font-bold uppercase tracking-widest text-muted">{title}</h2>
       <div className="divide-y divide-line">{children}</div>
     </section>
   );
@@ -49,7 +49,7 @@ const NOTIF: [keyof NotificationPrefs, string, string][] = [
   ["reposts", "Reposts", "When your post gets spread"],
   ["messages", "Direct messages", "New DMs"],
   ["awards", "Awards", "When your post wins something"],
-  ["friend_posts", "Friend activity", "Every time anyone posts (chaotic)"],
+  ["friend_posts", "Friend activity", "Every time anyone posts"],
 ];
 
 export default function SettingsPage() {
@@ -83,17 +83,17 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-4">
-      <PageTitle emoji="⚙️" sub="Customize your descent into madness.">
+      <PageTitle sub="Make YORU yours.">
         Settings
       </PageTitle>
 
       <Section title="Appearance">
-        <Segmented<ThemePref> label="Theme" value={theme} onChange={setTheme} options={[["dark", "🌑 Dark"], ["light", "☀️ Light"], ["system", "🖥️ System"]]} />
+        <Segmented<ThemePref> label="Theme" value={theme} onChange={setTheme} options={[["dark", "Dark"], ["light", "Light"], ["system", "System"]]} />
         <Segmented<MotionPref>
           label="Motion"
           value={motionPref}
           onChange={setMotionPref}
-          options={[["system", "System"], ["reduce", "Reduced"], ["full", "Full chaos"]]}
+          options={[["system", "System"], ["reduce", "Reduced"], ["full", "Full"]]}
         />
         <Toggle checked={sound} onChange={setSound} label="Sound effects" description="Pops and fanfares on likes, posts and awards" />
       </Section>
@@ -133,7 +133,7 @@ export default function SettingsPage() {
         />
         <div className="py-3">
           <div className="mb-2 text-sm font-semibold">Blocked people</div>
-          {blocked?.length === 0 && <p className="text-xs text-muted">Nobody. You&apos;re surprisingly tolerant.</p>}
+          {blocked?.length === 0 && <p className="text-xs text-muted">Nobody blocked.</p>}
           {blocked?.map((b) => (
             <div key={b.id} className="flex items-center gap-3 py-1.5">
               <Avatar src={b.avatar_url} name={b.display_name} size={32} />

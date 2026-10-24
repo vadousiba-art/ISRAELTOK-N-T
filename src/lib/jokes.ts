@@ -1,47 +1,43 @@
 import type { AwardKind, ReactionKind } from "./types";
 
-export const TAGLINE_1 = "The internet was a mistake.";
-export const TAGLINE_2 = "You made it worse.";
+export const TAGLINE_1 = "THE INTERNET AFTER DARK.";
+export const TAGLINE_2 = "夜は、まだ終わらない。";
 
 export const LOADING_LINES = [
-  "Consulting the group chat elders...",
-  "Bribing the algorithm...",
-  "Negotiating with the servers (they want snacks)...",
-  "Loading your bad decisions...",
-  "Untangling the brainrot...",
-  "Asking three cats in sunglasses for permission...",
-  "Summoning content nobody asked for...",
-  "Calibrating the cringe detector...",
-  "Recalling our ambassador from your phone...",
-  "Downloading more RAM (legally)...",
-  "Warming up the roast oven...",
-  "Filing paperwork with the Ministry of Memes...",
+  "Loading tonight's feed...",
+  "Waiting for the next episode...",
+  "Buffering the opening theme...",
+  "Turning the page...",
+  "Tuning the vocal synth...",
+  "Checking who's still awake...",
+  "Developing the next panel...",
+  "Syncing with the night shift...",
 ];
 
 export const randomLoading = () => LOADING_LINES[Math.floor(Math.random() * LOADING_LINES.length)];
 
 export const EMPTY_LINES = {
-  feed: "The feed is empty. Be the chaos you want to see.",
-  comments: "No comments yet. Be the first to say something regrettable.",
-  notifications: "No notifications. Nobody's thinking about you. Peaceful, honestly.",
-  chats: "No chats yet. Start one before the silence gets loud.",
-  bookmarks: "No bookmarks. You haven't found anything worth saving. Relatable.",
-  search: "Nothing found. Even the algorithm gave up.",
-  leaderboard: "Nobody here yet. The throne is empty and kind of sad.",
-  messages: "Dead chat. Say something unhinged to revive it.",
-  stories: "No stories. Everyone's touching grass apparently.",
+  feed: "It's quiet tonight. Drop the first post.",
+  comments: "No comments yet. Start the conversation.",
+  notifications: "Nothing new. The night is calm.",
+  chats: "Your next conversation starts here.",
+  bookmarks: "Nothing saved yet. Bookmark posts to find them later.",
+  search: "No results. Try another name, tag or word.",
+  leaderboard: "No rankings yet. Opt in and start posting.",
+  messages: "No messages yet. Say something.",
+  stories: "No stories tonight.",
 };
 
 export const SUCCESS_TOASTS = {
-  post: ["Posted. No take-backs.", "Unleashed upon the timeline.", "Your post has entered the arena."],
-  comment: ["Comment deployed.", "Words were said. Consequences pending."],
-  repost: ["Reposted. Spreading the brainrot."],
-  unrepost: ["Repost retracted. Cowardly but valid."],
-  bookmark: ["Saved for your future therapist."],
-  unbookmark: ["Unsaved. It wasn't that good anyway."],
-  report: ["Reported. The mods have been summoned."],
-  copy: ["Link copied. Go cause problems."],
-  award: ["Award granted. The committee approves."],
+  post: ["Posted.", "Your post is live."],
+  comment: ["Comment posted."],
+  repost: ["Reposted."],
+  unrepost: ["Repost removed."],
+  bookmark: ["Saved to bookmarks."],
+  unbookmark: ["Removed from bookmarks."],
+  report: ["Report sent. The moderators will take a look."],
+  copy: ["Link copied."],
+  award: ["Award given."],
 };
 
 export const pickLine = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
@@ -61,7 +57,7 @@ export const REACTION_EMOJI = Object.fromEntries(REACTIONS.map((r) => [r.kind, r
 
 export const AWARDS: { kind: AwardKind; emoji: string; label: string; blurb: string }[] = [
   { kind: "menace", emoji: "😈", label: "Certified Menace", blurb: "For outstanding chaos" },
-  { kind: "war_crime", emoji: "⚖️", label: "War Crime of the Week", blurb: "The Hague has been notified" },
+  { kind: "war_crime", emoji: "🗡️", label: "Villain Arc", blurb: "Dark, dramatic and unforgettable" },
   { kind: "touch_grass", emoji: "🌱", label: "Touch Grass", blurb: "Please. Go outside." },
   { kind: "galaxy_brain", emoji: "🧠", label: "Galaxy Brain", blurb: "Too smart or too stupid, unclear" },
   { kind: "skill_issue", emoji: "📉", label: "Skill Issue", blurb: "Self-explanatory" },
@@ -84,20 +80,20 @@ export const BADGES: Record<string, { emoji: string; label: string; blurb: strin
 };
 
 export const DAILY_CHALLENGES = [
-  "Describe your week using only a geopolitical event.",
-  "Post your most unhinged screenshot from this month (crop the evidence).",
-  "Write a formal declaration of war against a minor inconvenience.",
-  "Rate the last thing you ate like it's a peace treaty.",
-  "Explain your sleep schedule as a stock market chart.",
-  "Write the opening line of your villain origin story.",
-  "Confess your worst take. The Menace will judge.",
-  "Draft a diplomatic apology to someone you left on read.",
-  "Describe your fridge contents like a war correspondent.",
-  "Post a photo of something and give it a ridiculous political title.",
-  "Write a breaking news headline about your own life.",
-  "Invent a new national holiday and its cursed traditions.",
-  "Rank the group chat members as countries. No explanations.",
-  "Write a 1-star review of a normal day.",
+  "Recommend one anime you think nobody else here has watched.",
+  "Post the manga panel that lives rent-free in your head.",
+  "Share the Vocaloid or J-pop track on repeat this week.",
+  "Describe your week as an anime opening sequence.",
+  "Who is the most underrated side character of all time?",
+  "Share something you drew, edited or made recently.",
+  "Your comfort show for 3am. Go.",
+  "Rate the last thing you watched out of 10 — no explanations.",
+  "Post your current desktop or phone wallpaper.",
+  "Which opening theme would play when you walk into a room?",
+  "Drop a game soundtrack that deserves more love.",
+  "Pitch an anime crossover that should exist.",
+  "Your villain origin story in one sentence.",
+  "Share a meme that only this community would understand.",
 ];
 
 export function todaysChallenge(date = new Date()) {
@@ -106,31 +102,24 @@ export function todaysChallenge(date = new Date()) {
 }
 
 export const TICKER = [
-  "🚨 BREAKING: Local man discovers he has been muted in 4 group chats since 2023",
-  "📉 MARKETS: Doritos futures surge after Lucas blames 'the economy' again",
-  "🌍 UN calls emergency session over Ethan's sunglasses",
-  "🐈 Three cats in sunglasses elected to the Security Council",
-  "⚖️ The Hague confirms it has a folder labelled 'The Boys'",
-  "🛰️ Switzerland denies everything, refuses to elaborate",
-  "🌱 Scientists confirm grass still exists, nobody checks",
-  "📊 Poll: 9 out of 10 takes in this app are 'actually insane'",
-  "🧢 Zach's business idea officially classified as a threat to national security",
-  "🗺️ Ohio annexes your sleep schedule",
+  "Tonight on YORU: find your people",
+  "Anime · Manga · Vocaloid · J-music · Gaming · Art · Memes",
+  "夜は、まだ終わらない。",
 ];
 
 export const STORY_BG: Record<string, string> = {
-  lime: "linear-gradient(135deg,#c6ff00,#21c55d)",
-  pink: "linear-gradient(135deg,#ff2d95,#ff7ab8)",
-  purple: "linear-gradient(135deg,#9d4dff,#2a63ff)",
-  blue: "linear-gradient(135deg,#1f6bff,#00d4ff)",
-  fire: "linear-gradient(135deg,#ff6a00,#ff2d55)",
-  void: "radial-gradient(circle at 30% 20%,#2a2f45,#04060d)",
+  lime: "linear-gradient(160deg,#1a1a1a,#080808)",
+  pink: "linear-gradient(160deg,#f20d2f,#5c0613)",
+  purple: "linear-gradient(160deg,#2a2a2a,#0d0d0d)",
+  blue: "linear-gradient(160deg,#1b2a3a,#080808)",
+  fire: "linear-gradient(160deg,#a30f25,#1a0306)",
+  void: "radial-gradient(circle at 30% 20%,#262626,#080808)",
 };
 
 export const INTENSITY = [
-  { level: 1 as const, name: "Light Simmer", emoji: "🌶️", blurb: "Playful teasing" },
-  { level: 2 as const, name: "Medium War Crime", emoji: "🌶️🌶️", blurb: "Savage but affectionate" },
-  { level: 3 as const, name: "Geneva Violation", emoji: "☢️", blurb: "Unhinged. No survivors." },
+  { level: 1 as const, name: "Mild", emoji: "🌶️", blurb: "Playful teasing" },
+  { level: 2 as const, name: "Spicy", emoji: "🌶️🌶️", blurb: "Savage but affectionate" },
+  { level: 3 as const, name: "Nuclear", emoji: "☢️", blurb: "Unhinged. No survivors." },
 ];
 
 export const NOTIFICATION_TEXT: Record<string, string> = {
@@ -146,10 +135,15 @@ export const NOTIFICATION_TEXT: Record<string, string> = {
   roast: "roasted you",
 };
 
-export const ERROR_TITLES = [
-  "Something exploded.",
-  "The servers have unionized.",
-  "This page got sanctioned.",
-  "Diplomatic incident detected.",
-  "Skill issue (ours, this time).",
+export const ERROR_TITLES = ["Something went wrong.", "Lost in the dark.", "That didn't load."];
+
+export const CATEGORIES = [
+  { tag: "anime", label: "Anime", jp: "アニメ" },
+  { tag: "manga", label: "Manga", jp: "漫画" },
+  { tag: "music", label: "Music", jp: "音楽" },
+  { tag: "vocaloid", label: "Vocaloid", jp: "ボカロ" },
+  { tag: "gaming", label: "Gaming", jp: "ゲーム" },
+  { tag: "art", label: "Art", jp: "アート" },
+  { tag: "memes", label: "Memes", jp: "ミーム" },
+  { tag: "random", label: "Random", jp: "雑談" },
 ];

@@ -49,7 +49,7 @@ export function PollView({ post, onVoted }: { post: PostCore; onVoted: (p: PostC
                 className={clsx("absolute inset-y-0 left-0", o.votes === max ? "bg-brand/30" : "bg-card-2")}
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
-                transition={{ type: "spring", stiffness: 120, damping: 20 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
               />
             )}
             <span className="relative flex items-center justify-between gap-2">

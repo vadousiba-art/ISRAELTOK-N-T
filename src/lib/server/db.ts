@@ -49,7 +49,7 @@ export async function getUserDb(): Promise<Db> {
   const mode = appMode();
   if (mode === "demo") {
     const uid = await currentDemoUser();
-    if (!uid) throw new AppError("UNAUTHENTICATED", "Log in first, soldier.", 401);
+    if (!uid) throw new AppError("UNAUTHENTICATED", "Please log in first.", 401);
     return {
       userId: uid,
       rpc: async (fn, args) => {
@@ -63,7 +63,7 @@ export async function getUserDb(): Promise<Db> {
   }
   const sb = await supabaseForRequest();
   const { data } = await sb.auth.getUser();
-  if (!data.user) throw new AppError("UNAUTHENTICATED", "Log in first, soldier.", 401);
+  if (!data.user) throw new AppError("UNAUTHENTICATED", "Please log in first.", 401);
   return {
     userId: data.user.id,
     rpc: async (fn, args) => {

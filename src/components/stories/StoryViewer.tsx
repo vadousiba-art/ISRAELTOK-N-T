@@ -135,7 +135,7 @@ export function StoryViewer({ groups, startIndex, onClose }: { groups: StoryGrou
                 className={
                   item.media_url
                     ? "absolute inset-x-6 bottom-24 rounded-2xl bg-black/60 p-3 text-center text-lg font-bold text-white"
-                    : "sticker px-8 text-center text-4xl leading-tight text-black"
+                    : "px-8 text-center text-4xl font-semibold leading-tight text-white"
                 }
                 dir="auto"
               >

@@ -5,49 +5,51 @@
 /* ---------- Tokens ---------------------------------------------------- */
 
 :root {
-  --bg: #f4f6fb;
-  --bg-2: #e9edf6;
+  /* YORU light (secondary theme) */
+  --bg: #f5f5f5;
+  --bg-2: #ffffff;
   --card: #ffffff;
-  --card-2: #f3f5fa;
-  --line: #dde3ef;
-  --ink: #0b1020;
-  --ink-2: #2a3247;
-  --muted: #5c667d;
-  --brand: #1f5fff;
-  --brand-2: #4f86ff;
-  --ring-a: #2a63ff;
-  --ring-b: #8b3dff;
-  --heart: #ff2e74;
-  --roast: #ff2d8f;
-  --roast-label: #b13cff;
-  --online: #21c55d;
-  --lime: #8bc300;
-  --hot: #ff2d95;
-  --volt: #8b3dff;
-  --shadow: 0 1px 2px rgb(10 16 40 / 0.06), 0 8px 24px rgb(10 16 40 / 0.06);
+  --card-2: #f0f0f0;
+  --line: #e2e2e2;
+  --ink: #111111;
+  --ink-2: #2b2b2b;
+  --muted: #6b6b6b;
+  --brand: #d60b29;
+  --brand-2: #f20d2f;
+  --ring-a: #f20d2f;
+  --ring-b: #a30f25;
+  --heart: #e00b2b;
+  --roast: #d60b29;
+  --roast-label: #d60b29;
+  --online: #16a34a;
+  --lime: #111111;
+  --hot: #d60b29;
+  --volt: #a30f25;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 6px 20px rgb(0 0 0 / 0.05);
   color-scheme: light;
 }
 
 :root[data-theme="dark"] {
-  --bg: #04060d;
-  --bg-2: #070a14;
-  --card: #0a0e1a;
-  --card-2: #0d1322;
-  --line: #1a2138;
-  --ink: #f4f6fb;
-  --ink-2: #cfd5e4;
-  --muted: #8a92a7;
-  --brand: #1f6bff;
-  --brand-2: #3d82ff;
-  --ring-a: #2a63ff;
-  --ring-b: #8b3dff;
-  --heart: #ff3d7f;
-  --roast: #ff2d8f;
-  --roast-label: #c04cff;
+  /* YORU 夜 — the internet after dark */
+  --bg: #080808;
+  --bg-2: #0c0c0c;
+  --card: #121212;
+  --card-2: #1a1a1a;
+  --line: #292929;
+  --ink: #f5f5f5;
+  --ink-2: #d6d6d6;
+  --muted: #999999;
+  --brand: #f20d2f;
+  --brand-2: #ff3550;
+  --ring-a: #f20d2f;
+  --ring-b: #a30f25;
+  --heart: #f20d2f;
+  --roast: #f20d2f;
+  --roast-label: #ff4d63;
   --online: #22c55e;
-  --lime: #c6ff00;
-  --hot: #ff2d95;
-  --volt: #9d4dff;
+  --lime: #ededed;
+  --hot: #f20d2f;
+  --volt: #a30f25;
   --shadow: none;
   color-scheme: dark;
 }
@@ -71,8 +73,8 @@
   --color-hot: var(--hot);
   --color-volt: var(--volt);
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-meme: "Bangers", "Impact", ui-sans-serif, system-ui;
-  --font-marker: "Permanent Marker", ui-sans-serif, system-ui;
+  --font-meme: "Inter Variable", ui-sans-serif, system-ui;
+  --font-marker: "Inter Variable", ui-sans-serif, system-ui;
 }
 
 /* ---------- Base ------------------------------------------------------ */
@@ -91,7 +93,7 @@ body {
 }
 
 ::selection {
-  background: var(--hot);
+  background: var(--brand);
   color: white;
 }
 
@@ -104,7 +106,7 @@ body {
 .card {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 1.1rem;
+  border-radius: 1rem;
   box-shadow: var(--shadow);
 }
 
@@ -125,12 +127,12 @@ body {
 
 /* Roast-of-the-day box: hot pink frame */
 .roast-box {
-  border: 1.5px solid var(--roast);
+  border: 1px solid color-mix(in srgb, var(--roast) 55%, transparent);
   border-radius: 0.8rem;
-  box-shadow: 0 0 0 1px rgb(255 45 143 / 0.08), 0 0 24px -8px rgb(255 45 143 / 0.55);
+  background: color-mix(in srgb, var(--roast) 6%, transparent);
 }
 
-/* ---------- Chaos effects --------------------------------------------- */
+/* ---------- Motion & accents (kept subtle: 120–220ms, no constant motion) */
 
 @keyframes marquee {
   from {
@@ -141,57 +143,28 @@ body {
   }
 }
 .marquee {
-  animation: marquee 40s linear infinite;
+  animation: marquee 60s linear infinite;
 }
 
-@keyframes glitch-a {
-  0%, 100% { clip-path: inset(0 0 85% 0); transform: translate(-2px, 0); }
-  25% { clip-path: inset(40% 0 35% 0); transform: translate(2px, 1px); }
-  50% { clip-path: inset(70% 0 10% 0); transform: translate(-1px, -1px); }
-  75% { clip-path: inset(15% 0 60% 0); transform: translate(1px, 2px); }
-}
-.glitch {
-  position: relative;
-}
+/* Legacy effect hooks, intentionally calm in the YORU identity. */
 .glitch::before,
 .glitch::after {
-  content: attr(data-text);
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+  content: none;
 }
-.glitch::before {
-  color: var(--hot);
-  animation: glitch-a 0.9s steps(2) infinite;
-}
-.glitch::after {
-  color: var(--lime);
-  animation: glitch-a 1.3s steps(3) infinite reverse;
-}
-
-@keyframes wobble {
-  0%, 100% { transform: rotate(-3deg); }
-  50% { transform: rotate(3deg); }
-}
-.wobble {
-  animation: wobble 2.4s ease-in-out infinite;
-}
-
-@keyframes spin-slow {
-  to { transform: rotate(360deg); }
-}
+.wobble,
 .spin-slow {
-  animation: spin-slow 9s linear infinite;
-}
-
-@keyframes float-up {
-  0% { transform: translateY(0) rotate(0); opacity: 0; }
-  10% { opacity: 0.55; }
-  90% { opacity: 0.55; }
-  100% { transform: translateY(-110vh) rotate(40deg); opacity: 0; }
+  animation: none;
 }
 .float-meme {
-  animation: float-up linear infinite;
+  display: none;
+}
+
+@keyframes ring-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(242 13 47 / 0); }
+  50% { box-shadow: 0 0 0 3px rgb(242 13 47 / 0.18); }
+}
+.story-ring-new {
+  animation: ring-pulse 2.8s ease-in-out infinite;
 }
 
 @keyframes shimmer {
@@ -201,14 +174,23 @@ body {
 .skeleton {
   background: linear-gradient(90deg, var(--card-2) 25%, var(--line) 50%, var(--card-2) 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
+  animation: shimmer 1.6s ease-in-out infinite;
   border-radius: 0.6rem;
 }
 
+/* Small uppercase label (replaces the old meme-font stickers). */
 .sticker {
-  font-family: var(--font-meme);
-  letter-spacing: 0.04em;
-  text-shadow: 2px 2px 0 rgb(0 0 0 / 0.35);
+  font-family: var(--font-sans);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.68em;
+}
+
+.tagline {
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-weight: 600;
 }
 
 /* ---------- Reduced motion -------------------------------------------- */

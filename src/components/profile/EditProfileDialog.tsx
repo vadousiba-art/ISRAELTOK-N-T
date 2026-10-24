@@ -91,7 +91,7 @@ export function EditProfileDialog({ me, open, onClose }: { me: Me; open: boolean
       <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden onChange={(e) => e.target.files?.[0] && pickAvatar(e.target.files[0])} />
       <label className="mt-3 block text-xs font-bold text-muted">
         Status
-        <input className={`${input} mt-1`} value={form.status} maxLength={80} placeholder="currently: being a menace" onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))} />
+        <input className={`${input} mt-1`} value={form.status} maxLength={80} placeholder="currently: rewatching Evangelion" onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))} />
       </label>
       <label className="mt-3 block text-xs font-bold text-muted">
         Bio

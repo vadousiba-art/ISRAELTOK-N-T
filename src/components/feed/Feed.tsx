@@ -98,7 +98,7 @@ export function Feed({ mode = "latest", arg, emptyText, live = false }: { mode?:
             }}
             className="sticky top-[118px] z-20 mx-auto flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-bold text-white shadow-lg shadow-brand/40"
           >
-            <ArrowUp size={16} /> {fresh} new {fresh === 1 ? "post" : "posts"} of pure chaos
+            <ArrowUp size={16} /> {fresh} new {fresh === 1 ? "post" : "posts"}
           </motion.button>
         )}
       </AnimatePresence>
@@ -116,7 +116,7 @@ export function Feed({ mode = "latest", arg, emptyText, live = false }: { mode?:
       {loadingMore && data && <PostSkeleton />}
       {done && posts.length > 3 && (
         <p className="py-6 text-center text-sm font-semibold text-muted">
-          🏁 You reached the end. Go touch grass. <span className="text-xs">(or post something)</span>
+          You&apos;re all caught up. 夜は、まだ終わらない。
         </p>
       )}
     </div>

@@ -144,7 +144,7 @@ function Bubble({
                 className={clsx("absolute -top-11 z-20 flex gap-0.5 rounded-full border border-line bg-card p-1 shadow-xl", mine ? "right-0" : "left-0")}
               >
                 {QUICK.map((e) => (
-                  <motion.button key={e} whileHover={{ scale: 1.35, y: -4 }} onClick={() => react(e)} className="rounded-full px-1.5 text-lg font-black">
+                  <motion.button key={e} whileHover={{ scale: 1.35, y: -4 }} onClick={() => react(e)} className="rounded-full px-1.5 text-lg font-bold">
                     {e}
                   </motion.button>
                 ))}
@@ -209,7 +209,7 @@ function MembersDialog({ channel, open, onClose, onChanged }: { channel: Channel
   async function add(id: string) {
     try {
       await rpc("add_channel_members", { p_channel_id: channel.id, p_member_ids: [id] });
-      toast("Added. Welcome to the chaos.", "success", "➕");
+      toast("Added to the chat.", "success", "➕");
       onChanged();
     } catch (err) {
       toastError(err);
@@ -426,7 +426,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ id: string 
           <span className="flex h-[38px] w-[38px] items-center justify-center rounded-xl bg-card-2 text-xl">{channel.emoji}</span>
         )}
         <div className="min-w-0 flex-1">
-          <div className="truncate font-black">{title}</div>
+          <div className="truncate font-bold">{title}</div>
           <div className="truncate text-xs text-muted">
             {typing.length ? (
               <span className="font-semibold text-online">
@@ -555,7 +555,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ id: string 
                 dir="auto"
               />
               <motion.button
-                whileTap={{ scale: 0.8, rotate: -20 }}
+                whileTap={{ scale: 0.88 }}
                 onClick={send}
                 disabled={(!text.trim() && !media) || sending}
                 className="rounded-full bg-brand p-2.5 text-white disabled:opacity-40"

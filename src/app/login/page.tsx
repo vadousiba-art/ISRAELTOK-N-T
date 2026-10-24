@@ -50,7 +50,7 @@ function LoginInner() {
   if (config.mode === "demo") {
     return (
       <>
-        <h1 className="text-xl font-black">Pick a victim</h1>
+        <h1 className="text-xl font-bold">Choose an account</h1>
         <p className="mt-1 text-sm text-muted">
           Demo mode: no passwords, embedded database. Log in as anyone to try it.{" "}
           <Link href="/setup" className="font-bold text-brand">
@@ -67,8 +67,7 @@ function LoginInner() {
               initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: Math.min(i * 0.02, 0.4) }}
-              whileHover={{ scale: 1.05, rotate: i % 2 ? 2 : -2 }}
-              whileTap={{ scale: 0.92 }}
+              whileTap={{ scale: 0.97 }}
               disabled={busy}
               onClick={() => login({ user_id: u.id })}
               className="flex flex-col items-center gap-1 rounded-2xl border border-line p-2 text-center transition hover:border-brand hover:bg-card-2"
@@ -77,14 +76,14 @@ function LoginInner() {
               <span className="w-full truncate text-xs font-bold">
                 {u.display_name} {u.badge}
               </span>
-              {u.role !== "member" && <span className="text-[10px] font-black uppercase text-hot">{u.role}</span>}
+              {u.role !== "member" && <span className="text-[10px] font-bold uppercase text-hot">{u.role}</span>}
             </motion.button>
           ))}
         </div>
         <p className="mt-4 text-center text-sm text-muted">
           Have an invite?{" "}
           <Link href="/join" className="font-bold text-brand">
-            Join the bunker
+            Join YORU
           </Link>
         </p>
       </>
@@ -98,7 +97,7 @@ function LoginInner() {
         login({ email, password });
       }}
     >
-      <h1 className="text-xl font-black">Welcome back, menace</h1>
+      <h1 className="text-xl font-bold">Welcome back</h1>
       <p className="mt-1 text-sm text-muted">Private network. Members only. No normies.</p>
       {error && <p className="mt-3 rounded-xl bg-hot/15 p-2 text-sm font-semibold text-hot">{error}</p>}
       <label className="mt-4 block text-sm font-semibold">

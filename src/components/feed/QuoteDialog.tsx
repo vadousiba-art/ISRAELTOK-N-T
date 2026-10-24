@@ -19,7 +19,7 @@ export function QuoteDialog({ open, onClose, post }: { open: boolean; onClose: (
     setBusy(true);
     try {
       await rpc("toggle_repost", { p_post_id: post.id, p_quote: text.trim() });
-      toast("Quote posted. Context added, chaos multiplied.", "success", "💬");
+      toast("Quote posted.", "success", "💬");
       setText("");
       refreshFeeds();
       onClose();

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import clsx from "clsx";
+import { Moon } from "lucide-react";
 import { randomLoading } from "@/lib/jokes";
 
 export function timeAgo(iso: string, now = Date.now()) {
@@ -54,15 +55,8 @@ export function ChaosLoader({ className, label }: { className?: string; label?: 
   }, [label]);
   return (
     <div className={clsx("flex flex-col items-center justify-center gap-3 py-10 text-muted", className)} role="status">
-      <motion.span
-        className="text-4xl"
-        animate={{ rotate: [0, 360], scale: [1, 1.2, 1] }}
-        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-        aria-hidden
-      >
-        🌀
-      </motion.span>
-      <motion.p key={line} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="text-center text-sm font-medium">
+      <span className="h-7 w-7 rounded-full border-2 border-line border-t-brand motion-safe:animate-spin" aria-hidden />
+      <motion.p key={line} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="text-center text-sm">
         {line}
       </motion.p>
     </div>
@@ -85,18 +79,12 @@ export function PostSkeleton() {
   );
 }
 
-export function Empty({ emoji = "🦗", text, children }: { emoji?: string; text: string; children?: React.ReactNode }) {
+// `emoji` is accepted for older call sites; YORU uses one calm moon glyph.
+export function Empty({ text, children }: { emoji?: string; text: string; children?: React.ReactNode }) {
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
-      <motion.div
-        className="text-5xl"
-        animate={{ rotate: [-8, 8, -8] }}
-        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-        aria-hidden
-      >
-        {emoji}
-      </motion.div>
-      <p className="max-w-xs text-sm font-medium text-muted">{text}</p>
+      <Moon size={30} strokeWidth={1.5} className="text-brand" aria-hidden />
+      <p className="max-w-xs text-sm text-muted">{text}</p>
       {children}
     </div>
   );
@@ -157,8 +145,8 @@ export function Button({
         variant === "primary" && "bg-brand text-white hover:bg-brand-2",
         variant === "ghost" && "text-ink hover:bg-card-2",
         variant === "outline" && "border border-line text-ink hover:bg-card-2",
-        variant === "danger" && "bg-hot text-white hover:brightness-110",
-        variant === "chaos" && "bg-gradient-to-r from-hot via-volt to-brand text-white shadow-lg shadow-volt/30 hover:brightness-110",
+        variant === "danger" && "bg-brand text-white hover:bg-brand-2",
+        variant === "chaos" && "bg-brand text-white hover:bg-brand-2",
         className,
       )}
     >
@@ -167,11 +155,10 @@ export function Button({
   );
 }
 
-export function PageTitle({ children, emoji, sub }: { children: React.ReactNode; emoji?: string; sub?: string }) {
+export function PageTitle({ children, sub }: { children: React.ReactNode; emoji?: string; sub?: string }) {
   return (
     <div className="mb-4 px-1">
-      <h1 className="flex items-center gap-2 text-2xl font-black tracking-tight">
-        {emoji && <span className="wobble inline-block">{emoji}</span>}
+      <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
         {children}
       </h1>
       {sub && <p className="mt-1 text-sm text-muted">{sub}</p>}

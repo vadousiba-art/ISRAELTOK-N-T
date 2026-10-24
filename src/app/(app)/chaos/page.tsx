@@ -18,10 +18,10 @@ import { playSynth, SOUNDS, type SoundName } from "@/lib/client/sounds";
 function Card({ title, emoji, sub, children, accent = "brand" }: { title: string; emoji: string; sub: string; children: React.ReactNode; accent?: "brand" | "hot" | "volt" | "lime" }) {
   return (
     <motion.section
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 8 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
-      transition={{ type: "spring", stiffness: 260, damping: 24 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       className="card relative overflow-hidden p-4"
     >
       <div
@@ -34,8 +34,8 @@ function Card({ title, emoji, sub, children, accent = "brand" }: { title: string
         )}
         aria-hidden
       />
-      <h2 className="flex items-center gap-2 text-lg font-black">
-        <span className="wobble inline-block text-2xl">{emoji}</span> {title}
+      <h2 className="flex items-center gap-2 text-lg font-bold">
+        <span className="inline-block text-xl">{emoji}</span> {title}
       </h2>
       <p className="mb-3 text-sm text-muted">{sub}</p>
       {children}
@@ -73,10 +73,10 @@ function Result({ r, children }: { r: AiResponse | null; children?: React.ReactN
       {r && (
         <motion.div
           key={JSON.stringify(r).slice(0, 80)}
-          initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
-          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
-          transition={{ type: "spring", stiffness: 380, damping: 20 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
           className="mt-3 rounded-2xl border border-roast/40 bg-gradient-to-br from-roast/10 to-volt/10 p-3"
         >
           {children ?? <p className="whitespace-pre-wrap text-[15px]">{r.text}</p>}
@@ -162,14 +162,14 @@ function SkillIssue() {
           <div>
             <div className="flex items-end justify-between">
               <span className="sticker text-4xl text-hot">{d.score}%</span>
-              <span className="text-right text-sm font-black uppercase">{d.verdict}</span>
+              <span className="text-right text-sm font-bold uppercase">{d.verdict}</span>
             </div>
             <div className="mt-2 h-3 overflow-hidden rounded-full bg-line">
               <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-lime via-volt to-hot"
+                className="h-full rounded-full bg-brand"
                 initial={{ width: 0 }}
                 animate={{ width: `${d.score}%` }}
-                transition={{ type: "spring", stiffness: 60, damping: 14 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
               />
             </div>
             <p className="mt-2 text-sm">{d.diagnosis}</p>
@@ -196,8 +196,8 @@ function RateTake() {
           <div>
             <div className="flex items-baseline gap-2">
               <span className={clsx("sticker text-5xl", (d.rating ?? 0) >= 6 ? "text-lime" : "text-hot")}>{d.rating}</span>
-              <span className="text-lg font-black text-muted">/10</span>
-              <span className="ml-auto text-sm font-black uppercase">{d.verdict}</span>
+              <span className="text-lg font-bold text-muted">/10</span>
+              <span className="ml-auto text-sm font-bold uppercase">{d.verdict}</span>
             </div>
             <p className="mt-1 text-sm">{d.reason}</p>
             <ShareButton text={`⚖️ My take "${take}" got rated ${d.rating}/10 by the Menace: ${d.verdict}. ${d.reason}`} />
@@ -229,12 +229,12 @@ function Propaganda() {
 function PropagandaPoster({ d }: { d: { headline?: string; slogan?: string; decree?: string; ministry?: string } }) {
   return (
     <div className="overflow-hidden rounded-xl border-4 border-[#c1121f] bg-[#f4e4c1] p-4 text-center text-[#1b1b1b]">
-      <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c1121f]">{d.ministry}</div>
+      <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#c1121f]">{d.ministry}</div>
       <div className="sticker mt-2 text-3xl leading-none text-[#c1121f]" style={{ textShadow: "2px 2px 0 #1b1b1b" }}>
         {d.headline}
       </div>
       <div className="mx-auto my-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#c1121f] text-3xl">📢</div>
-      <div className="font-black italic">“{d.slogan}”</div>
+      <div className="font-bold italic">“{d.slogan}”</div>
       <p className="mt-2 text-xs">{d.decree}</p>
     </div>
   );
@@ -260,7 +260,7 @@ function Crisis() {
       <Result r={t.result}>
         {t.result && (
           <>
-            <div className="mb-2 text-[11px] font-black uppercase tracking-widest text-hot">🚨 Official bulletins</div>
+            <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-hot">🚨 Official bulletins</div>
             <p className="whitespace-pre-wrap text-sm">{t.result.text}</p>
             <ShareButton text={`🗺️ DIPLOMATIC CRISIS: ${a} vs ${b}\n\n${t.result.text}`} />
           </>
@@ -276,7 +276,7 @@ function BreakingNews() {
   const t = useTool();
   return (
     <Card title="Fake Breaking News" emoji="🚨" sub="Hysterical headlines. 0% journalism. Can be broadcast to the feed by the Menace." accent="hot">
-      <Field value={topic} onChange={(e) => setTopic(e.target.value.slice(0, 120))} placeholder="Topic (leave empty for chaos)" />
+      <Field value={topic} onChange={(e) => setTopic(e.target.value.slice(0, 120))} placeholder="Topic (leave empty for a random one)" />
       <div className="mt-3 grid grid-cols-2 gap-2">
         <Button variant="outline" disabled={t.busy} onClick={() => t.run("headline", { topic: topic || undefined })}>
           Generate
@@ -336,7 +336,7 @@ function ChaosButton() {
   const press = async () => {
     setBusy(true);
     playSynth("alarm");
-    controls.start({ x: [0, -12, 12, -8, 8, -4, 4, 0], rotate: [0, -2, 2, -1, 1, 0], transition: { duration: 0.6 } });
+    controls.start({ x: [0, -4, 4, 0], transition: { duration: 0.2 } });
     try {
       setOut(await ai("chaos"));
       mutate(byFn("get_me"));
@@ -352,11 +352,11 @@ function ChaosButton() {
       <Card title="The Random Chaos Button" emoji="🔴" sub="Do not press. (+1 chaos point if you press.)" accent="hot">
         <div className="flex justify-center py-2">
           <motion.button
-            whileHover={{ scale: 1.06 }}
-            whileTap={{ scale: 0.88 }}
+            whileTap={{ scale: 0.94 }}
+            transition={{ duration: 0.12 }}
             onClick={press}
             disabled={busy}
-            className="relative h-36 w-36 rounded-full bg-gradient-to-b from-[#ff4d6d] to-[#a4161a] text-white shadow-[0_10px_0_#5c0a0d,0_20px_40px_-10px_#ff2d55] active:translate-y-2 active:shadow-[0_2px_0_#5c0a0d]"
+            className="relative h-32 w-32 rounded-full bg-brand text-white ring-8 ring-brand/15 transition-colors duration-150 hover:bg-brand-2"
             aria-label="Press the chaos button"
           >
             <span className="sticker text-2xl">{busy ? "..." : "DO NOT PRESS"}</span>
@@ -375,16 +375,15 @@ function Soundboard() {
   return (
     <Card title="Soundboard" emoji="🔊" sub="Synthesized in your browser. Annoy responsibly." accent="lime">
       <div className="grid grid-cols-4 gap-2">
-        {names.map((n, i) => (
+        {names.map((n) => (
           <motion.button
             key={n}
-            whileHover={{ scale: 1.06, rotate: i % 2 ? 3 : -3 }}
-            whileTap={{ scale: 0.85 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => playSynth(n)}
             className="flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl border border-line bg-card-2 p-1 text-center transition hover:border-lime"
           >
             <span className="text-2xl">{SOUNDS[n].emoji}</span>
-            <span className="text-[10px] font-black leading-tight">{SOUNDS[n].label}</span>
+            <span className="text-[10px] font-bold leading-tight">{SOUNDS[n].label}</span>
           </motion.button>
         ))}
       </div>
@@ -427,7 +426,7 @@ function RoastOfTheDay() {
           }
         }}
       >
-        {t.busy ? "Choosing a victim..." : "Serve today's roast"}
+        {t.busy ? "Choosing..." : "Serve today's roast"}
       </Button>
       <p className="mt-2 text-[11px] text-muted">Only members who opted into roasts in Settings can be picked.</p>
     </Card>
@@ -441,7 +440,7 @@ function AwardsInfo() {
         {AWARDS.map((a) => (
           <div key={a.kind} className="rounded-2xl border border-line p-2.5">
             <div className="text-2xl">{a.emoji}</div>
-            <div className="text-sm font-black">{a.label}</div>
+            <div className="text-sm font-bold">{a.label}</div>
             <div className="text-xs text-muted">{a.blurb}</div>
           </div>
         ))}
@@ -457,10 +456,8 @@ export default function ChaosPage() {
   const { me } = useShell();
   return (
     <div>
-      <PageTitle emoji="🌀" sub={`Tools of mass distraction. You have ${me.chaos_points} chaos points.`}>
-        <span className="glitch" data-text="Chaos Tools">
-          Chaos Tools
-        </span>
+      <PageTitle emoji="🌀" sub={`Games, roasts and prompts for tonight. You have ${me.chaos_points} points.`}>
+        Chaos Tools
       </PageTitle>
       <div className="space-y-4">
         <ChaosButton />

@@ -43,9 +43,9 @@ public class MainActivity extends Activity {
         appHost = Uri.parse(BuildConfig.APP_URL).getHost();
 
         FrameLayout root = new FrameLayout(this);
-        root.setBackgroundColor(Color.parseColor("#04060d"));
+        root.setBackgroundColor(Color.parseColor("#080808"));
         webView = new WebView(this);
-        webView.setBackgroundColor(Color.parseColor("#04060d"));
+        webView.setBackgroundColor(Color.parseColor("#080808"));
         root.addView(webView, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
@@ -112,7 +112,7 @@ public class MainActivity extends Activity {
                 return WindowInsets.CONSUMED;
             });
         } else {
-            getWindow().setStatusBarColor(Color.parseColor("#04060d"));
+            getWindow().setStatusBarColor(Color.parseColor("#080808"));
             getWindow().setNavigationBarColor(Color.parseColor("#070a14"));
         }
     }
