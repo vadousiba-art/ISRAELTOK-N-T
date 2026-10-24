@@ -36,6 +36,11 @@ export async function proxy(req: NextRequest) {
     authed = Boolean(data.user);
   }
 
+  // Logged-out web visitors land on the website; the Android app goes
+  // straight to login.
+  if (!authed && pathname === "/" && !/IsraelTokntAndroid/.test(req.headers.get("user-agent") ?? "")) {
+    return NextResponse.redirect(new URL("/about", req.url));
+  }
   if (!authed && !isPublic) {
     const url = new URL("/login", req.url);
     if (pathname !== "/") url.searchParams.set("next", pathname + search);

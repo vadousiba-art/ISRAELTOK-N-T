@@ -238,12 +238,12 @@ test("anyone can sign up without an invite, and can delete their account", async
   await page.waitForURL("**/about?deleted=1");
   await expect(page.getByText("Your account has been deleted.")).toBeVisible();
   await page.goto("/");
-  await expect(page).toHaveURL(/\/login/);
+  await expect(page).toHaveURL(/\/about/);
 });
 
 test("public pages work signed out and the contact form reaches the admin inbox", async ({ page }) => {
   for (const [path, heading] of [
-    ["/about", "Find your people. Your next conversation starts here."],
+    ["/about", /Find your people/],
     ["/privacy", "Privacy Policy"],
     ["/terms", "Terms of Service"],
     ["/faq", "Frequently asked questions"],

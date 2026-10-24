@@ -187,6 +187,24 @@ body {
 .marquee {
   animation: marquee 60s linear infinite;
 }
+@keyframes marquee-rev {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Rotating gradient border on the landing page buttons. */
+@keyframes yoru-rotate {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
 
 /* Legacy effect hooks, intentionally calm in the YORU identity. */
 .glitch::before,
