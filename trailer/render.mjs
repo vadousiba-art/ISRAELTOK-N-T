@@ -84,7 +84,7 @@ if (stills) {
       "-f", "image2pipe", "-framerate", String(fps), "-i", "-",
       ...(withAudio ? ["-i", audio] : []),
       ...(preview ? ["-vf", "scale=540:960:flags=lanczos"] : []),
-      "-c:v", "libx264", "-preset", preview ? "veryfast" : "slow", "-crf", preview ? "22" : "16",
+      "-c:v", "libx264", "-preset", preview ? "veryfast" : "slow", "-crf", preview ? "22" : "18", "-maxrate", "22M", "-bufsize", "44M",
       "-profile:v", "high", "-pix_fmt", "yuv420p", "-r", String(fps),
       ...(withAudio ? ["-c:a", "aac", "-b:a", "256k", "-ar", "48000", "-shortest"] : []),
       "-movflags", "+faststart",
