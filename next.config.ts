@@ -24,7 +24,19 @@ const nextConfig: NextConfig = {
     return [{ source: "/download/israeltoknt.apk", destination: "/download/yoru.apk", permanent: false }];
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // Serve the APK as a plain file download (stores fetch it from this URL).
+      {
+        source: "/download/:file*",
+        headers: [
+          { key: "Content-Type", value: "application/vnd.android.package-archive" },
+          { key: "Content-Disposition", value: 'attachment; filename="YORU.apk"' },
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Cache-Control", value: "public, max-age=300" },
+        ],
+      },
+    ];
   },
 };
 
