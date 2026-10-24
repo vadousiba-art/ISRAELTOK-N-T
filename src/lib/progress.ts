@@ -1,4 +1,4 @@
-import type { Accent, CurrentlyKind } from "./types";
+import type { CurrentlyKind } from "./types";
 
 // Mirrors public.level_for() in supabase/migrations/0003_yoru_features.sql.
 export const levelFor = (xp: number) => Math.floor(Math.sqrt(Math.max(xp, 0) / 40)) + 1;
@@ -26,14 +26,45 @@ export function levelProgress(xp: number) {
   return { level, floor, next, pct: Math.min(1, (xp - floor) / Math.max(next - floor, 1)) };
 }
 
-export const ACCENT_COLORS: Record<Accent, { brand: string; brand2: string; label: string; jp: string }> = {
-  crimson: { brand: "#f20d2f", brand2: "#ff3550", label: "Crimson", jp: "紅" },
-  sakura: { brand: "#ff5fa2", brand2: "#ff86b9", label: "Sakura", jp: "桜" },
-  violet: { brand: "#8b5cf6", brand2: "#a78bfa", label: "Violet", jp: "菫" },
-  ice: { brand: "#38bdf8", brand2: "#7dd3fc", label: "Ice", jp: "氷" },
-  gold: { brand: "#f5b301", brand2: "#fcd34d", label: "Gold", jp: "金" },
-  jade: { brand: "#10b981", brand2: "#34d399", label: "Jade", jp: "翠" },
-};
+// Personal color. Everything accent-colored is generated from one hue
+// (see --accent-h in globals.css). 351 is YORU red, #F20D2F.
+export const DEFAULT_HUE = 351;
+export const HUE_STORAGE_KEY = "yoru-hue";
+
+export const HUE_PRESETS: { hue: number; label: string; jp: string }[] = [
+  { hue: 351, label: "YORU red", jp: "紅" },
+  { hue: 330, label: "Sakura", jp: "桜" },
+  { hue: 268, label: "Violet", jp: "菫" },
+  { hue: 205, label: "Ice", jp: "氷" },
+  { hue: 160, label: "Jade", jp: "翠" },
+  { hue: 43, label: "Gold", jp: "金" },
+  { hue: 20, label: "Ember", jp: "炎" },
+];
+
+// The brand color for a hue, matching --brand in dark mode.
+export const hueColor = (hue: number | null | undefined, lightness = 50) =>
+  hue == null || hue === DEFAULT_HUE ? `hsl(351.4, 90%, ${lightness}%)` : `hsl(${hue}, 90%, ${lightness}%)`;
+
+export function hueName(hue: number) {
+  const exact = HUE_PRESETS.find((p) => Math.abs(p.hue - hue) <= 4);
+  if (exact) return exact.label;
+  const names: [number, string][] = [[15, "Red"], [40, "Orange"], [65, "Gold"], [90, "Lime"], [150, "Green"], [185, "Teal"], [215, "Sky"], [250, "Blue"], [285, "Violet"], [320, "Magenta"], [345, "Pink"], [360, "Red"]];
+  return names.find(([max]) => hue < max)?.[1] ?? "Red";
+}
+
+// Recolors the whole interface. Remembered locally so the next visit paints
+// in the right color before the profile loads.
+export function applyHue(hue: number | null | undefined) {
+  const root = document.documentElement;
+  if (hue == null || hue === DEFAULT_HUE) root.style.removeProperty("--accent-h");
+  else root.style.setProperty("--accent-h", String(hue));
+  try {
+    if (hue == null || hue === DEFAULT_HUE) localStorage.removeItem(HUE_STORAGE_KEY);
+    else localStorage.setItem(HUE_STORAGE_KEY, String(hue));
+  } catch {
+    /* storage unavailable */
+  }
+}
 
 export const CURRENTLY: Record<CurrentlyKind, { verb: string; emoji: string }> = {
   watching: { verb: "Watching", emoji: "📺" },

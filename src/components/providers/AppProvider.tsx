@@ -168,7 +168,7 @@ export function AppProvider({ config, children }: { config: PublicConfig; childr
                   transition={{ duration: 0.18, ease: "easeOut" }}
                   className={`pointer-events-auto flex max-w-md items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium shadow-2xl backdrop-blur ${
                     t.kind === "error"
-                      ? "border-brand/50 bg-[#1a0306]/95 text-white"
+                      ? "border-brand/50 bg-[color-mix(in_srgb,var(--brand)_14%,#080808)] text-white"
                       : t.kind === "chaos"
                         ? "border-line bg-card/95 text-ink"
                         : "border-line bg-card/95 text-ink"

@@ -7,7 +7,7 @@ import { AppDownload } from "./AppDownload";
 export function AuthFrame({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative flex min-h-dvh flex-col overflow-hidden">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,rgba(242,13,47,0.12),transparent_60%)]" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,color-mix(in_srgb,var(--brand)_14%,transparent),transparent_60%)]" />
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center px-5 py-10">
         <motion.div
           initial={{ y: -8, opacity: 0 }}

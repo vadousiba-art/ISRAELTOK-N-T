@@ -109,10 +109,10 @@ export const TICKER = [
 
 export const STORY_BG: Record<string, string> = {
   lime: "linear-gradient(160deg,#1a1a1a,#080808)",
-  pink: "linear-gradient(160deg,#f20d2f,#5c0613)",
+  pink: "linear-gradient(160deg,var(--brand),color-mix(in srgb,var(--brand) 38%,black))",
   purple: "linear-gradient(160deg,#2a2a2a,#0d0d0d)",
-  blue: "linear-gradient(160deg,#1b2a3a,#080808)",
-  fire: "linear-gradient(160deg,#a30f25,#1a0306)",
+  blue: "linear-gradient(160deg,color-mix(in srgb,var(--brand) 22%,#111),#080808)",
+  fire: "linear-gradient(160deg,var(--ring-b),color-mix(in srgb,var(--brand) 12%,black))",
   void: "radial-gradient(circle at 30% 20%,#262626,#080808)",
 };
 

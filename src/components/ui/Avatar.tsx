@@ -3,13 +3,14 @@
 import clsx from "clsx";
 import { mediaSrc } from "@/lib/client/api";
 
+// Initials avatars use shades of the app color so they match the theme.
 const GRADIENTS = [
-  "linear-gradient(135deg,#1f6bff,#9d4dff)",
-  "linear-gradient(135deg,#ff2d95,#ff9f1c)",
-  "linear-gradient(135deg,#21c55d,#c6ff00)",
-  "linear-gradient(135deg,#9d4dff,#ff2d95)",
-  "linear-gradient(135deg,#00c2ff,#1f6bff)",
-  "linear-gradient(135deg,#ff6a00,#ff2d55)",
+  "linear-gradient(135deg,var(--brand),var(--ring-b))",
+  "linear-gradient(135deg,var(--ring-b),#1a1a1a)",
+  "linear-gradient(135deg,var(--brand-2),var(--brand))",
+  "linear-gradient(135deg,#2e2e2e,var(--ring-b))",
+  "linear-gradient(135deg,var(--brand),#141414)",
+  "linear-gradient(135deg,#3a3a3a,#141414)",
 ];
 
 function hash(s: string) {

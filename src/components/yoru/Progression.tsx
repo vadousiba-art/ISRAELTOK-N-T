@@ -12,26 +12,16 @@ import { useApp } from "@/components/providers/AppProvider";
 import { useShell } from "@/components/shell/AppShell";
 import { burst } from "@/components/ui/EmojiBurst";
 import { RichText } from "@/components/ui/RichText";
-import { ACCENT_COLORS, celebrateLevelUp, greeting, levelProgress, levelTitle, tzOffsetMinutes } from "@/lib/progress";
-import type { Accent, CheckinResult, Post } from "@/lib/types";
+import { applyHue, celebrateLevelUp, greeting, levelProgress, levelTitle, tzOffsetMinutes } from "@/lib/progress";
+import type { CheckinResult, Post } from "@/lib/types";
 
-// Applies the member's chosen accent to the whole app (brand color, rings).
+// Applies the member's personal color (saved on their profile) to the app.
 export function AccentStyle() {
   const { data } = useProgress();
-  const accent = data?.accent ?? "crimson";
+  const hue = data?.accent_hue;
   useEffect(() => {
-    const root = document.documentElement;
-    if (accent === "crimson") {
-      root.style.removeProperty("--brand");
-      root.style.removeProperty("--brand-2");
-      root.style.removeProperty("--ring-a");
-      return;
-    }
-    const c = ACCENT_COLORS[accent as Accent] ?? ACCENT_COLORS.crimson;
-    root.style.setProperty("--brand", c.brand);
-    root.style.setProperty("--brand-2", c.brand2);
-    root.style.setProperty("--ring-a", c.brand);
-  }, [accent]);
+    if (hue !== undefined) applyHue(hue);
+  }, [hue]);
   return null;
 }
 

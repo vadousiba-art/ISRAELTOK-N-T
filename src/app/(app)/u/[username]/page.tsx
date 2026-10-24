@@ -20,7 +20,7 @@ import { ReportDialog } from "@/components/feed/ReportDialog";
 import { EditProfileDialog } from "@/components/profile/EditProfileDialog";
 import { PostCard } from "@/components/feed/PostCard";
 import { XpBar } from "@/components/yoru/Progression";
-import { ACCENT_COLORS, CURRENTLY, levelProgress } from "@/lib/progress";
+import { CURRENTLY, hueColor, levelProgress } from "@/lib/progress";
 import { BADGES } from "@/lib/jokes";
 import type { Profile, ProfileExtras } from "@/lib/types";
 
@@ -40,7 +40,7 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
 
   if (error) return <Empty emoji="👻" text={error.message} />;
   if (!p) return <ChaosLoader />;
-  const accent = ACCENT_COLORS[x?.accent ?? "crimson"]?.brand ?? ACCENT_COLORS.crimson.brand;
+  const accent = hueColor(x?.accent_hue);
 
   async function dm() {
     try {
@@ -94,7 +94,7 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
       <div className="card overflow-hidden">
         <div
           className="relative h-28 overflow-hidden"
-          style={{ background: `radial-gradient(ellipse at top right, ${accent}66, transparent 65%), linear-gradient(160deg, #1a1a1a, #080808)` }}
+          style={{ background: `radial-gradient(ellipse at top right, color-mix(in srgb, ${accent} 40%, transparent), transparent 65%), linear-gradient(160deg, #1a1a1a, #080808)` }}
         >
           <span className="pointer-events-none absolute -left-2 -top-6 select-none text-[120px] font-bold leading-none text-white/[0.04]" aria-hidden>
             夜

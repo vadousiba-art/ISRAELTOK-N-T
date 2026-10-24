@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check } from "lucide-react";
 import clsx from "clsx";
 import { useSWRConfig } from "swr";
 import { byFn, useProgress, useRpc } from "@/lib/client/hooks";
@@ -13,8 +12,9 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Button, PageTitle, Toggle } from "@/components/ui/bits";
 import { IntensityPicker } from "@/components/menace/IntensityPicker";
 import { AMBIENCE_MODES } from "@/components/fx/Ambience";
-import { ACCENT_COLORS, CURRENTLY, PALETTE_EVENT } from "@/lib/progress";
-import type { Accent, CurrentlyKind, Me, NotificationPrefs, ProfileLite } from "@/lib/types";
+import { CURRENTLY, PALETTE_EVENT } from "@/lib/progress";
+import { ColorSlider } from "@/components/yoru/ColorSlider";
+import type { CurrentlyKind, Me, NotificationPrefs, ProfileLite } from "@/lib/types";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -66,7 +66,7 @@ export default function SettingsPage() {
     if (progress) setCurrently({ kind: progress.currently_kind ?? "", title: progress.currently_title ?? "" });
   }, [progress]);
 
-  async function saveStyle(p: { accent?: Accent; currently_kind?: CurrentlyKind | ""; currently_title?: string }) {
+  async function saveStyle(p: { currently_kind?: CurrentlyKind | ""; currently_title?: string }) {
     try {
       await rpc("update_my_style", { p });
       mutateProgress();
@@ -119,31 +119,7 @@ export default function SettingsPage() {
       </Section>
 
       <Section title="Style">
-        <div className="py-3">
-          <div className="mb-2 text-sm font-semibold">Accent color</div>
-          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Accent color">
-            {(Object.keys(ACCENT_COLORS) as Accent[]).map((a) => {
-              const c = ACCENT_COLORS[a];
-              const on = (progress?.accent ?? "crimson") === a;
-              return (
-                <button
-                  key={a}
-                  role="radio"
-                  aria-checked={on}
-                  aria-label={c.label}
-                  onClick={() => saveStyle({ accent: a })}
-                  className={clsx("flex items-center gap-2 rounded-full border px-2.5 py-1.5 text-sm transition-colors duration-150", on ? "border-ink" : "border-line hover:border-muted")}
-                >
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full" style={{ background: c.brand }}>
-                    {on && <Check size={12} className="text-white" />}
-                  </span>
-                  {c.label} <span className="text-xs text-muted">{c.jp}</span>
-                </button>
-              );
-            })}
-          </div>
-          <p className="mt-1.5 text-xs text-muted">Recolors YORU for you and tints your profile for everyone.</p>
-        </div>
+        <ColorSlider />
         <div className="py-3">
           <div className="mb-2 text-sm font-semibold">Currently</div>
           <form

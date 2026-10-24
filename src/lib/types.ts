@@ -15,11 +15,10 @@ export interface ProfileLite {
   online: boolean;
   // Added in migration 0003; optional so older cached data still type-checks.
   level?: number;
-  accent?: Accent;
+  accent_hue?: number;
   flair?: string;
 }
 
-export type Accent = "crimson" | "sakura" | "violet" | "ice" | "gold" | "jade";
 export type CurrentlyKind = "watching" | "reading" | "listening" | "playing";
 
 export interface Progress {
@@ -30,7 +29,7 @@ export interface Progress {
   streak: number;
   best_streak: number;
   checked_in_today?: boolean;
-  accent: Accent;
+  accent_hue: number;
   flair: string;
   currently_kind: CurrentlyKind | null;
   currently_title: string | null;

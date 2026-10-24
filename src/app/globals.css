@@ -4,7 +4,13 @@
 
 /* ---------- Tokens ---------------------------------------------------- */
 
+/*
+ * Every accent comes from one hue. The default, 351.4, is YORU red: #F20D2F
+ * (brand) and #A30F25 (dark red). Members can move it with the color slider
+ * in Settings; the app then sets --accent-h on <html>.
+ */
 :root {
+  --accent-h: 351.4;
   /* YORU light (secondary theme) */
   --bg: #f5f5f5;
   --bg-2: #ffffff;
@@ -14,17 +20,17 @@
   --ink: #111111;
   --ink-2: #2b2b2b;
   --muted: #6b6b6b;
-  --brand: #d60b29;
-  --brand-2: #f20d2f;
-  --ring-a: #f20d2f;
-  --ring-b: #a30f25;
-  --heart: #e00b2b;
-  --roast: #d60b29;
-  --roast-label: #d60b29;
+  --brand: hsl(var(--accent-h), 90%, 44%);
+  --brand-2: hsl(var(--accent-h), 90%, 50%);
+  --ring-a: hsl(var(--accent-h), 90%, 50%);
+  --ring-b: hsl(var(--accent-h), 83%, 35%);
+  --heart: hsl(var(--accent-h), 91%, 46%);
+  --roast: var(--brand);
+  --roast-label: var(--brand);
   --online: #16a34a;
   --lime: #111111;
-  --hot: #d60b29;
-  --volt: #a30f25;
+  --hot: var(--brand);
+  --volt: var(--ring-b);
   --shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 6px 20px rgb(0 0 0 / 0.05);
   color-scheme: light;
 }
@@ -39,17 +45,17 @@
   --ink: #f5f5f5;
   --ink-2: #d6d6d6;
   --muted: #999999;
-  --brand: #f20d2f;
-  --brand-2: #ff3550;
-  --ring-a: #f20d2f;
-  --ring-b: #a30f25;
-  --heart: #f20d2f;
-  --roast: #f20d2f;
-  --roast-label: #ff4d63;
+  --brand: hsl(var(--accent-h), 90%, 50%);
+  --brand-2: hsl(var(--accent-h), 100%, 60%);
+  --ring-a: var(--brand);
+  --ring-b: hsl(var(--accent-h), 83%, 35%);
+  --heart: var(--brand);
+  --roast: var(--brand);
+  --roast-label: hsl(var(--accent-h), 100%, 65%);
   --online: #22c55e;
   --lime: #ededed;
-  --hot: #f20d2f;
-  --volt: #a30f25;
+  --hot: var(--brand);
+  --volt: var(--ring-b);
   --shadow: none;
   color-scheme: dark;
 }
@@ -102,6 +108,38 @@ body {
   outline-offset: 2px;
   border-radius: 6px;
 }
+/* Raster brand art (logo, mark) follows the member's color. */
+.hue-follow {
+  filter: hue-rotate(calc((var(--accent-h) - 351.4) * 1deg));
+}
+
+/* Rainbow track for the color slider. */
+.hue-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 14px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, hsl(0,90%,50%), hsl(60,90%,50%), hsl(120,90%,50%), hsl(180,90%,50%), hsl(240,90%,50%), hsl(300,90%,50%), hsl(359,90%,50%));
+  cursor: pointer;
+}
+.hue-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 9999px;
+  background: var(--brand);
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.4), 0 0 16px var(--brand);
+}
+.hue-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  background: var(--brand);
+  border: 3px solid #fff;
+  box-shadow: 0 0 16px var(--brand);
+}
+
 /* The command palette's search box sits inside its own framed dialog. */
 .palette-input:focus-visible {
   outline: none;

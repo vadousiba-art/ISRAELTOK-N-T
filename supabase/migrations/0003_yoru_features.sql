@@ -1,5 +1,5 @@
 -- ============================================================================
--- YORU features: night streaks + XP levels, profile style, pinned posts,
+-- YORU features: night streaks + XP levels, personal color, pinned posts,
 -- featured posts, site controls (announcement, quiet mode, slow mode, word
 -- filter, nightly prompt), member mutes and flair, admin analytics, audit log.
 --
@@ -18,7 +18,9 @@ alter table public.profiles add column if not exists xp int not null default 0;
 alter table public.profiles add column if not exists streak int not null default 0;
 alter table public.profiles add column if not exists best_streak int not null default 0;
 alter table public.profiles add column if not exists last_checkin date;
-alter table public.profiles add column if not exists accent text not null default 'crimson';
+-- Personal color: the hue (0-359) every accent in the app is generated from.
+-- 351 is YORU red (#F20D2F).
+alter table public.profiles add column if not exists accent_hue int not null default 351;
 alter table public.profiles add column if not exists currently_kind text;
 alter table public.profiles add column if not exists currently_title text;
 alter table public.profiles add column if not exists flair text not null default '';
@@ -26,8 +28,7 @@ alter table public.profiles add column if not exists muted_until timestamptz;
 alter table public.profiles add column if not exists pinned_post_id uuid references public.posts (id) on delete set null;
 
 do $$ begin
-  alter table public.profiles add constraint profiles_accent_check
-    check (accent in ('crimson', 'sakura', 'violet', 'ice', 'gold', 'jade'));
+  alter table public.profiles add constraint profiles_accent_hue_check check (accent_hue between 0 and 359);
 exception when duplicate_object then null; end $$;
 do $$ begin
   alter table public.profiles add constraint profiles_currently_check
@@ -119,7 +120,7 @@ begin
   return new_xp;
 end $$;
 
--- profile_lite gains level, accent and flair so they show next to names
+-- profile_lite gains level, accent hue and flair so they show next to names
 -- everywhere (posts, comments, chat, leaderboards).
 create or replace function public.profile_lite(p public.profiles) returns jsonb
 language sql stable as $$
@@ -128,7 +129,7 @@ language sql stable as $$
     'avatar_url', p.avatar_url, 'badge', p.badge, 'verified', p.verified,
     'is_bot', p.is_bot, 'role', p.role, 'status', p.status,
     'online', p.is_bot or coalesce(p.last_seen_at > now() - interval '5 minutes', false),
-    'level', public.level_for(p.xp), 'accent', p.accent, 'flair', p.flair
+    'level', public.level_for(p.xp), 'accent_hue', p.accent_hue, 'flair', p.flair
   )
 $$;
 
@@ -369,7 +370,7 @@ begin
     'streak', case when me.last_checkin >= today - 1 then me.streak else 0 end,
     'best_streak', me.best_streak,
     'checked_in_today', me.last_checkin = today,
-    'accent', me.accent, 'flair', me.flair,
+    'accent_hue', me.accent_hue, 'flair', me.flair,
     'currently_kind', me.currently_kind, 'currently_title', me.currently_title,
     'pinned_post_id', me.pinned_post_id,
     'muted_until', case when me.muted_until > now() then me.muted_until end
@@ -414,12 +415,15 @@ declare
 begin
   perform public.enforce_rate_limit('style', 60, 3600);
   for k in select jsonb_object_keys(coalesce(p, '{}'::jsonb)) loop
-    if k not in ('accent', 'currently_kind', 'currently_title') then
+    if k not in ('accent_hue', 'currently_kind', 'currently_title') then
       raise exception 'INVALID|Unknown style field: %', k;
     end if;
   end loop;
+  if p ? 'accent_hue' and (jsonb_typeof(p -> 'accent_hue') <> 'number' or (p ->> 'accent_hue')::numeric not between 0 and 359) then
+    raise exception 'INVALID|Color hue must be between 0 and 359.';
+  end if;
   update public.profiles set
-    accent = case when p ? 'accent' then p ->> 'accent' else accent end,
+    accent_hue = case when p ? 'accent_hue' then round((p ->> 'accent_hue')::numeric)::int else accent_hue end,
     currently_kind = case when p ? 'currently_kind' then nullif(p ->> 'currently_kind', '') else currently_kind end,
     currently_title = case when p ? 'currently_title' then nullif(btrim(p ->> 'currently_title'), '') else currently_title end
   where id = v;
@@ -456,7 +460,7 @@ begin
     'level_floor', 40 * (lvl - 1) * (lvl - 1), 'next_level_at', 40 * lvl * lvl,
     'streak', case when p.last_checkin >= current_date - 2 then p.streak else 0 end,
     'best_streak', p.best_streak,
-    'accent', p.accent, 'flair', p.flair,
+    'accent_hue', p.accent_hue, 'flair', p.flair,
     'currently_kind', p.currently_kind, 'currently_title', p.currently_title,
     'muted', p.muted_until > now(),
     'pinned', (

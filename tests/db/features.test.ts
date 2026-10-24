@@ -94,16 +94,17 @@ describe("progression", () => {
   it("sends a level-up notification and exposes level on profile_lite", async () => {
     const n = await db.query<{ body: string }>("select body from public.notifications where user_id = $1 and kind = 'level_up'", [ids.bob]);
     expect(n.rows.map((r) => r.body)).toContain("2");
-    const me = await as<{ level: number; accent: string }>(ids.bob, "get_me");
+    const me = await as<{ level: number; accent_hue: number }>(ids.bob, "get_me");
     expect(me.level).toBe(2);
-    expect(me.accent).toBe("crimson");
+    expect(me.accent_hue).toBe(351);
   });
 
   it("validates style updates and pins only your own posts", async () => {
-    await as(ids.alice, "update_my_style", { p: { accent: "sakura", currently_kind: "watching", currently_title: "Frieren" } });
-    const ex = await as<{ accent: string; currently_title: string }>(ids.bob, "get_profile_extras", { p_username: "alice" });
-    expect(ex).toMatchObject({ accent: "sakura", currently_title: "Frieren" });
-    await expect(as(ids.alice, "update_my_style", { p: { accent: "neon" } })).rejects.toThrow();
+    await as(ids.alice, "update_my_style", { p: { accent_hue: 330, currently_kind: "watching", currently_title: "Frieren" } });
+    const ex = await as<{ accent_hue: number; currently_title: string }>(ids.bob, "get_profile_extras", { p_username: "alice" });
+    expect(ex).toMatchObject({ accent_hue: 330, currently_title: "Frieren" });
+    await expect(as(ids.alice, "update_my_style", { p: { accent_hue: 400 } })).rejects.toThrow(/INVALID/);
+    await expect(as(ids.alice, "update_my_style", { p: { accent_hue: "red" } })).rejects.toThrow(/INVALID/);
     await expect(as(ids.alice, "update_my_style", { p: { role: "owner" } })).rejects.toThrow(/INVALID/);
 
     const bobPost = await mkPost(ids.bob, { p_body: "bob's post" });

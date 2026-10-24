@@ -228,12 +228,12 @@ function Propaganda() {
 
 function PropagandaPoster({ d }: { d: { headline?: string; slogan?: string; decree?: string; ministry?: string } }) {
   return (
-    <div className="overflow-hidden rounded-xl border-4 border-[#c1121f] bg-[#f4e4c1] p-4 text-center text-[#1b1b1b]">
-      <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#c1121f]">{d.ministry}</div>
-      <div className="sticker mt-2 text-3xl leading-none text-[#c1121f]" style={{ textShadow: "2px 2px 0 #1b1b1b" }}>
+    <div className="overflow-hidden rounded-xl border-4 border-brand bg-[#f4e4c1] p-4 text-center text-[#1b1b1b]">
+      <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-brand">{d.ministry}</div>
+      <div className="sticker mt-2 text-3xl leading-none text-brand" style={{ textShadow: "2px 2px 0 #1b1b1b" }}>
         {d.headline}
       </div>
-      <div className="mx-auto my-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#c1121f] text-3xl">📢</div>
+      <div className="mx-auto my-3 flex h-16 w-16 items-center justify-center rounded-full bg-brand text-3xl">📢</div>
       <div className="font-bold italic">“{d.slogan}”</div>
       <p className="mt-2 text-xs">{d.decree}</p>
     </div>

@@ -10,7 +10,6 @@ const mediaUrl = z.string().max(300).nullable().optional();
 const mediaType = z.enum(["image", "video", "gif"]).nullable().optional();
 const none = z.object({});
 const offset = z.number().int().min(-840).max(840).optional();
-export const ACCENTS = ["crimson", "sakura", "violet", "ice", "gold", "jade"] as const;
 
 export const REACTIONS = ["heart", "skull", "fire", "clown", "cap", "crying", "salute", "w", "l"] as const;
 export const AWARDS = ["menace", "war_crime", "touch_grass", "galaxy_brain", "skill_issue", "ratio"] as const;
@@ -133,7 +132,7 @@ export const RPC_SCHEMAS = {
   update_my_style: z.object({
     p: z
       .object({
-        accent: z.enum(ACCENTS).optional(),
+        accent_hue: z.number().int().min(0).max(359).optional(),
         currently_kind: z.enum(["watching", "reading", "listening", "playing", ""]).optional(),
         currently_title: text(60).optional(),
       })

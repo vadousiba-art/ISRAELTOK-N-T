@@ -24,7 +24,7 @@ export const viewport: Viewport = {
 };
 
 // Applies the saved theme + motion preference before first paint.
-const bootScript = `(function(){try{var t=localStorage.getItem('itn-theme')||'dark';if(t==='system'){t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.dataset.theme=t;var m=localStorage.getItem('itn-motion');if(m==='reduce'||m==='full'){document.documentElement.dataset.motion=m}}catch(e){document.documentElement.dataset.theme='dark'}})();`;
+const bootScript = `(function(){try{var t=localStorage.getItem('itn-theme')||'dark';if(t==='system'){t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.dataset.theme=t;var m=localStorage.getItem('itn-motion');if(m==='reduce'||m==='full'){document.documentElement.dataset.motion=m}var h=Number(localStorage.getItem('yoru-hue'));if(localStorage.getItem('yoru-hue')&&h>=0&&h<360){document.documentElement.style.setProperty('--accent-h',String(h))}}catch(e){document.documentElement.dataset.theme='dark'}})();`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const mode = appMode();

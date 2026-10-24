@@ -156,7 +156,7 @@ function KanjiRain({ onClose }: { onClose: () => void }) {
     const size = 22;
     const cols = Math.ceil(w / size);
     const drops = Array.from({ length: cols }, () => Math.random() * -40);
-    const brand = getComputedStyle(document.documentElement).getPropertyValue("--brand").trim() || "#f20d2f";
+    const brand = getComputedStyle(document.documentElement).getPropertyValue("--brand").trim() || "hsl(351.4, 90%, 50%)";
     if (prefersReducedMotion()) {
       ctx.fillStyle = "rgba(0,0,0,0.6)";
       ctx.fillRect(0, 0, w, h);

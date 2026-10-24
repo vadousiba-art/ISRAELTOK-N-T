@@ -45,7 +45,17 @@ export function Ambience({ mode }: { mode: AmbienceMode }) {
     let h = 0;
     let parts: P[] = [];
     let raf = 0;
-    const brand = getComputedStyle(document.documentElement).getPropertyValue("--brand").trim() || "#f20d2f";
+    // Particles wear the member's color; re-read now and then so the color
+    // slider recolors them live.
+    let brand = "";
+    let brand2 = "";
+    let frame = 0;
+    const readColors = () => {
+      const css = getComputedStyle(document.documentElement);
+      brand = css.getPropertyValue("--brand").trim() || "hsl(351.4, 90%, 50%)";
+      brand2 = css.getPropertyValue("--brand-2").trim() || brand;
+    };
+    readColors();
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -67,14 +77,14 @@ export function Ambience({ mode }: { mode: AmbienceMode }) {
         ctx.translate(p.x, p.y);
         ctx.rotate(p.t);
         ctx.globalAlpha = p.a;
-        ctx.fillStyle = "#ff8fb8";
+        ctx.fillStyle = brand2;
         ctx.beginPath();
         ctx.ellipse(0, 0, p.r, p.r * 0.62, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
       } else if (mode === "rain") {
         ctx.globalAlpha = p.a;
-        ctx.strokeStyle = "#cfd8e3";
+        ctx.strokeStyle = brand2;
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
@@ -92,7 +102,7 @@ export function Ambience({ mode }: { mode: AmbienceMode }) {
         ctx.shadowBlur = 0;
       } else {
         ctx.globalAlpha = p.a * (0.55 + 0.45 * Math.sin(p.t));
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = p.r > 1.2 ? brand2 : "#ffffff";
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx.fill();
@@ -100,6 +110,7 @@ export function Ambience({ mode }: { mode: AmbienceMode }) {
     };
 
     const step = () => {
+      if (++frame % 30 === 0) readColors();
       ctx.clearRect(0, 0, w, h);
       for (let i = 0; i < parts.length; i++) {
         const p = parts[i];

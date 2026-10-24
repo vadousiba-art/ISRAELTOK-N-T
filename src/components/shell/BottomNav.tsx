@@ -52,7 +52,7 @@ export function BottomNav() {
             onClick={() => openComposer()}
             whileTap={{ scale: 0.9 }}
             transition={{ duration: 0.12 }}
-            className="-mt-6 flex h-[58px] w-[58px] items-center justify-center rounded-full bg-brand text-white shadow-[0_6px_22px_-6px_rgb(242_13_47/0.7)] ring-4 ring-bg"
+            className="-mt-6 flex h-[58px] w-[58px] items-center justify-center rounded-full bg-brand text-white shadow-[0_6px_22px_-6px_color-mix(in_srgb,var(--brand)_70%,transparent)] ring-4 ring-bg"
             aria-label="Create post"
           >
             <Plus size={30} strokeWidth={2.4} />

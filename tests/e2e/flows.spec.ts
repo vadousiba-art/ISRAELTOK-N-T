@@ -193,6 +193,20 @@ test("admins run announcements and quiet mode from site controls", async ({ page
   await expect(page.getByText("changed quiet mode").first()).toBeVisible();
 });
 
+test("the color slider recolors the whole app and is remembered", async ({ page }) => {
+  await loginAs(page, /Ethan/);
+  const brand = () => page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--brand").trim());
+  const before = await brand();
+  await page.goto("/settings");
+  await page.getByLabel("App color").fill("200");
+  await expect.poll(brand).not.toBe(before);
+  await page.waitForTimeout(900); // saved shortly after the slider stops
+  await page.reload();
+  await expect.poll(() => page.evaluate(() => document.documentElement.style.getPropertyValue("--accent-h"))).toBe("200");
+  await page.getByRole("button", { name: "Reset" }).click();
+  await expect.poll(brand).toBe(before);
+});
+
 test("command palette jumps anywhere", async ({ page }) => {
   await loginAs(page, /Ari/);
   await page.keyboard.press("Control+k");
