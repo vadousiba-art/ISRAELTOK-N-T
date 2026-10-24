@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { Bell, Menu as MenuIcon, Search } from "lucide-react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Logo, Tagline } from "@/components/ui/Logo";
 import { NIGHT_MODE_EVENT } from "@/lib/progress";
 import { useMe } from "@/lib/client/hooks";
@@ -14,6 +14,18 @@ export function Header() {
   const { data: me } = useMe();
   const unread = me?.unread_notifications ?? 0;
   const anyUnread = unread + (me?.unread_messages ?? 0) > 0;
+  // Publish the header's height so sticky sub-headers (chat) sit right below it.
+  const headerRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const set = () => document.documentElement.style.setProperty("--header-h", `${el.offsetHeight}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   // Five quick taps on the logo unlock 夜 mode.
   const taps = useRef<number[]>([]);
   const onLogoTap = () => {
@@ -26,7 +38,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-bg/90 px-3 pb-2.5 pt-3 backdrop-blur-xl sm:px-4">
+    <header ref={headerRef} className="sticky top-0 z-30 bg-bg/90 px-3 pb-2.5 pt-3 backdrop-blur-xl sm:px-4">
       <div className="flex items-center gap-2">
         <button
           onClick={openDrawer}

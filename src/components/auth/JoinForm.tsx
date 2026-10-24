@@ -7,7 +7,7 @@ import { Button, ChaosLoader } from "@/components/ui/bits";
 import { useApp } from "@/components/providers/AppProvider";
 import { ApiError, get, post } from "@/lib/client/api";
 
-type InviteState = { valid: boolean; first_user?: boolean; inviter?: string; reason?: string };
+type InviteState = { valid: boolean; first_user?: boolean; open?: boolean; inviter?: string; reason?: string };
 
 const REASONS: Record<string, string> = {
   not_found: "That invite code doesn't exist. Did you make it up?",
@@ -24,6 +24,7 @@ export function JoinForm({ code: initialCode }: { code: string }) {
   const [checking, setChecking] = useState(false);
   const [form, setForm] = useState({ email: "", password: "", username: "", display_name: "" });
   const [busy, setBusy] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function check(c: string) {
@@ -69,7 +70,7 @@ export function JoinForm({ code: initialCode }: { code: string }) {
         }}
       >
         <h1 className="text-xl font-bold">Got an invite code?</h1>
-        <p className="mt-1 text-sm text-muted">This place is invite-only. Ask a member for a link.</p>
+        <p className="mt-1 text-sm text-muted">YORU is invite-only right now. Ask a member for a link.</p>
         {invite && !invite.valid && (
           <p className="mt-3 rounded-xl bg-hot/15 p-2 text-sm font-semibold text-hot">{REASONS[invite.reason ?? "not_found"]}</p>
         )}
@@ -108,11 +109,13 @@ export function JoinForm({ code: initialCode }: { code: string }) {
 
   return (
     <form onSubmit={submit}>
-      <h1 className="text-xl font-bold">{invite.first_user ? "Start your community" : "You're invited"}</h1>
+      <h1 className="text-xl font-bold">{invite.first_user ? "Start your community" : invite.inviter ? "You're invited" : "Create your account"}</h1>
       <p className="mt-1 text-sm text-muted">
         {invite.first_user
           ? "Nobody's here yet. The first account becomes the owner."
-          : `${invite.inviter ?? "Someone"} invited you to YORU. Find your people.`}
+          : invite.inviter
+            ? `${invite.inviter} invited you to YORU. Find your people.`
+            : "Free, takes 30 seconds. Find your people."}
       </p>
       {error && <p className="mt-3 rounded-xl bg-hot/15 p-2 text-sm font-semibold text-hot">{error}</p>}
       {field("display_name", "Display name", { required: true, maxLength: 40, placeholder: "Ethan", autoComplete: "nickname" })}
@@ -126,9 +129,29 @@ export function JoinForm({ code: initialCode }: { code: string }) {
       {field("email", "Email", { required: true, type: "email", autoComplete: "email" })}
       {config.mode === "supabase" &&
         field("password", "Password (8+ chars)", { required: true, type: "password", minLength: 8, autoComplete: "new-password" })}
-      <Button type="submit" disabled={busy} variant="chaos" className="mt-5 w-full py-3">
+      <label className="mt-4 flex items-start gap-2.5 text-xs text-muted">
+        <input type="checkbox" required checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[var(--brand)]" />
+        <span>
+          I&apos;m 16 or older and I agree to the{" "}
+          <Link href="/terms" target="_blank" className="text-brand underline">
+            Terms
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" target="_blank" className="text-brand underline">
+            Privacy Policy
+          </Link>
+          .
+        </span>
+      </label>
+      <Button type="submit" disabled={busy || !agreed} variant="chaos" className="mt-4 w-full py-3">
         {busy ? "Creating your account..." : "Join YORU"}
       </Button>
+      <p className="mt-4 text-center text-sm text-muted">
+        Already have an account?{" "}
+        <Link href="/login" className="font-bold text-brand">
+          Log in
+        </Link>
+      </p>
     </form>
   );
 }

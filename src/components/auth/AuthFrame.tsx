@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { Logo, Tagline, TAGLINE_JP } from "@/components/ui/Logo";
 import { AppDownload } from "./AppDownload";
+import { LegalLinks } from "@/components/public/LegalLinks";
 
 export function AuthFrame({ children }: { children: React.ReactNode }) {
   return (
@@ -28,6 +29,7 @@ export function AuthFrame({ children }: { children: React.ReactNode }) {
           {children}
         </motion.div>
         <AppDownload className="mt-4" />
+        <LegalLinks className="mt-6" />
       </main>
     </div>
   );

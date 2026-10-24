@@ -134,6 +134,16 @@ export function SiteControls() {
         </div>
       </Panel>
 
+      <Panel title="Who can join">
+        <Toggle
+          checked={!!data.open_signup}
+          onChange={(v) => save({ open_signup: v }, v ? "Sign-ups are open to everyone." : "Invite-only. New people need an invite link.", "signup")}
+          label="Open sign-ups"
+          description="On: anyone can create an account from the app or website. Off: invite links only (existing members are not affected)."
+        />
+        {updated("open_signup")}
+      </Panel>
+
       <Panel title="Posting rules">
         <div className="divide-y divide-line">
           <Toggle

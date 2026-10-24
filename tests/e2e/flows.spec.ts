@@ -134,6 +134,7 @@ test("admin invites a new member who can join and post", async ({ page, browser 
   await guest.getByLabel("Display name").fill("Newbie");
   await guest.getByLabel("Username").fill(handle);
   await guest.getByLabel("Email").fill(`${handle.toLowerCase()}@example.com`);
+  await guest.getByRole("checkbox").check();
   await guest.getByRole("button", { name: "Join YORU" }).click();
   await guest.waitForURL("**/");
   await expect(guest.getByText("What's on your mind?")).toBeVisible();
@@ -216,7 +217,50 @@ test("command palette jumps anywhere", async ({ page }) => {
   await expect(page.getByRole("button", { name: /Top Levels/ })).toBeVisible();
 });
 
-test("invalid invite codes are rejected", async ({ page }) => {
+test("anyone can sign up without an invite, and can delete their account", async ({ page }) => {
+  await page.context().setExtraHTTPHeaders({ "x-forwarded-for": `10.0.1.${ipSeq++}` });
   await page.goto("/join/definitely-not-real");
-  await expect(page.getByText(/doesn't exist/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
+  const handle = `Walkin${Date.now() % 100000}`;
+  await page.getByLabel("Display name").fill("Walk In");
+  await page.getByLabel("Username").fill(handle);
+  await page.getByLabel("Email").fill(`${handle.toLowerCase()}@example.com`);
+  await expect(page.getByRole("button", { name: "Join YORU" })).toBeDisabled();
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button", { name: "Join YORU" }).click();
+  await page.waitForURL("**/");
+  await expect(page.getByText("What's on your mind?")).toBeVisible();
+
+  await page.goto("/settings");
+  await page.getByRole("button", { name: "Delete my account" }).click();
+  await page.getByLabel("Type your username to confirm").fill(handle);
+  await page.getByRole("button", { name: "Delete forever" }).click();
+  await page.waitForURL("**/about?deleted=1");
+  await expect(page.getByText("Your account has been deleted.")).toBeVisible();
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/login/);
+});
+
+test("public pages work signed out and the contact form reaches the admin inbox", async ({ page }) => {
+  for (const [path, heading] of [
+    ["/about", "Find your people. Your next conversation starts here."],
+    ["/privacy", "Privacy Policy"],
+    ["/terms", "Terms of Service"],
+    ["/faq", "Frequently asked questions"],
+    ["/delete-account", "Delete your YORU account"],
+  ] as const) {
+    await page.goto(path);
+    await expect(page.getByRole("heading", { name: heading, level: 1 })).toBeVisible();
+  }
+  await page.goto("/support");
+  await page.getByLabel("What do you need help with?").selectOption("bug");
+  await page.getByLabel("Your email").fill("tester@example.com");
+  await page.getByLabel("Message").fill("The sakura effect is too pretty.");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(page.getByText("Message sent.")).toBeVisible();
+
+  await loginAs(page, /Ari/);
+  await page.goto("/admin");
+  await page.getByRole("tab", { name: "Inbox" }).click();
+  await expect(page.getByText("The sakura effect is too pretty.")).toBeVisible();
 });

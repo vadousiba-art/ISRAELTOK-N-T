@@ -260,6 +260,64 @@ body {
   border-radius: 9999px;
 }
 
+/* Long-form public pages (privacy, terms, FAQ). */
+.legal h1 {
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.legal h2 {
+  margin-top: 2.2rem;
+  font-size: 1.15rem;
+  font-weight: 650;
+}
+.legal h3 {
+  margin-top: 1.4rem;
+  font-weight: 600;
+}
+.legal p,
+.legal li {
+  color: var(--ink-2);
+  line-height: 1.65;
+  font-size: 0.95rem;
+}
+.legal p {
+  margin-top: 0.7rem;
+}
+.legal ul {
+  margin-top: 0.6rem;
+  padding-left: 1.2rem;
+  list-style: disc;
+}
+.legal li {
+  margin-top: 0.3rem;
+}
+.legal li::marker {
+  color: var(--brand);
+}
+.legal a {
+  color: var(--brand-2);
+  text-decoration: underline;
+}
+.legal table {
+  margin-top: 0.8rem;
+  width: 100%;
+  font-size: 0.85rem;
+  border-collapse: collapse;
+}
+.legal th,
+.legal td {
+  border: 1px solid var(--line);
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+  color: var(--ink-2);
+}
+.legal th {
+  color: var(--ink);
+  font-weight: 600;
+}
+
 /* Small uppercase label (replaces the old meme-font stickers). */
 .sticker {
   font-family: var(--font-sans);

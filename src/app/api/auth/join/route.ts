@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     const invite = await serviceRpc<{ valid: boolean; first_user?: boolean; reason?: string }>("check_invite", {
       p_code: input.code,
     });
-    if (!invite.valid) throw new AppError("INVALID_INVITE", "That invite is dead. Like your social life.", 400);
+    if (!invite.valid) throw new AppError("INVALID_INVITE", "YORU is invite-only right now. Ask a member for an invite link.", 400);
     const free = await serviceRpc<boolean>("username_available", { p_username: input.username });
     if (!free) throw new AppError("USERNAME_TAKEN", "Username already taken. Be original for once.", 409);
 
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     });
     if (error) {
       if (/already/i.test(error.message)) throw new AppError("INVALID", "That email already has an account.", 409);
-      throw new AppError("INVALID_INVITE", "Sign-up failed. The invite may have just run out — ask for a fresh one.", 400);
+      throw new AppError("INVALID_INVITE", "Sign-up failed. Sign-ups may have just closed, or the invite ran out.", 400);
     }
     const sb = await supabaseForRequest();
     const { error: loginError } = await sb.auth.signInWithPassword({ email: input.email, password: input.password });

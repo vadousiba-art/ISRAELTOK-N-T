@@ -14,6 +14,9 @@ import { IntensityPicker } from "@/components/menace/IntensityPicker";
 import { AMBIENCE_MODES } from "@/components/fx/Ambience";
 import { CURRENTLY, PALETTE_EVENT } from "@/lib/progress";
 import { ColorSlider } from "@/components/yoru/ColorSlider";
+import { DeleteAccount } from "@/components/profile/DeleteAccount";
+import { LEGAL_LINKS } from "@/components/public/LegalLinks";
+import Link from "next/link";
 import type { CurrentlyKind, Me, NotificationPrefs, ProfileLite } from "@/lib/types";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -218,6 +221,23 @@ export default function SettingsPage() {
         </div>
       </Section>
 
+      <Section title="Help & legal">
+        <div className="flex flex-wrap gap-2 py-3 text-sm">
+          {LEGAL_LINKS.map((l) => (
+            <Link key={l.href} href={l.href} className="rounded-full border border-line px-3 py-1.5 text-ink-2 transition-colors duration-150 hover:border-brand hover:text-ink">
+              {l.label}
+            </Link>
+          ))}
+        </div>
+        <p className="py-3 text-xs text-muted">
+          Questions, problems or privacy requests? Use the contact form on the{" "}
+          <Link href="/support" className="text-brand underline">
+            Support
+          </Link>{" "}
+          page. To report a post or person, use the ••• menu on it.
+        </p>
+      </Section>
+
       <Section title="Account">
         <div className="py-3 text-sm text-muted">
           Signed in as <b className="text-ink">@{me.username}</b> · role {me.role} · {config.mode} mode
@@ -234,6 +254,7 @@ export default function SettingsPage() {
             Log out
           </Button>
         </div>
+        <DeleteAccount username={me.username} isOwner={me.role === "owner"} />
       </Section>
     </div>
   );

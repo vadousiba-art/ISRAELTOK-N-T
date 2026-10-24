@@ -416,7 +416,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div>
-      <div className="sticky top-[118px] z-20 -mx-3 mb-2 flex items-center gap-3 border-b border-line bg-bg/90 px-3 py-2 backdrop-blur sm:-mx-4 sm:px-4">
+      <div className="sticky top-[var(--header-h,76px)] z-20 -mx-3 mb-2 flex items-center gap-3 border-b border-line bg-bg/90 px-3 py-2 backdrop-blur sm:-mx-4 sm:px-4">
         <button onClick={() => router.push("/chat")} className="rounded-full p-1.5 hover:bg-card-2" aria-label="Back to chats">
           <ArrowLeft size={20} />
         </button>

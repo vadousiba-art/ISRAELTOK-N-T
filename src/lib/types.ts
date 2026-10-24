@@ -63,6 +63,18 @@ export interface SiteState {
   lockdown: boolean;
   slow_mode: number;
   nightly_prompt: string | null;
+  open_signup?: boolean;
+}
+
+export interface SupportMessage {
+  id: string;
+  email: string | null;
+  topic: "general" | "account" | "deletion" | "privacy" | "safety" | "bug";
+  message: string;
+  status: "open" | "closed";
+  created_at: string;
+  closed_at: string | null;
+  user: ProfileLite | null;
 }
 
 export interface AdminSite extends SiteState {

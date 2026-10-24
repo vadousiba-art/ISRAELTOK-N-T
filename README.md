@@ -37,6 +37,7 @@ Demo mode lets anyone log in as anyone. It turns itself off in production unless
    - `supabase/migrations/0001_core.sql` (tables, RLS, functions, triggers, realtime)
    - `supabase/migrations/0002_storage.sql` (the private `media` bucket and its read policy)
    - `supabase/migrations/0003_yoru_features.sql` (levels, streaks, site controls, mutes, audit log). Additive only: new columns with defaults, new tables and functions. It can be run twice safely and does not change existing rows.
+   - `supabase/migrations/0004_open_signup.sql` (open sign-ups with an admin switch, support inbox, account deletion). Turns on open sign-ups.
 
    Or use the Supabase CLI: `supabase init` (once; it keeps the existing migrations), then `supabase link --project-ref <ref>` and `supabase db push`.
 3. **Configure the environment:** `cp .env.example .env.local`, then fill in `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY`. Add `ANTHROPIC_API_KEY` to enable the full AI Menace.
@@ -51,7 +52,9 @@ Demo mode lets anyone log in as anyone. It turns itself off in production unless
 
 ## Android app
 
-`android/` is a small native Android app (plain Java, no extra libraries) that opens the live site full-screen. It supports photo and video uploads, the back button, external links in the browser, invite links that open in the app, an offline screen, and the logo as its icon. Accounts, chat and the feed all run on the server, so the app stays up to date without new releases.
+Store listing text, links and graphics: [`docs/store-listing.md`](docs/store-listing.md). Public pages: `/about`, `/privacy`, `/terms`, `/faq`, `/support`, `/delete-account`. Set `SUPPORT_EMAIL` to show a support address on them.
+
+`android/` (package `com.yoru.social`) is a small native Android app (plain Java, no extra libraries) that opens the live site full-screen. It supports photo and video uploads, the back button, external links in the browser, invite links that open in the app, an offline screen, and the logo as its icon. Accounts, chat and the feed all run on the server, so the app stays up to date without new releases.
 
 - **Download:** the built APK is served at `/download/yoru.apk` (the old `/download/israeltoknt.apk` link redirects there). The login screen and the menu link to it, and the link is hidden inside the app itself.
 - **Build:** install the Android SDK (platform 36, build-tools 36) and JDK 17+. Create `android/local.properties` with `sdk.dir=...` and `android/keystore.properties` with your signing key (see `android/app/build.gradle`). Then run `cd android && gradle assembleRelease`. To point the app at a different site, pass `-PitnUrl=https://your-site`.

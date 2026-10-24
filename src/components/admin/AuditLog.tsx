@@ -32,6 +32,9 @@ const LABEL: Record<string, string> = {
   "site.nightly_prompt": "changed tonight's prompt",
   "site.broadcast": "sent a broadcast",
   "site.recalculate_xp": "rebuilt everyone's XP",
+  "site.open_signup": "changed who can join",
+  "support.close": "closed a support message",
+  "support.reopen": "reopened a support message",
 };
 
 function detail(e: AuditEntry) {
@@ -41,6 +44,7 @@ function detail(e: AuditEntry) {
   if (e.action === "member.flair") return d.flair ? `“${d.flair}”` : "cleared";
   if (e.action === "member.mute" && d.until) return `until ${new Date(String(d.until)).toLocaleString()}`;
   if (e.action === "site.lockdown") return d.value ? "on" : "off";
+  if (e.action === "site.open_signup") return d.value ? "anyone can sign up" : "invite-only";
   if (e.action === "site.slow_mode") return Number(d.value) ? `${d.value}s` : "off";
   if (e.action === "site.word_filter") return `${d.words} words`;
   if (e.action === "site.broadcast") return `“${d.body}” · ${d.recipients} recipients`;

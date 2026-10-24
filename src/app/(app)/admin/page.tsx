@@ -14,11 +14,12 @@ import { Button, ChaosLoader, Empty, PageTitle, TimeAgo } from "@/components/ui/
 import { AdminOverviewPanel } from "@/components/admin/Overview";
 import { SiteControls } from "@/components/admin/SiteControls";
 import { AuditLog } from "@/components/admin/AuditLog";
+import { SupportInbox } from "@/components/admin/SupportInbox";
 import { MemberToolsDialog } from "@/components/admin/MemberTools";
 import { LevelChip } from "@/components/yoru/Progression";
 import type { AdminOverview, MemberExtras, ProfileLite } from "@/lib/types";
 
-type Tab = "overview" | "controls" | "members" | "invites" | "reports" | "log";
+type Tab = "overview" | "controls" | "members" | "invites" | "reports" | "inbox" | "log";
 
 export default function AdminPage() {
   const { me } = useShell();
@@ -79,6 +80,7 @@ export default function AdminPage() {
             ["members", `Members (${data.members.length})`],
             ["invites", "Invites"],
             ["reports", `Reports${openReports ? ` (${openReports})` : ""}`],
+            ["inbox", "Inbox"],
             ["log", "Audit log"],
           ] as const
         ).map(([id, label]) => (
@@ -100,6 +102,7 @@ export default function AdminPage() {
       {tab === "overview" && <AdminOverviewPanel onGoto={setTab} />}
       {tab === "controls" && <SiteControls />}
       {tab === "log" && <AuditLog />}
+      {tab === "inbox" && <SupportInbox />}
 
       {tab === "invites" && (
         <>

@@ -123,12 +123,12 @@ function LoginInner() {
         />
       </label>
       <Button type="submit" disabled={busy} className="mt-5 w-full py-3">
-        {busy ? "Infiltrating..." : "Log in"}
+        {busy ? "Logging in..." : "Log in"}
       </Button>
       <p className="mt-4 text-center text-sm text-muted">
-        Got an invite link?{" "}
+        New to YORU?{" "}
         <Link href="/join" className="font-bold text-brand">
-          Join here
+          Create an account
         </Link>
       </p>
     </form>

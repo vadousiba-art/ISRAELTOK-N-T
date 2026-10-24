@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { appMode, supabaseAnonKey, supabaseUrl } from "@/lib/config";
 
-const PUBLIC = ["/login", "/join", "/setup"];
+const PUBLIC = ["/login", "/join", "/setup", "/about", "/privacy", "/terms", "/faq", "/support", "/delete-account"];
 
 // Optimistic auth gate + Supabase session refresh. Real authorization happens
 // in Postgres (RLS + RPC checks); this only keeps logged-out users on /login.

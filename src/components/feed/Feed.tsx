@@ -96,7 +96,7 @@ export function Feed({ mode = "latest", arg, emptyText, live = false }: { mode?:
               mutate();
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
-            className="sticky top-[118px] z-20 mx-auto flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-bold text-white shadow-lg shadow-brand/40"
+            className="sticky top-[calc(var(--header-h,76px)+8px)] z-20 mx-auto flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-bold text-white shadow-lg shadow-brand/40"
           >
             <ArrowUp size={16} /> {fresh} new {fresh === 1 ? "post" : "posts"}
           </motion.button>

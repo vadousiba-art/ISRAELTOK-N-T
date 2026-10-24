@@ -156,6 +156,7 @@ export const RPC_SCHEMAS = {
       .object({
         announcement: z.object({ text: text(280), tone: z.enum(["info", "event", "alert"]) }).nullable().optional(),
         lockdown: z.boolean().optional(),
+        open_signup: z.boolean().optional(),
         slow_mode: z.number().int().min(0).max(3600).optional(),
         word_filter: z.array(text(30)).max(100).optional(),
         nightly_prompt: text(200).nullable().optional(),
@@ -168,6 +169,8 @@ export const RPC_SCHEMAS = {
   admin_set_flair: z.object({ p_user_id: id, p_flair: text(24) }),
   admin_grant_xp: z.object({ p_user_id: id, p_amount: z.number().int().min(-5000).max(5000) }),
   admin_recalculate_xp: none,
+  admin_support_inbox: z.object({ p_limit: z.number().int().min(1).max(300).optional() }),
+  admin_close_support: z.object({ p_id: id, p_closed: z.boolean().optional() }),
 } as const;
 
 export type RpcName = keyof typeof RPC_SCHEMAS;
