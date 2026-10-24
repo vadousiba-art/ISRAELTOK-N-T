@@ -1,0 +1,23 @@
+{
+  "_comment": "YORU Video 002 — 'transmission'. One timeline for picture and sound. 30 fps; the last frame cuts straight back into frame 0.",
+  "fps": 30,
+  "duration": 13.0,
+  "flicker": [0.8, 0.867],
+  "breach": 1.5,
+  "cuts1": [1.7, 2.35, 2.9, 3.3, 3.55],
+  "stutter": [3.8, 4.4],
+  "egg": [4.4, 4.5],
+  "archive": [4.5, 6.6],
+  "staticAll": 5.85,
+  "redAll": 6.25,
+  "build": [6.6, 6.9, 7.12, 7.28, 7.39, 7.47, 7.52, 7.56],
+  "impact2": 7.6,
+  "silence": [7.667, 8.2],
+  "reveal": 8.2,
+  "lock": 9.0,
+  "micro": [9.7, 10.43, 11.13],
+  "headline": [9.35, 10.05],
+  "eot": [10.6, 11.0],
+  "powerOff": [11.7, 12.2],
+  "morse": [2.0, 0.06]
+}
