@@ -34,6 +34,7 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private ValueCallback<Uri[]> pendingUpload;
+    private static final String LEGACY_HOST = "israeltoknt.vercel.app";
     private String appHost;
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -86,6 +87,10 @@ public class MainActivity extends Activity {
         Uri data = intent != null ? intent.getData() : null;
         if (data != null && appHost.equals(data.getHost()) && "https".equals(data.getScheme())) {
             return data.toString();
+        }
+        // Links to the pre-YORU address open the same page on the current one.
+        if (data != null && LEGACY_HOST.equals(data.getHost()) && "https".equals(data.getScheme())) {
+            return data.buildUpon().authority(appHost).build().toString();
         }
         return BuildConfig.APP_URL;
     }

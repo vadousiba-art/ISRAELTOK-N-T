@@ -23,11 +23,13 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- Open invite links (https://israeltoknt.vercel.app/join/...) in the app -->
+            <!-- Open invite links (https://yoru-social.vercel.app/join/..., and the old
+                 israeltoknt.vercel.app address) in the app -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="yoru-social.vercel.app" />
                 <data android:scheme="https" android:host="israeltoknt.vercel.app" />
             </intent-filter>
         </activity>

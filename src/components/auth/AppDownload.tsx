@@ -13,7 +13,7 @@ export function AppDownload({ className }: { className?: string }) {
   if (inApp) return null;
   return (
     <a
-      href="/download/israeltoknt.apk"
+      href="/download/yoru.apk"
       download="YORU.apk"
       className={`flex items-center justify-center gap-2 rounded-full border border-line bg-card px-4 py-2.5 text-sm font-bold transition hover:border-brand hover:text-brand ${className ?? ""}`}
     >

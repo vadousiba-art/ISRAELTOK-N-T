@@ -19,6 +19,10 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  // The APK used to be served as israeltoknt.apk; old links keep working.
+  async redirects() {
+    return [{ source: "/download/israeltoknt.apk", destination: "/download/yoru.apk", permanent: false }];
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
