@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { Logo, Tagline } from "@/components/ui/Logo";
 import { TICKER } from "@/lib/jokes";
+import { AppDownload } from "./AppDownload";
 
 const STICKERS = [
   { t: "INVITE ONLY", c: "bg-lime text-black", r: -8, x: "6%", y: "12%" },
@@ -53,6 +54,7 @@ export function AuthFrame({ children }: { children: React.ReactNode }) {
         >
           {children}
         </motion.div>
+        <AppDownload className="mt-4" />
       </main>
     </div>
   );

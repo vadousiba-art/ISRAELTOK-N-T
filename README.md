@@ -46,6 +46,15 @@ Demo mode lets anyone log in as anyone. It turns itself off in production unless
 
 ---
 
+## Android app
+
+`android/` is a small native Android app (plain Java, no extra libraries) that opens the live site full-screen. It supports photo and video uploads, the back button, external links in the browser, invite links that open in the app, an offline screen, and the logo as its icon. Accounts, chat and the feed all run on the server, so the app stays up to date without new releases.
+
+- **Download:** the built APK is served at `/download/israeltoknt.apk`. The login screen and the menu link to it, and the link is hidden inside the app itself.
+- **Build:** install the Android SDK (platform 36, build-tools 36) and JDK 17+. Create `android/local.properties` with `sdk.dir=...` and `android/keystore.properties` with your signing key (see `android/app/build.gradle`). Then run `cd android && gradle assembleRelease`. To point the app at a different site, pass `-PitnUrl=https://your-site`.
+- **Updates:** future APKs must be signed with the same key, or phones will refuse to update and require an uninstall. Keep the keystore safe.
+- **iPhone:** open the site in Safari, then Share → Add to Home Screen. The web app manifest makes it open full-screen.
+
 ## Features
 
 | Area | What works |

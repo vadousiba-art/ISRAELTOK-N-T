@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Offline</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #04060d; color: #f4f6fb; font-family: system-ui, sans-serif; }
+  main { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; box-sizing: border-box; }
+  .emoji { font-size: 72px; animation: wobble 2s ease-in-out infinite; }
+  h1 { font-weight: 900; margin: 16px 0 8px; }
+  p { color: #8a92a7; max-width: 320px; }
+  a { margin-top: 20px; background: #1f6bff; color: #fff; text-decoration: none; font-weight: 800; padding: 14px 28px; border-radius: 999px; }
+  @keyframes wobble { 0%,100% { transform: rotate(-8deg) } 50% { transform: rotate(8deg) } }
+  @media (prefers-reduced-motion: reduce) { .emoji { animation: none } }
+</style>
+</head>
+<body>
+<main>
+  <div class="emoji">🛰️</div>
+  <h1>No signal, soldier.</h1>
+  <p>The internet finally fought back. Check your connection and try again.</p>
+  <a id="retry" href="#">Try again</a>
+</main>
+<script>
+  var u = new URLSearchParams(location.search).get("u");
+  if (u && /^https:\/\//.test(u)) document.getElementById("retry").href = u;
+</script>
+</body>
+</html>

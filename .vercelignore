@@ -5,3 +5,4 @@ test-results
 playwright-report
 .pgtest
 *.tsbuildinfo
+android

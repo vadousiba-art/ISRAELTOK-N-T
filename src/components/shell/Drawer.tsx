@@ -11,6 +11,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Logo } from "@/components/ui/Logo";
 import { post } from "@/lib/client/api";
 import { TICKER } from "@/lib/jokes";
+import { AppDownload } from "@/components/auth/AppDownload";
 import { useShell } from "./AppShell";
 import { navItems } from "./navItems";
 
@@ -102,6 +103,7 @@ export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }
                 ))}
               </div>
             </div>
+            <AppDownload className="mb-3" />
             <button
               onClick={logout}
               className="mt-auto flex items-center gap-3 rounded-2xl px-3 py-3 font-bold text-hot hover:bg-card-2"
