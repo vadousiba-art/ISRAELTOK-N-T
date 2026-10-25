@@ -184,7 +184,7 @@ const bodyGeo = new THREE.ExtrudeGeometry(roundedRect(PH.w - 0.24, PH.h - 0.24, 
   curveSegments: 32,
 });
 bodyGeo.translate(0, 0, -PH.d / 2);
-const frameMat = new THREE.MeshPhysicalMaterial({ color: 0x2b2b30, metalness: 1, roughness: 0.3, envMapIntensity: 1.25 });
+const frameMat = new THREE.MeshPhysicalMaterial({ color: 0x3c3c42, metalness: 1, roughness: 0.22, envMapIntensity: 2.2 });
 const toonBody = new THREE.MeshBasicMaterial({ color: 0x050505 });
 const body = new THREE.Mesh(bodyGeo, frameMat);
 phone.add(body);
@@ -304,7 +304,7 @@ screen.position.z = FRONT + 0.004;
 phone.add(screen);
 const glass = new THREE.Mesh(
   new THREE.ShapeGeometry(roundedRect(PH.w - 0.12, PH.h - 0.12, PH.r - 0.06), 32),
-  new THREE.MeshPhysicalMaterial({ color: 0x000000, roughness: 0.04, metalness: 0, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, envMapIntensity: 0.55, clearcoat: 1, clearcoatRoughness: 0.03 }),
+  new THREE.MeshPhysicalMaterial({ color: 0x000000, roughness: 0.04, metalness: 0, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, envMapIntensity: 0.9, clearcoat: 1, clearcoatRoughness: 0.03 }),
 );
 glass.position.z = FRONT + 0.008;
 phone.add(glass);
