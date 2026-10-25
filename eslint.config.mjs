@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     // Standalone trailer project (browser + Node render scripts).
     "trailer/**",
     "teaser-002/**",
+    "break-the-feed/**",
   ]),
 ]);
 
