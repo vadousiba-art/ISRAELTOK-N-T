@@ -149,7 +149,7 @@ const FU = finalMat.uniforms;
 
 // ================================================================ 3D studio + phones
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 500);
+const camera = new THREE.PerspectiveCamera(30, W / H, 2, 400);
 scene.add(camera);
 {
   const env = new THREE.Scene();
@@ -245,7 +245,7 @@ function makePhone() {
   outline.scale.set(1.035, 1.018, 1.25);
   outline.visible = false;
   const face = new THREE.Mesh(faceGeo, new THREE.MeshPhysicalMaterial({ color: 0x030303, roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.05 }));
-  face.position.z = FRONT + 0.002;
+  face.position.z = FRONT + 0.004;
   const mat = new THREE.ShaderMaterial({
     uniforms: {
       uA: { value: null },
@@ -264,12 +264,12 @@ function makePhone() {
     fragmentShader: SCREEN_FRAG,
   });
   const screen = new THREE.Mesh(new THREE.PlaneGeometry(DISP.w, DISP.h), mat);
-  screen.position.z = FRONT + 0.004;
+  screen.position.z = FRONT + 0.014;
   const glass = new THREE.Mesh(
     faceGeo,
     new THREE.MeshPhysicalMaterial({ color: 0x000000, roughness: 0.04, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, envMapIntensity: 0.9, clearcoat: 1, clearcoatRoughness: 0.03 }),
   );
-  glass.position.z = FRONT + 0.008;
+  glass.position.z = FRONT + 0.026;
   const buttons = [
     [3.0, 1.6],
     [1.0, 1.0],
@@ -307,7 +307,7 @@ const LOOK_KEYS = ["kuro", "rei", "mio", "gremlin"];
 // Screenshot pixel (1080x2338) on a phone -> output pixel, with the final-pass zoom.
 const _v = new THREE.Vector3();
 function project(phone, px, py, zoom = 1) {
-  _v.set((px / 1080 - 0.5) * CONT.w, CONT_Y + (0.5 - py / 2338) * CONT.h, FRONT + 0.004);
+  _v.set((px / 1080 - 0.5) * CONT.w, CONT_Y + (0.5 - py / 2338) * CONT.h, FRONT + 0.014);
   phone.g.updateMatrixWorld(true);
   _v.applyMatrix4(phone.g.matrixWorld).project(camera);
   const x = (_v.x * 0.5 + 0.5) * W;
@@ -689,12 +689,15 @@ function makeItYours(bg, fg, t) {
 }
 
 // ---------------------------------------------------- lineup placement
+// Two rows, like a team photo: the back pair stands raised behind the front pair,
+// so every identity's header, avatar and name stay visible and nothing is cropped.
 const LINE = [
-  { x: -5.7, y: 0.5, z: -2.6, ry: 0.42, d: 0.0 },
-  { x: -2.0, y: -0.3, z: 0.0, ry: 0.16, d: 0.12 },
-  { x: 2.0, y: 0.3, z: -0.7, ry: -0.16, d: 0.24 },
-  { x: 5.7, y: -0.5, z: -2.6, ry: -0.42, d: 0.36 },
+  { x: -3.9, y: 4.6, z: -6.0, ry: 0.22, d: 0.0 },
+  { x: 3.9, y: 4.6, z: -6.0, ry: -0.22, d: 0.1 },
+  { x: -3.7, y: -3.0, z: 0.0, ry: 0.12, d: 0.2 },
+  { x: 3.7, y: -3.0, z: 0.0, ry: -0.12, d: 0.3 },
 ];
+const LINE_KEYS = ["kuro", "mio", "rei", "gremlin"];
 
 // ================================================================ frame
 window.renderFrame = (t) => {
@@ -937,13 +940,13 @@ window.renderFrame = (t) => {
       const L = LINE[i];
       const k = easeOut(clamp((e - L.d) / 0.7));
       p.g.visible = true;
-      p.setScreen(`profile-${LOOK_KEYS[i]}`);
+      p.setScreen(`profile-${LINE_KEYS[i]}`);
       p.panelMode(0);
-      p.g.position.set(L.x * lerp(1.4, 1, k), L.y + lerp(-16, 0, k) + Math.sin(t * 1.1 + i) * 0.08, L.z);
-      p.g.rotation.set(0.03, L.ry + (1 - k) * 0.5 * Math.sign(L.ry || 1), (1 - k) * 0.2);
+      p.g.position.set(L.x, L.y + lerp(-18, 0, k) + Math.sin(t * 1.1 + i) * 0.08, L.z);
+      p.g.rotation.set(0.03, L.ry + (1 - k) * 0.5 * Math.sign(L.ry), (1 - k) * 0.12);
     });
     const dk = easeInOut(ramp(t, C.s5, C.s6));
-    aimCamera({ ang: lerp(0.1, -0.08, dk), dist: lerp(60, 55, dk), lift: 2.0 });
+    aimCamera({ ang: lerp(0.1, -0.06, dk), dist: lerp(58, 55, dk), lift: 3.0 });
     title(fg, "DIFFERENT VIBES.", "それぞれの個性", t, C.vibes, C.s6 + 0.1);
     title(fg, "ONE YORU.", "ひとつの夜", t, C.oneYoru, C.s6 + 0.1, { y: 214 + 150, size: 84 });
   }
@@ -958,12 +961,12 @@ window.renderFrame = (t) => {
       lineup.forEach((p, i) => {
         const L = LINE[i];
         p.g.visible = true;
-        p.setScreen(`profile-${LOOK_KEYS[i]}`);
+        p.setScreen(`profile-${LINE_KEYS[i]}`);
         p.panelMode(mk);
         p.g.position.set(lerp(L.x, (i - 1.5) * 0.9, ck), lerp(L.y, (i - 1.5) * -0.5, ck), lerp(L.z, i * 0.4, ck));
         p.g.rotation.set(0, lerp(L.ry, 0, ck), lerp(0, (i - 1.5) * 0.07, ck));
       });
-      aimCamera({ ang: -0.08 * (1 - ck), dist: lerp(55, 42, ck), lift: 2.0 });
+      aimCamera({ ang: lerp(-0.06, 0, ck), dist: lerp(55, 40, ck), lift: lerp(3.0, 2.0, ck) });
       const k = easeIn(ramp(t, C.collapse[0], C.collapse[1]));
       zoom = Math.max(0.004, 1 - k);
       rot = k * 0.8;
