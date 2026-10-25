@@ -77,6 +77,7 @@ if (stills) {
   const f0 = Math.round(from * fps);
   const f1 = Math.min(total, Math.round(to * fps));
   const withAudio = fs.existsSync(audio) && f0 === 0 && f1 === total;
+  if (!withAudio && !preview) throw new Error("partial renders need --preview (protects the final file)");
   const ff = spawn(
     "ffmpeg",
     [

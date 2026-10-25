@@ -37,7 +37,9 @@ function layer() {
   const cv = document.createElement("canvas");
   cv.width = Math.round(W * SCALE);
   cv.height = Math.round(H * SCALE);
-  const g = cv.getContext("2d");
+  // Software-backed: GPU canvases that are only cleared in a frame can skip the
+  // texture re-upload after many frames, leaving the previous frame on screen.
+  const g = cv.getContext("2d", { willReadFrequently: true });
   return { cv, g };
 }
 const BG = layer();
