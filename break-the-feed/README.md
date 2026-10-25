@@ -39,6 +39,26 @@ node render.mjs --stills 11.8     # PNG stills -> out/stills/
 | 13.0–17.0 | **Brand reveal.** Absolute black. A crimson line scans across and reveals the official wordmark (YORU 夜), traces an underline, fades. THE FEED IS YOURS. |
 | 17.0–20.0 | **Final sting.** Impact flash; the logo inside a fractured panel; it shrinks back into the opening composition, cuts to black, and the video loops into its own first frame. |
 
+## Captions over the phone section
+
+`overlay/` adds animated captions to the finished film without re-rendering it:
+it draws transparent caption frames for 7.5–10.4 s and composites them onto
+`out/yoru-break-the-feed.mp4` with ffmpeg (picture re-encoded, audio copied).
+
+```bash
+node overlay/render-overlay.mjs          # -> out/yoru-break-the-feed-captions.mp4
+node overlay/render-overlay.mjs --stills 8.1,9.0,9.9
+```
+
+| Screen on the phone | Caption | Highlighted on screen |
+| --- | --- | --- |
+| Home | 01 HOME — WATCH IT TOGETHER. Anime nights · Stories · Tonight's picks | the "Anime night Friday 9pm — vote for the movie" event card |
+| Feed | 02 FEED — SETTLE THE DEBATE. Polls · Fan art · Honest ratings | the "Best anime opening of 2026?" poll |
+| Profile | 03 PROFILE — LEVEL UP NIGHTLY. Streaks · XP · What you're watching | the Lv 4 Night Owl XP bar |
+
+Captions slide out with each in-app swipe. The crimson brackets use the exact
+camera and phone pose from `main.js`, so they track the UI in perspective.
+
 ## Brand and content accuracy
 
 - Logo: the official `wordmark.png`, unmodified, never shown above its native 868 px width.
