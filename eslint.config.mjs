@@ -16,6 +16,7 @@ const eslintConfig = defineConfig([
     "trailer/**",
     "teaser-002/**",
     "break-the-feed/**",
+    "promo-03/**",
   ]),
 ]);
 

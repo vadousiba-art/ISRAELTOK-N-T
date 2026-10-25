@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>YORU — YOUR WORLD. YOUR RULES.</title>
+<script type="importmap">
+  { "imports": { "three": "/node_modules/three/build/three.module.js" } }
+</script>
+<style>
+  @font-face {
+    font-family: "Inter";
+    src: url("/assets/brand/inter.woff2") format("woff2");
+    font-weight: 100 900;
+  }
+  html, body { margin: 0; width: 1080px; height: 1920px; background: #000; overflow: hidden; }
+  canvas { display: block; width: 1080px; height: 1920px; }
+</style>
+</head>
+<body>
+<canvas id="gl" width="1080" height="1920"></canvas>
+<script type="module" src="/film/main.js"></script>
+</body>
+</html>
