@@ -663,6 +663,23 @@ function makeItYours(bg, fg, t) {
     bg.stroke();
     bg.restore();
   });
+  if (coverMode) {
+    // Cover only: the official wordmark and the campaign line in the top band.
+    // The wordmark is white-on-dark by design, so it sits on a black band.
+    fg.fillStyle = INK;
+    fg.fillRect(0, 0, W, 300);
+    fg.fillStyle = CRIMSON;
+    fg.fillRect(0, 296, W, 6);
+    const LW = 470;
+    fg.drawImage(IMG.logo, W / 2 - LW / 2, 52, LW, LW * LOGO_AR);
+    fg.save();
+    fg.font = '800 38px "Inter"';
+    fg.letterSpacing = "6px";
+    fg.textAlign = "center";
+    fg.fillStyle = "#f2f2f2";
+    fg.fillText("YOUR WORLD. YOUR RULES.", W / 2 + 3, 238);
+    fg.restore();
+  }
   const bk = clamp((e - 0.5) / 0.14);
   if (bk > 0) {
     fg.save();
@@ -1046,8 +1063,11 @@ window.renderFrame = (t) => {
 };
 
 // Cover frame: the four real example profiles under the campaign line.
+let coverMode = false;
 window.renderCover = () => {
+  coverMode = true;
   window.renderFrame(C.makeIt[0] + 0.9);
+  coverMode = false;
   return true;
 };
 
