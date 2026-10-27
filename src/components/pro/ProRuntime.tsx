@@ -1,32 +1,37 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Link from "next/link";
+import { Eye, X } from "lucide-react";
 import { useMe } from "@/lib/client/hooks";
-import { equipped, useMyPro } from "@/lib/client/pro";
+import { lookWith, tryOn, useMyPro, useTryOn } from "@/lib/client/pro";
 import { applyTheme, playSound } from "@/lib/client/pro-fx";
 import { setBurstStyle } from "@/components/ui/EmojiBurst";
-import type { EffectP, ReactionP, SoundP, ThemeP } from "@/lib/pro/catalog";
+import { item, type EffectP, type ReactionP, type SoundP, type ThemeP } from "@/lib/pro/catalog";
 import { AmbientEffect, RouteTransition } from "./art/Effects";
 
 // Applies the member's personal slots: theme, interface effect, reaction
-// style and notification sound. Only items the server says are in effect
-// (owned now) are used; nothing here is ever visible to other members.
+// style and notification sound. It uses only what the server says is in
+// effect, plus any try-on in this tab (shown with a bar to end it). Nothing
+// here is visible to other members, and a try-on is never saved.
 export function ProRuntime() {
   const { data: pro } = useMyPro();
   const { data: me } = useMe();
-  const theme = equipped<ThemeP>(pro, "theme");
-  const effect = equipped<EffectP>(pro, "effect");
-  const reaction = equipped<ReactionP>(pro, "reaction");
-  const sound = equipped<SoundP>(pro, "sound");
+  const t = useTryOn();
+  const theme = item<ThemeP>(lookWith(pro, t, "theme"));
+  const effect = item<EffectP>(lookWith(pro, t, "effect"));
+  const reaction = item<ReactionP>(lookWith(pro, t, "reaction"));
+  const sound = item<SoundP>(pro?.equips.sound?.active ? pro.equips.sound.item : undefined);
   const effectsOn = pro?.settings.effects_on !== false;
+  const trying = Object.values(t).some(Boolean);
 
   useEffect(() => {
-    applyTheme(theme?.p ?? null);
+    applyTheme(theme?.cat === "theme" ? theme.p : null);
   }, [theme]);
   useEffect(() => () => applyTheme(null), []);
 
   useEffect(() => {
-    setBurstStyle(reaction?.p ?? null);
+    setBurstStyle(reaction?.cat === "reaction" ? reaction.p : null);
     return () => setBurstStyle(null);
   }, [reaction]);
 
@@ -40,6 +45,19 @@ export function ProRuntime() {
     last.current = unread;
   }, [unread, sound, pro?.settings.sounds_on, pro?.settings.sound_volume]);
 
-  if (!effect || !effectsOn) return null;
-  return effect.p.kind === "particles" ? <AmbientEffect p={effect.p} /> : <RouteTransition p={effect.p} />;
+  return (
+    <>
+      {effect?.cat === "effect" && effectsOn && (effect.p.kind === "particles" ? <AmbientEffect p={effect.p} /> : <RouteTransition p={effect.p} />)}
+      {trying && (
+        <div role="status" className="fixed inset-x-3 bottom-20 z-[70] mx-auto flex max-w-md items-center gap-2 rounded-full border border-line bg-card/95 px-4 py-2 text-sm shadow-lg backdrop-blur lg:bottom-6">
+          <Eye size={16} className="shrink-0 text-brand" />
+          <span className="min-w-0 flex-1 truncate">Trying on: only you can see this, nothing is saved.</span>
+          <Link href="/pro/shop" className="shrink-0 font-bold text-brand">Shop</Link>
+          <button type="button" onClick={() => tryOn.clear()} className="shrink-0 rounded-full p-1 hover:bg-card-2" aria-label="End try-on">
+            <X size={16} />
+          </button>
+        </div>
+      )}
+    </>
+  );
 }
