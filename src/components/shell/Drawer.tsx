@@ -79,7 +79,7 @@ export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }
                 <div className="truncate font-semibold">
                   {me.display_name} {me.badge}
                 </div>
-                <div className="truncate text-sm text-muted">@{me.username}</div>
+                <div className="truncate text-sm text-muted"><bdi>@{me.username}</bdi></div>
               </div>
               {me.level ? <LevelChip level={me.level} className="ms-auto" /> : null}
             </Link>

@@ -384,3 +384,11 @@ body {
   background: repeating-conic-gradient(from 0deg at 85% 15%, #fff 0deg 0.6deg, transparent 0.6deg 7deg);
   mask-image: radial-gradient(circle at 85% 15%, transparent 18%, #000 70%);
 }
+
+/* Right-to-left languages: text that is not in the interface language
+   (posts, @handles, #tags, strings not translated yet) takes its direction
+   from its own content, so "@name" or "What's on your mind?" keep their
+   punctuation in place instead of being mirrored. */
+[dir="rtl"] :where(p, h1, h2, h3, h4, span, a, label, li, button, input, textarea) {
+  unicode-bidi: plaintext;
+}

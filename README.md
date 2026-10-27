@@ -63,6 +63,10 @@ By default all app data lives in Supabase Postgres. Setting `DATA_BACKEND=neon` 
 
 | Doc | What's in it |
 | --- | --- |
+| [docs/open-gates.md](docs/open-gates.md) | YORU 2.0 "Open Gates": feature status, how to release and roll back, test results |
+| [docs/monetization.md](docs/monetization.md) | Payment provider research (fees, age rules), recommendation, Pro/tips architecture. Nothing charges today |
+| [docs/security-review.md](docs/security-review.md) | Gatekeeper review: access control, findings and fixes, privacy, legal notes |
+| [docs/aws-openai-readiness.md](docs/aws-openai-readiness.md) | What would change if AWS/OpenAI credits are approved (none are confirmed) |
 | [docs/seven-projects.md](docs/seven-projects.md) | The seven-project setup: what runs where, capacity, verification, how to turn it on |
 | [docs/architecture.md](docs/architecture.md) | Audit findings, the decision, service responsibilities, auth/media/realtime flows, outage behaviour |
 | [docs/database-migration.md](docs/database-migration.md) | Backup, provision, copy, verify, cutover (read-only window), monitor; local rehearsal |
@@ -110,6 +114,7 @@ Store listing text, links and graphics: [`docs/store-listing.md`](docs/store-lis
 | **Style** | YORU red by default; a color slider in Settings (plus presets: 紅 桜 菫 氷 翠 金 炎) recolors the entire app live, including the logo, effects and animations, and tints your profile for everyone. Every accent is generated from one hue (`--accent-h`), "Currently watching / reading / listening / playing", pinned post on your profile, admin-given flair |
 | **Effects** | Ambient background (stars, sakura, rain, fireflies or off), double-tap media to like, `||spoilers||` that blur until tapped, category chips in the composer, Ctrl/Cmd+K command palette, and a hidden 夜 mode (Konami code or tap the logo five times). All respect reduced motion |
 | **Admin** | Overview with 14-day activity chart and top posters/tags; announcement banner; broadcast notification to everyone; quiet mode (pause member posts); slow mode; word filter; tonight's prompt; feature posts in "Tonight's picks"; mute members (10 min to 7 days), flair, grant XP, rebuild XP from history; full audit log of admin actions. Plus invites, roles, verify, ban and the report queue |
+| **Open Gates (2.0)** | 16 interface languages (machine-translated, labelled) with Arabic right-to-left; interests and Discover; profile banners, avatar frames and a badge showcase; saved looks; Collections; Ghost Mode; Creator Showcase with admin review; report categories with auto-escalation; YORU Pro (purchases off, admin grants only); public Trust Center; "What's new" release tour. Details: [docs/open-gates.md](docs/open-gates.md) |
 | **UX** | Dark, light and system themes; reduced-motion support (system, reduced, or full); mobile-first layout with a desktop 3-column view; absurd loading, empty, 404 and error screens |
 
 ---

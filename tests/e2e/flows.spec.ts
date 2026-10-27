@@ -3,7 +3,11 @@ import { expect, test, type Page } from "@playwright/test";
 // The login route allows 10 attempts per IP per minute; give each test login
 // its own address so the suite does not trip that limit.
 let ipSeq = 1;
-async function loginAs(page: Page, name: RegExp) {
+// The "What's new" release modal opens once per device; mark it seen so it
+// does not cover the flows below. Its own test runs without this.
+const RELEASE_SEEN = () => localStorage.setItem("yoru-release-seen", "2.0");
+async function loginAs(page: Page, name: RegExp, { releaseSeen = true } = {}) {
+  if (releaseSeen) await page.context().addInitScript(RELEASE_SEEN);
   await page.context().setExtraHTTPHeaders({ "x-forwarded-for": `10.0.0.${ipSeq++}` });
   await page.goto("/login");
   await page.getByRole("button", { name }).first().click();
@@ -127,6 +131,7 @@ test("admin invites a new member who can join and post", async ({ page, browser 
   expect(code).toMatch(/^[a-z0-9]{10}$/);
 
   const ctx = await browser.newContext();
+  await ctx.addInitScript(RELEASE_SEEN);
   const guest = await ctx.newPage();
   await guest.goto(`/join/${code}`);
   await expect(guest.getByRole("heading", { name: "You're invited" })).toBeVisible();
@@ -218,6 +223,7 @@ test("command palette jumps anywhere", async ({ page }) => {
 });
 
 test("anyone can sign up without an invite, and can delete their account", async ({ page }) => {
+  await page.context().addInitScript(RELEASE_SEEN);
   await page.context().setExtraHTTPHeaders({ "x-forwarded-for": `10.0.1.${ipSeq++}` });
   await page.goto("/join/definitely-not-real");
   await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
@@ -263,4 +269,134 @@ test("public pages work signed out and the contact form reaches the admin inbox"
   await page.goto("/admin");
   await page.getByRole("tab", { name: "Inbox" }).click();
   await expect(page.getByText("The sakura effect is too pretty.")).toBeVisible();
+});
+
+// ---------------------------------------------------------------- Open Gates
+
+test("the What's new modal opens once, can be skipped, and replays from Settings", async ({ page }) => {
+  await loginAs(page, /Tyler/, { releaseSeen: false });
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText("Version 2.0");
+  await dialog.getByRole("button", { name: "Next" }).click();
+  await dialog.getByRole("button", { name: "Back" }).click();
+  await dialog.getByRole("button", { name: "Skip" }).click();
+  await expect(dialog).toBeHidden();
+
+  await page.reload();
+  await expect(page.getByText("What's on your mind?")).toBeVisible();
+  await page.waitForTimeout(1500); // longer than the auto-open delay
+  await expect(page.getByRole("dialog")).toBeHidden();
+
+  await page.goto("/settings");
+  await page.getByRole("button", { name: "Replay" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toBeHidden();
+});
+
+test("switching to Arabic translates the app, flips it right-to-left and is remembered", async ({ page }) => {
+  await loginAs(page, /Tyler/);
+  await page.goto("/settings");
+  await page.locator("#language").selectOption("ar");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+  await expect(page.getByRole("heading", { name: "الإعدادات", level: 1 })).toBeVisible();
+  await expect(page.getByText(/مترجمة آليًا/)).toBeVisible(); // machine-translation notice
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await page.locator("#language").selectOption("en");
+  await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+  await expect(page.getByRole("heading", { name: "Settings", level: 1 })).toBeVisible();
+});
+
+test("Ghost Mode hides the online dot from other members", async ({ page, browser }) => {
+  await loginAs(page, /Ethan/);
+  const ctx = await browser.newContext();
+  const viewer = await ctx.newPage();
+  await loginAs(viewer, /Lucas/);
+  await viewer.goto("/u/EthanLang");
+  await expect(viewer.getByLabel("online").first()).toBeVisible();
+
+  await page.goto("/settings");
+  const ghost = page.getByRole("switch", { name: "Ghost Mode" });
+  await ghost.click();
+  await expect(ghost).toHaveAttribute("aria-checked", "true");
+  await viewer.reload();
+  await expect(viewer.getByRole("heading", { name: /Ethan/ })).toBeVisible();
+  await expect(viewer.getByLabel("online")).toHaveCount(0);
+
+  await page.reload();
+  await expect(page.getByRole("switch", { name: "Ghost Mode" })).toHaveAttribute("aria-checked", "true");
+  await page.getByRole("switch", { name: "Ghost Mode" }).click();
+  await expect(page.getByRole("switch", { name: "Ghost Mode" })).toHaveAttribute("aria-checked", "false");
+  await ctx.close();
+});
+
+test("posts can be saved into a named collection", async ({ page }) => {
+  await loginAs(page, /Zach/);
+  const card = page.locator("article").first();
+  const snippet = ((await card.locator("p").first().textContent()) ?? "").trim().slice(0, 24);
+  await card.getByRole("button", { name: "More actions" }).click();
+  await page.getByRole("menuitem", { name: "Add to collection" }).click();
+  const name = `Best of ${Date.now() % 10000}`;
+  await page.getByLabel("Name", { exact: true }).fill(name);
+  await page.getByRole("button", { name: "Create and add" }).click();
+  await expect(page.getByText(`Added to ${name}`)).toBeVisible();
+  await page.keyboard.press("Escape");
+
+  await page.goto("/collections");
+  await page.getByRole("link", { name: new RegExp(name) }).click();
+  await expect(page.getByRole("heading", { name: new RegExp(name) })).toBeVisible();
+  if (snippet) await expect(page.locator("article").first()).toContainText(snippet);
+});
+
+test("a member applies to the Creator Showcase and an admin approves them", async ({ page, browser }) => {
+  await loginAs(page, /Zach/);
+  await page.goto("/creators");
+  await page.getByRole("button", { name: "Apply to be a creator" }).click();
+  await page.getByLabel("What you create").selectOption("artist");
+  await page.getByLabel("Link to your work").fill("https://example.com/zach-art");
+  await page.getByLabel("Tell us about your work").fill("Ink drawings of my friends as anime villains, posted weekly.");
+  await page.getByRole("button", { name: "Send application" }).click();
+  await expect(page.getByText("Your application is waiting for review.")).toBeVisible();
+
+  const ctx = await browser.newContext();
+  const admin = await ctx.newPage();
+  await loginAs(admin, /Ari/);
+  await admin.goto("/admin");
+  await admin.getByRole("tab", { name: "Creators" }).click();
+  await expect(admin.getByText("Ink drawings of my friends")).toBeVisible();
+  await admin.getByRole("button", { name: "Approve" }).click();
+  await expect(admin.getByText("No creator applications waiting.")).toBeVisible();
+  await ctx.close();
+
+  await page.reload();
+  await expect(page.getByText("You're an approved creator: Artist.")).toBeVisible();
+  await page.goto("/u/ZachAttack");
+  await expect(page.getByText(/Creator · Artist/)).toBeVisible();
+});
+
+test("an admin grants complimentary Pro and the member sees it", async ({ page, browser }) => {
+  await loginAs(page, /Ari/);
+  await page.goto("/pro"); // nobody can buy it: no payment provider is connected
+  await expect(page.getByRole("button", { name: "Not available yet" })).toBeDisabled();
+  await page.goto("/admin");
+  await page.getByRole("tab", { name: "Pro" }).click();
+  await page.getByPlaceholder("@username").fill("LucasSZN");
+  await page.getByRole("button", { name: "Grant Pro" }).click();
+  await expect(page.getByText("Pro granted to @LucasSZN for 30 days.")).toBeVisible();
+
+  const ctx = await browser.newContext();
+  const member = await ctx.newPage();
+  await loginAs(member, /Lucas/);
+  await member.goto("/pro");
+  await expect(member.getByText(/You have YORU Pro until/)).toBeVisible();
+  await ctx.close();
+});
+
+test("the Trust Center is public", async ({ page }) => {
+  await page.goto("/trust");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page).toHaveURL(/\/trust/);
 });

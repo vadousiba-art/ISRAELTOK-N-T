@@ -53,7 +53,7 @@ function ExploreInner() {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value.slice(0, 40))}
-          placeholder="Search people, posts, #tags..."
+          placeholder="Search people, posts, #tags"
           className="w-full rounded-full border border-line bg-card py-3 pe-10 ps-12 outline-none focus:border-brand"
           aria-label="Search"
           onKeyDown={(e) => {

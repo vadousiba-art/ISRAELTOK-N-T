@@ -1,7 +1,7 @@
 import { appMode, dataBackend } from "@/lib/config";
 import type { SqlConn } from "@/lib/database/migrations";
 import { runSeed, type SeedAdapter } from "@/lib/seed/run";
-import { SEED_UNREAD_NOTIFICATIONS } from "@/lib/seed/data";
+import { CORE_USERS, SEED_UNREAD_NOTIFICATIONS } from "@/lib/seed/data";
 
 const IDENT = /^[a-z_][a-z0-9_]*$/;
 const TABLES_WITH_ID = new Set(["posts", "poll_options", "comments", "awards", "stories", "messages", "channels", "notifications"]);
@@ -62,6 +62,8 @@ export async function seedDemo(db: SqlConn, opts: { transaction?: boolean } = {}
       await db.query("delete from public.rate_limits");
       // Demo only: give the seeded people interests and languages so Discover
       // has something to show locally (skipped if the Open Gates columns are absent).
+      // The demo login accounts keep no saved language, like existing accounts;
+      // only background members vary.
       const hasCol = await db.query<{ ok: boolean }>(
         "select exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'interests') as ok",
       );
@@ -71,8 +73,9 @@ export async function seedDemo(db: SqlConn, opts: { transaction?: boolean } = {}
           update public.profiles p set
             interests = string_to_array((array['anime,manga,gaming', 'vocaloid,jpop,music', 'art,cosplay,anime',
                                'gaming,memes,tech', 'manga,writing,film', 'jrock,music,figures'])[(r.n % 6) + 1], ','),
-            locale = (array['en','ja','en','es','fr','en','pt','ko'])[(r.n % 8) + 1]
-          from ranked r where p.id = r.id and r.n > 1`);
+            locale = case when p.username = any(string_to_array($1, ',')) then null
+                          else (array['en','ja','en','es','fr','en','pt','ko'])[(r.n % 8) + 1] end
+          from ranked r where p.id = r.id and r.n > 1`, [CORE_USERS.map((u) => u.username).join(",")]);
       }
     },
     log: (m) => console.log(`[itn demo seed] ${m}`),

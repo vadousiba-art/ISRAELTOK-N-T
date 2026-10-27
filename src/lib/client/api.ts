@@ -74,11 +74,14 @@ type SignResult =
 
 // Large photos are downscaled in the browser before upload (longest side
 // 2048 px), which cuts storage and egress several times over at no server
-// cost. GIFs (animation), videos and small images are sent untouched, and any
-// failure falls back to the original file.
+// cost. JPEGs are always re-encoded, because drawing to a canvas drops EXIF
+// metadata such as the GPS location phones embed in photos. GIFs (animation),
+// videos and small PNG/WebP images are sent untouched, and any failure falls
+// back to the original file.
 const MAX_SIDE = 2048;
 async function optimizeImage(file: File): Promise<File> {
-  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size < 600 * 1024) return file;
+  const jpeg = file.type === "image/jpeg";
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || (!jpeg && file.size < 600 * 1024)) return file;
   try {
     const bitmap = await createImageBitmap(file);
     const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
@@ -90,7 +93,7 @@ async function optimizeImage(file: File): Promise<File> {
     // PNG may be transparent: WebP keeps the alpha channel.
     const type = file.type === "image/jpeg" ? "image/jpeg" : "image/webp";
     const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, type, 0.86));
-    if (!blob || blob.type !== type || blob.size >= file.size) return file;
+    if (!blob || blob.type !== type || (!jpeg && blob.size >= file.size)) return file;
     return new File([blob], file.name.replace(/\.\w+$/, type === "image/jpeg" ? ".jpg" : ".webp"), { type });
   } catch {
     return file;

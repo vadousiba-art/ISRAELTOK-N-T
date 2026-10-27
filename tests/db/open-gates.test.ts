@@ -88,6 +88,18 @@ describe("identity and Pro entitlements", () => {
     // Members cannot read each other's entitlements.
     expect(await sqlAs(u.ben, "select * from public.entitlements where user_id = $1", [u.ann])).toEqual([]);
   });
+
+  it("shows the free banner and frame once Pro ends, and brings the choice back on renewal", async () => {
+    type Look = { banner_style: string; avatar_frame: string };
+    await as(u.owner, "admin_revoke_pro", { p_user: u.ann });
+    const mine = await as<Look>(u.ann, "get_my_identity");
+    expect([mine.banner_style, mine.avatar_frame]).toEqual(["aurora", "none"]);
+    const seen = await as<Look>(u.ben, "get_profile_identity", { p_username: "gate_ann" });
+    expect([seen.banner_style, seen.avatar_frame]).toEqual(["aurora", "none"]);
+    await as(u.owner, "admin_grant_pro", { p_user: u.ann, p_days: 30 });
+    const back = await as<Look>(u.ann, "get_my_identity");
+    expect([back.banner_style, back.avatar_frame]).toEqual(["crimson_moon", "neon"]);
+  });
 });
 
 describe("Theme Forge+", () => {

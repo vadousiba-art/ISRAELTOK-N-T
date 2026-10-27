@@ -117,6 +117,22 @@ language sql stable security definer set search_path = public as $$
   )
 $$;
 
+-- Pro cosmetics fall back to the free defaults while someone is not Pro. The
+-- stored choice is kept, so it comes back if Pro is renewed.
+create or replace function public.effective_banner(p_user uuid, p_style text) returns text
+language sql stable security definer set search_path = public as $$
+  select case when p_style in ('sakura_night','crimson_moon','manga_panel')
+              then case when public.is_pro(p_user) then p_style else 'aurora' end
+              else p_style end
+$$;
+
+create or replace function public.effective_frame(p_user uuid, p_frame text) returns text
+language sql stable security definer set search_path = public as $$
+  select case when p_frame in ('neon','hanko')
+              then case when public.is_pro(p_user) then p_frame else 'none' end
+              else p_frame end
+$$;
+
 -- ---------------------------------------------------------------------------
 -- Collections+ (named, organised saves; bookmarks keep working as before)
 -- ---------------------------------------------------------------------------
@@ -140,6 +156,7 @@ create table if not exists public.collection_items (
   primary key (collection_id, post_id)
 );
 create index if not exists collection_items_post_idx on public.collection_items (post_id);
+create index if not exists collection_items_page_idx on public.collection_items (collection_id, added_at desc);
 
 -- ---------------------------------------------------------------------------
 -- Theme Forge+ (saved looks; free 3, Pro 12)
@@ -248,7 +265,7 @@ language sql stable as $$
     'is_bot', p.is_bot, 'role', p.role, 'status', p.status,
     'online', p.is_bot or (not p.ghost_mode and coalesce(p.last_seen_at > now() - interval '5 minutes', false)),
     'level', public.level_for(p.xp), 'accent_hue', p.accent_hue, 'flair', p.flair,
-    'creator', p.creator_category, 'frame', p.avatar_frame
+    'creator', p.creator_category, 'frame', public.effective_frame(p.id, p.avatar_frame)
   )
 $$;
 
@@ -279,7 +296,8 @@ begin
   return jsonb_build_object(
     'locale', me.locale, 'interests', to_jsonb(me.interests),
     'ghost_mode', me.ghost_mode, 'discoverable', me.discoverable,
-    'banner_style', me.banner_style, 'avatar_frame', me.avatar_frame,
+    'banner_style', public.effective_banner(v, me.banner_style),
+    'avatar_frame', public.effective_frame(v, me.avatar_frame),
     'showcase_badges', to_jsonb(me.showcase_badges),
     'creator_category', me.creator_category,
     'pro', pro,
@@ -348,7 +366,9 @@ begin
     raise exception 'NOT_FOUND|No such member.' using errcode = 'P0002';
   end if;
   return jsonb_build_object(
-    'interests', to_jsonb(p.interests), 'banner_style', p.banner_style, 'avatar_frame', p.avatar_frame,
+    'interests', to_jsonb(p.interests),
+    'banner_style', public.effective_banner(p.id, p.banner_style),
+    'avatar_frame', public.effective_frame(p.id, p.avatar_frame),
     'showcase_badges', to_jsonb(p.showcase_badges),
     'creator_category', p.creator_category, 'creator_since', p.creator_since,
     'pro', public.is_pro(p.id),
@@ -810,6 +830,10 @@ end $$;
 -- ---------------------------------------------------------------------------
 
 revoke execute on function public.is_pro(uuid) from public, anon;
+revoke execute on function public.effective_banner(uuid, text) from public, anon;
+revoke execute on function public.effective_frame(uuid, text) from public, anon;
+grant execute on function public.effective_banner(uuid, text) to authenticated, service_role;
+grant execute on function public.effective_frame(uuid, text) to authenticated, service_role;
 revoke execute on function public.collection_json(public.collections, uuid) from public, anon;
 revoke execute on function public.creator_application_json(public.creator_applications) from public, anon;
 revoke execute on function public.open_gates_version() from public, anon;
