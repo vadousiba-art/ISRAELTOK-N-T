@@ -473,3 +473,8 @@ body {
 [data-chat-theme] .chat-me { background: var(--chat-me) !important; color: var(--chat-me-ink) !important; }
 [data-chat-theme] .chat-them { background: var(--chat-them) !important; color: var(--chat-them-ink) !important; }
 [data-chat-theme] .text-muted { color: color-mix(in srgb, var(--chat-them-ink) 70%, transparent); }
+
+/* Charts (Creator Analytics / Profile Insights). Two validated series hues,
+   stepped per mode; text always uses ink tokens, never the series colour. */
+:root { --viz-1: #2a78d6; --viz-2: #eb6834; --viz-grid: #e8e7e1; --viz-axis: #c3c2b7; --viz-seq-0: #e6effb; --viz-seq-1: #9ec5f4; --viz-seq-2: #3987e5; --viz-seq-3: #1c5cab; }
+:root[data-theme="dark"] { --viz-1: #3987e5; --viz-2: #d95926; --viz-grid: #262626; --viz-axis: #3a3a38; --viz-seq-0: #1b2430; --viz-seq-1: #184f95; --viz-seq-2: #2a78d6; --viz-seq-3: #86b6ef; }
