@@ -45,7 +45,7 @@ async function signup(username: string, invite?: string) {
 
 beforeAll(async () => {
   db = await PGlite.create();
-  await db.exec(fs.readFileSync(path.join(root, "src/lib/server/demo/shim.sql"), "utf8"));
+  await db.exec(fs.readFileSync(path.join(root, "src/lib/database/postgres-shim.sql"), "utf8"));
   await db.exec(fs.readFileSync(path.join(root, "supabase/migrations/0001_core.sql"), "utf8"));
   ids.owner = await signup("Owner");
   const inv = await as<{ code: string }>(ids.owner, "admin_create_invite", { p_max_uses: 3 });

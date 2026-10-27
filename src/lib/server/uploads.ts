@@ -75,3 +75,45 @@ export function verifyDemoUpload(p: string, mime: string, exp: number, sig: stri
   const got = Buffer.from(sig);
   return expected.length === got.length && crypto.timingSafeEqual(expected, got);
 }
+
+// Before an uploaded path is attached to a post, story, message or avatar:
+// it must be the caller's own upload, and with Supabase Storage (where the
+// browser uploads directly) the stored bytes must match the declared type.
+// The demo upload endpoint already checks bytes on the way in.
+const verified = new Set<string>();
+
+export function uploadPathsIn(fn: string, args: Record<string, unknown>): string[] {
+  const out: string[] = [];
+  const add = (v: unknown) => typeof v === "string" && UPLOAD_PATH_RE.test(v) && out.push(v);
+  add(args.p_media_url);
+  if (fn === "update_my_profile" && args.p && typeof args.p === "object") add((args.p as Record<string, unknown>).avatar_url);
+  return out;
+}
+
+export async function verifyUploads(
+  paths: string[],
+  userId: string,
+  sniffRemote: ((path: string) => Promise<Uint8Array | null>) | null,
+): Promise<string | null> {
+  for (const p of paths) {
+    if (!p.startsWith(`u/${userId}/`)) return "That file belongs to someone else's upload.";
+    if (!sniffRemote || verified.has(p)) continue;
+    let head: Uint8Array | null;
+    try {
+      head = await sniffRemote(p);
+    } catch (err) {
+      // Storage briefly unreachable: do not block posting over it. The bucket
+      // still enforces the declared type and size limits.
+      console.warn("[yoru] could not check an upload's contents:", (err as Error).message);
+      continue;
+    }
+    if (!head) return "That upload could not be found. Please try again.";
+    const mime = MIME_BY_EXT[p.split(".").pop()!];
+    // Rejected files are left alone (never delete from a request path); the
+    // abandoned-upload cleanup removes files nothing refers to.
+    if (!mime || !sniffMatches(mime, head)) return "That file is not what it claims to be.";
+    verified.add(p);
+    if (verified.size > 5000) verified.clear();
+  }
+  return null;
+}

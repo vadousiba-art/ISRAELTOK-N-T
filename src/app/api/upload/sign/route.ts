@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { appMode, uploadConfig } from "@/lib/config";
 import { getUserDb } from "@/lib/server/db";
-import { AppError, handle } from "@/lib/server/errors";
+import { AppError, assertWritable, handle } from "@/lib/server/errors";
 import { supabaseAdmin } from "@/lib/server/supabase";
 import { maxBytesFor, mediaKind, newUploadPath, signDemoUpload } from "@/lib/server/uploads";
 
@@ -13,6 +13,7 @@ const Req = z.object({ type: z.string().max(60), size: z.number().int().positive
 // bucket (which also enforces type/size). Demo: an HMAC-signed local URL.
 export async function POST(req: NextRequest) {
   return handle(async () => {
+    assertWritable();
     const parsed = Req.safeParse(await req.json().catch(() => ({})));
     if (!parsed.success) throw new AppError("INVALID", "Bad upload request.", 400);
     const { type, size } = parsed.data;

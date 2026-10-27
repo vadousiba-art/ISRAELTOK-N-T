@@ -48,7 +48,7 @@ const xpOf = async (uid: string) => (await db.query<{ xp: number }>("select xp f
 
 beforeAll(async () => {
   db = await PGlite.create();
-  await db.exec(fs.readFileSync(path.join(root, "src/lib/server/demo/shim.sql"), "utf8"));
+  await db.exec(fs.readFileSync(path.join(root, "src/lib/database/postgres-shim.sql"), "utf8"));
   await db.exec(fs.readFileSync(path.join(root, "supabase/migrations/0001_core.sql"), "utf8"));
   await db.exec(fs.readFileSync(path.join(root, "supabase/migrations/0003_yoru_features.sql"), "utf8"));
   // Running it twice must be harmless (idempotent migration).

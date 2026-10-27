@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { aiConfig, appMode, supabaseServiceKey } from "@/lib/config";
+import { aiConfig, appMode, configProblems, dataBackend, databaseUrl, supabaseServiceKey } from "@/lib/config";
 import { Logo, Tagline } from "@/components/ui/Logo";
 
 export const metadata = { title: "Setup" };
@@ -19,6 +19,8 @@ function Row({ ok, label, hint }: { ok: boolean; label: string; hint: string }) 
 export default function SetupPage() {
   const mode = appMode();
   const ai = aiConfig();
+  const backend = dataBackend();
+  const problems = configProblems();
   return (
     <div className="mx-auto max-w-2xl px-5 py-10">
       <div className="flex flex-col items-center">
@@ -43,6 +45,14 @@ export default function SetupPage() {
             label="Supabase service role key (server only)"
             hint="SUPABASE_SERVICE_ROLE_KEY — needed for invite sign-ups, uploads and the AI Menace bot. Never exposed to browsers."
           />
+          <Row
+            ok={backend !== "postgres" || Boolean(databaseUrl())}
+            label={`Primary database: ${backend === "postgres" ? "Neon (Postgres)" : backend === "supabase" ? "Supabase Postgres" : backend === "pglite" ? "embedded demo database" : "none"}`}
+            hint="Optional: set DATA_BACKEND=neon and DATABASE_URL (Neon pooled connection string) to keep app data on Neon while Supabase handles login, files and realtime. See docs/database-migration.md."
+          />
+          {problems.map((p) => (
+            <Row key={p} ok={false} label="Configuration problem" hint={p} />
+          ))}
           <Row
             ok={Boolean(ai.apiKey)}
             label="Anthropic API key (AI Menace)"

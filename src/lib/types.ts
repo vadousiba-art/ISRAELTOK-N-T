@@ -337,4 +337,6 @@ export type LiveEvent =
   | { type: "notification"; id: string; kind?: string; body?: string }
   | { type: "post"; id: string; author_id: string }
   | { type: "story"; id: string }
-  | { type: "typing"; channel_id: string; user_id: string; name: string };
+  | { type: "typing"; channel_id: string; user_id: string; name: string }
+  // Too many changes at once (e.g. an admin broadcast): refetch instead.
+  | { type: "resync" };

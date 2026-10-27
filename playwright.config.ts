@@ -2,7 +2,12 @@ import { defineConfig, devices } from "@playwright/test";
 
 // End-to-end flows against the production build in demo mode (embedded DB,
 // fresh data directory per run). Run `npm run build` first.
+// E2E_DATABASE_URL runs the same flows on a real Postgres through the Neon
+// adapter instead (DATA_BACKEND=neon), e.g. the rehearsal target database.
 const PORT = 3100;
+const pgEnv: Record<string, string> = process.env.E2E_DATABASE_URL
+  ? { DATA_BACKEND: "neon", DATABASE_URL: process.env.E2E_DATABASE_URL }
+  : {};
 
 export default defineConfig({
   testDir: "tests/e2e",
@@ -22,6 +27,6 @@ export default defineConfig({
     url: `http://localhost:${PORT}/api/health`,
     reuseExistingServer: false,
     timeout: 120_000,
-    env: { DEMO_MODE: "true", DEMO_DATA_DIR: ".data-e2e", ANTHROPIC_API_KEY: "" },
+    env: { DEMO_MODE: "true", DEMO_DATA_DIR: ".data-e2e", ANTHROPIC_API_KEY: "", ...pgEnv },
   },
 });

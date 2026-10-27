@@ -5,11 +5,16 @@ import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { SWRConfig } from "swr";
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { AppMode } from "@/lib/config";
+import type { AppMode, RealtimeTransport } from "@/lib/config";
 import { ApiError, rpc } from "@/lib/client/api";
 import type { AmbienceMode } from "@/components/fx/Ambience";
 
-export type PublicConfig = { mode: AppMode; supabaseUrl: string | null; supabaseAnonKey: string | null };
+export type PublicConfig = {
+  mode: AppMode;
+  supabaseUrl: string | null;
+  supabaseAnonKey: string | null;
+  realtime: RealtimeTransport;
+};
 export type ThemePref = "dark" | "light" | "system";
 export type MotionPref = "system" | "reduce" | "full";
 type ToastKind = "success" | "error" | "info" | "chaos";

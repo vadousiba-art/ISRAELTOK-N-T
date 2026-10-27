@@ -6,7 +6,7 @@ A private, invite-only, Japanese-inspired social network for anime, manga, Vocal
 
 > YORU is a visual rebrand of the app formerly called IsraelTokn't. The database, accounts, auth and Android package id (`com.israeltoknt.app`) are unchanged, so existing users keep everything.
 
-Built with **Next.js 16 (App Router) · TypeScript · Tailwind CSS 4 · Motion · Supabase (Postgres, Auth, Realtime, Storage) · Claude**.
+Built with **Next.js 16 (App Router) · TypeScript · Tailwind CSS 4 · Motion · Supabase (Postgres, Auth, Realtime, Storage) · Claude**, with optional **Neon** Postgres as the primary database.
 
 ---
 
@@ -38,6 +38,7 @@ Demo mode lets anyone log in as anyone. It turns itself off in production unless
    - `supabase/migrations/0002_storage.sql` (the private `media` bucket and its read policy)
    - `supabase/migrations/0003_yoru_features.sql` (levels, streaks, site controls, mutes, audit log). Additive only: new columns with defaults, new tables and functions. It can be run twice safely and does not change existing rows.
    - `supabase/migrations/0004_open_signup.sql` (open sign-ups with an admin switch, support inbox, account deletion). Turns on open sign-ups.
+   - `supabase/migrations/0005_neon_ready.sql` (search and foreign-key indexes, the upload-cleanup helper, opt-in change capture for Neon). Additive; changes no rows.
 
    Or use the Supabase CLI: `supabase init` (once; it keeps the existing migrations), then `supabase link --project-ref <ref>` and `supabase db push`.
 3. **Configure the environment:** `cp .env.example .env.local`, then fill in `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY`. Add `ANTHROPIC_API_KEY` to enable the full AI Menace.
@@ -47,6 +48,31 @@ Demo mode lets anyone log in as anyone. It turns itself off in production unless
 7. *(Optional)* `npm run seed -- --yes` loads the demo content into Supabase. Do this after you've created your own owner account, otherwise the seed user becomes the owner.
 
 `/setup` shows which pieces are configured, and `/api/health` returns the same status as JSON.
+
+---
+
+## Database options (Supabase or Neon)
+
+By default all app data lives in Supabase Postgres. Setting `DATA_BACKEND=neon` plus `DATABASE_URL` keeps app data on **Neon** instead. Supabase still handles login, files and realtime delivery. The same migrations, RLS policies and functions run on both, user ids don't change, and passwords never leave Supabase.
+
+**Production stays on Supabase for now.** Neon's free plan caps compute at 100 CU-hours a month, which an always-online YORU would likely exhaust mid-month. Everything is built, tested and documented, ready for when it makes sense:
+
+| Doc | What's in it |
+| --- | --- |
+| [docs/architecture.md](docs/architecture.md) | Audit findings, the decision, service responsibilities, auth/media/realtime flows, outage behaviour |
+| [docs/database-migration.md](docs/database-migration.md) | Backup, provision, copy, verify, cutover (read-only window), monitor; local rehearsal |
+| [docs/api-integrations.md](docs/api-integrations.md) | Every provider API used, where, and how errors and retries work |
+| [docs/environment-setup.md](docs/environment-setup.md) | Every environment variable, local and Vercel setup, troubleshooting |
+| [docs/free-tier-limits.md](docs/free-tier-limits.md) | Verified free-tier limits, risks, monitoring |
+| [docs/rollback.md](docs/rollback.md) | Backups, when and how to roll back, data validation |
+
+```bash
+npm run db:local                 # local Postgres that behaves like Neon (non-superuser owner)
+npm run db:migrate               # apply migrations to DATABASE_URL_DIRECT / DATABASE_URL
+npm run db:copy -- --dry-run     # Supabase -> Neon copy plan (SOURCE_DATABASE_URL -> DATABASE_URL_DIRECT)
+npm run db:rehearse              # full local rehearsal: seed, migrate, copy, change, re-copy, verify
+npm run test:pg                  # adapter tests against real Postgres
+```
 
 ---
 
@@ -91,6 +117,7 @@ Store listing text, links and graphics: [`docs/store-listing.md`](docs/store-lis
 - **Invite-only sign-up** is enforced by a trigger on `auth.users`. Invite use is counted atomically.
 - **The API allowlists browser-callable functions** and validates every argument with zod (`src/lib/server/rpc-registry.ts`). Bot and invite functions can only be executed by the service role.
 - **Uploads:** the server checks type, size and quota, then issues a one-time signed upload URL into a private bucket that also enforces MIME type and size. Media is served through `/api/media/*`, which checks the session first. In demo mode the file signature (magic bytes) is also checked.
+- **Uploaded files are checked again when used:** a path can only be attached to a post, story, message or avatar by the person who uploaded it, and with Supabase Storage the first bytes must match the file type. Large photos are downscaled in the browser before upload.
 - **Secrets stay on the server:** the service-role key and Anthropic key are only read in server code. The browser only sees the public URL and anon key.
 - **Security headers:** `X-Frame-Options: DENY`, `nosniff`, a strict referrer policy, and a permissions policy.
 
@@ -110,7 +137,10 @@ Store listing text, links and graphics: [`docs/store-listing.md`](docs/store-lis
 supabase/migrations/   SQL schema, RLS, functions, triggers (single source of truth)
 src/app/(app)/         Signed-in screens: feed, explore, post, chat, menace, chaos, profile...
 src/app/api/           rpc/[fn], auth, upload, media, live (SSE), ai/[tool], health
-src/lib/server/        db adapter (Supabase or PGlite), AI client, uploads, errors, rate limiting
+src/lib/server/        db adapter (Supabase, Neon or PGlite), realtime relay, AI client, uploads, errors, rate limiting
+src/lib/database/      migration runner + Postgres shim shared by PGlite, Neon and the scripts
+scripts/db/            migrate, copy-to-neon, rehearse, local Postgres
+supabase/manual/       Supabase-side SQL for a Neon cutover and its rollback (run by hand)
 src/lib/seed/          Demo content + storage-agnostic seeder
 src/components/        Shell, feed, stories, chat, menace, profile, ui
 tests/unit|db|e2e      Vitest unit tests, SQL security tests (PGlite), Playwright flows
@@ -127,6 +157,9 @@ tests/unit|db|e2e      Vitest unit tests, SQL security tests (PGlite), Playwrigh
 | `npm run lint` / `npm run typecheck` | ESLint / TypeScript |
 | `npm run seed -- --yes` | Seed a Supabase project with the demo content |
 | `npm run demo:reset` | Wipe the local demo database |
+| `npm run db:local` / `db:migrate` / `db:copy` / `db:rehearse` | Postgres/Neon tooling (see Database options) |
+| `npm run test:pg` | Neon adapter tests against a real Postgres (`TEST_DATABASE_URL`) |
+| `npm run load-test -- --url http://localhost:3000` | Lightweight load test against a demo-mode server |
 
 ## Content note
 

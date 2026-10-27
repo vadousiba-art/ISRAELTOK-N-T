@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getUserId, requireConfigured, serviceRpc } from "@/lib/server/db";
-import { AppError, errorResponse } from "@/lib/server/errors";
+import { AppError, assertWritable, errorResponse } from "@/lib/server/errors";
 import { clientIp, limit } from "@/lib/server/ratelimit";
 import { SUPPORT_TOPICS } from "@/lib/support";
 
@@ -17,6 +17,7 @@ const Body = z.object({
 export async function POST(req: NextRequest) {
   try {
     requireConfigured();
+    assertWritable();
     if (!limit(`support:${clientIp(req)}`, 5, 10 * 60_000)) {
       throw new AppError("RATE_LIMIT", "You've sent a few messages already. Please try again later.", 429);
     }

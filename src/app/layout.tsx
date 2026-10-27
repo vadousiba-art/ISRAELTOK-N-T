@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/inter";
 import "./globals.css";
-import { appMode, supabaseAnonKey, supabaseUrl } from "@/lib/config";
+import { appMode, supabaseAnonKey, supabaseUrl, realtimeTransport } from "@/lib/config";
 import { AppProvider } from "@/components/providers/AppProvider";
 
 // Config is read per request (env can differ between build and runtime).
@@ -32,6 +32,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     mode,
     supabaseUrl: mode === "supabase" ? (supabaseUrl() ?? null) : null,
     supabaseAnonKey: mode === "supabase" ? (supabaseAnonKey() ?? null) : null,
+    realtime: realtimeTransport(),
   };
   return (
     <html lang="en" data-theme="dark" suppressHydrationWarning>

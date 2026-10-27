@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { appMode } from "@/lib/config";
-import { DEMO_COOKIE, requireConfigured, serviceRpc } from "@/lib/server/db";
-import { demoDb } from "@/lib/server/demo/pglite";
-import { AppError, errorResponse, toAppError } from "@/lib/server/errors";
+import { appMode, dataBackend } from "@/lib/config";
+import { DEMO_COOKIE, mirrorAuthUser, requireConfigured, serviceQuery, serviceRpc } from "@/lib/server/db";
+import { AppError, assertWritable, errorResponse, toAppError } from "@/lib/server/errors";
 import { clientIp, limit } from "@/lib/server/ratelimit";
 import { supabaseAdmin, supabaseForRequest } from "@/lib/server/supabase";
 
@@ -18,6 +17,7 @@ const Join = z.object({
 export async function POST(req: NextRequest) {
   try {
     requireConfigured();
+    assertWritable();
     if (!limit(`join:${clientIp(req)}`, 5, 60_000)) {
       throw new AppError("RATE_LIMIT", "Slow down. One identity crisis at a time.", 429);
     }
@@ -37,10 +37,9 @@ export async function POST(req: NextRequest) {
     const meta = { username: input.username, display_name: input.display_name, invite_code: input.code };
 
     if (appMode() === "demo") {
-      const db = await demoDb();
       let id: string;
       try {
-        const r = await db.query<{ id: string }>(
+        const r = await serviceQuery<{ id: string }>(
           "insert into auth.users (email, raw_user_meta_data) values ($1, $2) returning id",
           [input.email.toLowerCase(), JSON.stringify(meta)],
         );
@@ -57,15 +56,30 @@ export async function POST(req: NextRequest) {
 
     // The handle_new_user trigger re-validates and consumes the invite
     // atomically, so a race between two sign-ups cannot exceed max_uses.
-    const { error } = await supabaseAdmin().auth.admin.createUser({
+    const { data: created, error } = await supabaseAdmin().auth.admin.createUser({
       email: input.email,
       password: input.password,
       email_confirm: true,
       user_metadata: meta,
     });
-    if (error) {
-      if (/already/i.test(error.message)) throw new AppError("INVALID", "That email already has an account.", 409);
+    if (error || !created.user) {
+      if (error && /already/i.test(error.message)) throw new AppError("INVALID", "That email already has an account.", 409);
       throw new AppError("INVALID_INVITE", "Sign-up failed. Sign-ups may have just closed, or the invite ran out.", 400);
+    }
+    if (dataBackend() === "postgres") {
+      // Data lives on Neon: create the profile there. If that fails (invite
+      // used up a moment ago, username race), remove the new login again so no
+      // half-created account is left behind.
+      try {
+        await mirrorAuthUser(created.user, meta);
+      } catch (err) {
+        await supabaseAdmin()
+          .auth.admin.deleteUser(created.user.id)
+          .catch(() => console.error("[yoru] could not roll back auth user after failed sign-up"));
+        const e = toAppError(err);
+        if (e.code === "INVALID" && e.status === 409) throw new AppError("INVALID", "That email already has an account.", 409);
+        throw e;
+      }
     }
     const sb = await supabaseForRequest();
     const { error: loginError } = await sb.auth.signInWithPassword({ email: input.email, password: input.password });

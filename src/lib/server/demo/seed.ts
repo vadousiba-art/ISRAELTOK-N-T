@@ -1,4 +1,5 @@
-import type { PGlite } from "@electric-sql/pglite";
+import { appMode, dataBackend } from "@/lib/config";
+import type { SqlConn } from "@/lib/database/migrations";
 import { runSeed, type SeedAdapter } from "@/lib/seed/run";
 import { SEED_UNREAD_NOTIFICATIONS } from "@/lib/seed/data";
 
@@ -11,7 +12,12 @@ function cols(obj: Record<string, unknown>) {
   return keys;
 }
 
-export async function seedDemo(db: PGlite) {
+// node-postgres sends JS arrays as Postgres arrays; jsonb objects must be text.
+function toParam(v: unknown) {
+  return v !== null && typeof v === "object" && !Array.isArray(v) && !(v instanceof Date) ? JSON.stringify(v) : v;
+}
+
+export async function seedDemo(db: SqlConn, opts: { transaction?: boolean } = {}) {
   const adapter: SeedAdapter = {
     async createUser(u, inviteCode) {
       const res = await db.query<{ id: string }>(
@@ -34,7 +40,7 @@ export async function seedDemo(db: PGlite) {
       const sql = `insert into public.${table} (${keys.join(", ")}) values (${keys
         .map((_, i) => `$${i + 1}`)
         .join(", ")}) ${TABLES_WITH_ID.has(table) ? "returning id" : ""}`;
-      const res = await db.query<{ id: string }>(sql, keys.map((k) => row[k]));
+      const res = await db.query<{ id: string }>(sql, keys.map((k) => toParam(row[k])));
       return res.rows[0]?.id;
     },
     async update(table, match, values) {
@@ -44,7 +50,7 @@ export async function seedDemo(db: PGlite) {
       const sql = `update public.${table} set ${vk.map((k, i) => `${k} = $${i + 1}`).join(", ")} where ${mk
         .map((k, i) => `${k} = $${vk.length + i + 1}`)
         .join(" and ")}`;
-      await db.query(sql, [...vk.map((k) => values[k]), ...mk.map((k) => match[k])]);
+      await db.query(sql, [...vk.map((k) => toParam(values[k])), ...mk.map((k) => match[k])]);
     },
     async finalize(ids) {
       await db.query(
@@ -57,6 +63,7 @@ export async function seedDemo(db: PGlite) {
     },
     log: (m) => console.log(`[itn demo seed] ${m}`),
   };
+  if (opts.transaction === false) return runSeed(adapter);
   // One transaction so a crash never leaves a half-seeded database behind.
   await db.exec("begin");
   try {
@@ -66,4 +73,27 @@ export async function seedDemo(db: PGlite) {
     await db.exec("rollback");
     throw err;
   }
+}
+
+const g = globalThis as unknown as { __yoruDemoSeed?: Promise<void> };
+
+// Demo login on a plain Postgres database (DEMO_MODE with DATA_BACKEND=neon,
+// used for local end-to-end tests): seed once if there are no people yet.
+// PGlite seeds itself when it opens. Never runs with Supabase Auth.
+export function ensureDemoSeeded(): Promise<void> {
+  if (appMode() !== "demo" || dataBackend() !== "postgres") return Promise.resolve();
+  g.__yoruDemoSeed ??= (async () => {
+    const { pgQuery, pgTransaction } = await import("../postgres");
+    const humans = await pgQuery<{ n: number }>("select count(*)::int as n from public.profiles where not is_bot");
+    if (humans.rows[0].n > 0) return;
+    await pgTransaction(async (conn) => {
+      await conn.exec("lock table public.profiles in exclusive mode");
+      const again = await conn.query<{ n: number }>("select count(*)::int as n from public.profiles where not is_bot");
+      if (again.rows[0].n === 0) await seedDemo(conn, { transaction: false });
+    });
+  })().catch((err) => {
+    g.__yoruDemoSeed = undefined;
+    throw err;
+  });
+  return g.__yoruDemoSeed;
 }

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { appMode } from "@/lib/config";
-import { DEMO_COOKIE, requireConfigured } from "@/lib/server/db";
-import { demoDb } from "@/lib/server/demo/pglite";
+import { DEMO_COOKIE, requireConfigured, serviceQuery } from "@/lib/server/db";
 import { AppError, errorResponse } from "@/lib/server/errors";
 import { clientIp, limit } from "@/lib/server/ratelimit";
 import { supabaseForRequest } from "@/lib/server/supabase";
@@ -20,8 +19,7 @@ export async function POST(req: NextRequest) {
 
     if (appMode() === "demo") {
       const { user_id } = DemoLogin.parse(body);
-      const db = await demoDb();
-      const ok = await db.query("select 1 from public.profiles where id = $1 and not banned and not is_bot", [user_id]);
+      const ok = await serviceQuery("select 1 from public.profiles where id = $1 and not banned and not is_bot", [user_id]);
       if (!ok.rows.length) throw new AppError("NOT_FOUND", "That demo account does not exist (or got banned).", 404);
       const res = NextResponse.json({ data: { ok: true } });
       res.cookies.set(DEMO_COOKIE, user_id, {

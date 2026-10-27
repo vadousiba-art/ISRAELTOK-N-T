@@ -2,11 +2,9 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { appMode } from "@/lib/config";
-import { DEMO_COOKIE, getUserDb, serviceRpc } from "@/lib/server/db";
-import { demoDataDir } from "@/lib/config";
-import { demoDb } from "@/lib/server/demo/pglite";
-import { AppError, errorResponse } from "@/lib/server/errors";
+import { appMode, dataBackend, demoDataDir } from "@/lib/config";
+import { DEMO_COOKIE, getUserDb, serviceQuery, serviceRpc } from "@/lib/server/db";
+import { AppError, assertWritable, errorResponse } from "@/lib/server/errors";
 import { clientIp, limit } from "@/lib/server/ratelimit";
 import { supabaseAdmin, supabaseForRequest } from "@/lib/server/supabase";
 
@@ -17,6 +15,7 @@ const Body = z.object({ confirm: z.string().max(40) });
 // uploaded files and the login itself, then signs them out.
 export async function POST(req: NextRequest) {
   try {
+    assertWritable();
     if (!limit(`delete:${clientIp(req)}`, 5, 60_000)) throw new AppError("RATE_LIMIT", "Too many attempts. Please wait a minute.", 429);
     const db = await getUserDb();
     const me = await db.rpc<{ username: string; role: string }>("get_me");
@@ -29,13 +28,14 @@ export async function POST(req: NextRequest) {
 
     const res = NextResponse.json({ data: { ok: true } });
     if (appMode() === "demo") {
-      const pg = await demoDb();
-      await pg.query("delete from auth.users where id = $1", [db.userId]);
+      await serviceQuery("delete from auth.users where id = $1", [db.userId]);
       await fs.rm(path.join(/*turbopackIgnore: true*/ process.cwd(), demoDataDir(), "uploads", "u", db.userId), { recursive: true, force: true });
       res.cookies.delete(DEMO_COOKIE);
       return res;
     }
 
+    // Neon keeps a mirror of the identity (no password); remove it too.
+    if (dataBackend() === "postgres") await serviceQuery("delete from auth.users where id = $1", [db.userId]);
     const admin = supabaseAdmin();
     const folder = `u/${db.userId}`;
     for (let i = 0; i < 20; i++) {

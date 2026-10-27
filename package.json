@@ -11,6 +11,12 @@
     "test": "vitest run",
     "test:e2e": "next build && playwright test",
     "seed": "tsx scripts/seed-supabase.ts",
+    "db:local": "bash scripts/db/local-postgres.sh",
+    "db:migrate": "tsx scripts/db/migrate.mts",
+    "db:copy": "tsx scripts/db/copy-to-neon.mts",
+    "db:rehearse": "tsx scripts/db/rehearse.mts",
+    "test:pg": "TEST_DATABASE_URL=${TEST_DATABASE_URL:-postgres://neondb_owner@127.0.0.1:54329/yoru_test} vitest run tests/db/postgres-adapter.test.ts",
+    "load-test": "tsx scripts/load-test.mts",
     "demo:reset": "node -e \"require('fs').rmSync('.data',{recursive:true,force:true});console.log('Demo data wiped. It will re-seed on next start.')\""
   },
   "dependencies": {
@@ -19,10 +25,12 @@
     "@fontsource-variable/inter": "^5.3.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.118.0",
+    "@vercel/functions": "^3.10.4",
     "clsx": "^2.1.1",
     "lucide-react": "^1.61.0",
     "motion": "^14.6.0",
     "next": "16.4.2",
+    "pg": "^8.23.1",
     "qrcode": "^1.5.4",
     "react": "19.3.0",
     "react-dom": "19.3.0",
@@ -34,6 +42,7 @@
     "@playwright/test": "^1.64.1",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^22.20.5",
+    "@types/pg": "^8.23.1",
     "@types/qrcode": "^1.5.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -46,5 +55,10 @@
   },
   "engines": {
     "node": ">=20.12"
+  },
+  "overrides": {
+    "@vercel/cli-config": {
+      "zod": "$zod"
+    }
   }
 }

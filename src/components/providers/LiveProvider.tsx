@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef } from "react";
 import { useSWRConfig } from "swr";
 import { useApp } from "./AppProvider";
-import { byFn } from "@/lib/client/hooks";
+import { byFn, refreshFeeds } from "@/lib/client/hooks";
 import { rpc } from "@/lib/client/api";
 import type { LiveEvent } from "@/lib/types";
 import { celebrateLevelUp } from "@/lib/progress";
@@ -12,9 +12,12 @@ type Listener = (e: LiveEvent) => void;
 type LiveCtx = { subscribe: (l: Listener) => () => void };
 const Ctx = createContext<LiveCtx | null>(null);
 
-// Realtime fan-out. Supabase mode: one Realtime channel with postgres_changes
-// (RLS decides what each user receives). Demo mode: the /api/live SSE stream.
-// Events only carry ids; components refetch through the RPCs.
+// Realtime fan-out. Events only carry ids; components refetch through the RPCs.
+//   postgres_changes  data on Supabase: one channel, RLS decides what each user receives
+//   broadcast         data on Neon: the server relays committed changes to two private
+//                     Broadcast topics (this user's own, and all members); Realtime
+//                     Authorization only lets a user join their own user topic
+//   sse               demo login: the /api/live Server-Sent Events stream
 export function LiveProvider({ userId, children }: { userId: string; children: React.ReactNode }) {
   const { config, supabase, toast } = useApp();
   const listeners = useRef(new Set<Listener>());
@@ -36,13 +39,17 @@ export function LiveProvider({ userId, children }: { userId: string; children: R
       }
       if (e.type === "message") mutate(byFn("get_me", "get_channels"));
       if (e.type === "story") mutate(byFn("get_stories"));
+      if (e.type === "resync") {
+        mutate(byFn("get_me", "get_notifications", "get_channels", "get_stories", "get_my_progress"));
+        refreshFeeds();
+      }
       for (const l of listeners.current) l(e);
     },
     [mutate, toast],
   );
 
   useEffect(() => {
-    if (config.mode === "demo") {
+    if (config.realtime === "sse") {
       let es: EventSource | null = null;
       let retry: ReturnType<typeof setTimeout> | undefined;
       let closed = false;
@@ -69,6 +76,24 @@ export function LiveProvider({ userId, children }: { userId: string; children: R
     }
     const sb = supabase();
     if (!sb) return;
+    if (config.realtime === "broadcast") {
+      let cancelled = false;
+      const channels: ReturnType<typeof sb.channel>[] = [];
+      const onLive = ({ payload }: { payload: { events?: LiveEvent[] } }) => {
+        for (const e of payload?.events ?? []) emit(e);
+      };
+      (async () => {
+        await sb.realtime.setAuth(); // private topics need the user's access token
+        if (cancelled) return;
+        for (const topic of [`yoru:u:${userId}`, "yoru:all"]) {
+          channels.push(sb.channel(topic, { config: { private: true } }).on("broadcast", { event: "live" }, onLive).subscribe());
+        }
+      })().catch(() => {});
+      return () => {
+        cancelled = true;
+        for (const ch of channels) sb.removeChannel(ch);
+      };
+    }
     const ch = sb
       .channel(`itn-live-${userId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, (p) => {
@@ -98,7 +123,7 @@ export function LiveProvider({ userId, children }: { userId: string; children: R
     return () => {
       sb.removeChannel(ch);
     };
-  }, [config.mode, supabase, userId, emit]);
+  }, [config.realtime, supabase, userId, emit]);
 
   // Presence heartbeat while the tab is visible.
   useEffect(() => {

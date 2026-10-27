@@ -79,7 +79,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Ambience mode={ambience} />
         {config.mode === "demo" && (
           <div className="relative z-30 border-b border-line bg-bg-2 px-3 py-1 text-center text-[11px] font-medium tracking-wide text-muted">
-            DEMO MODE · local embedded database · anyone can log in as anyone ·{" "}
+            DEMO MODE · local test login · anyone can log in as anyone ·{" "}
             <a href="/setup" className="text-brand underline">
               connect Supabase
             </a>

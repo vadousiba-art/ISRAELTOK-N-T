@@ -4,7 +4,7 @@ import { aiConfig } from "@/lib/config";
 import { intensityRule, TOOL_INSTRUCTIONS, type Intensity, type ToolName } from "@/lib/ai/prompts";
 import { aiAvailable, menace, type AiResult } from "@/lib/server/ai";
 import { getUserDb, serviceRpc, type Db } from "@/lib/server/db";
-import { AppError, handle } from "@/lib/server/errors";
+import { AppError, assertWritable, handle } from "@/lib/server/errors";
 import type { Me, Message, Post } from "@/lib/types";
 
 // Claude calls can take a while; give serverless hosts (e.g. Vercel) room.
@@ -88,6 +88,7 @@ async function checkQuota(db: Db) {
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ tool: string }> }) {
   return handle(async () => {
+    assertWritable();
     const { tool } = await ctx.params;
     if (!Object.prototype.hasOwnProperty.call(INPUTS, tool)) throw new AppError("NOT_FOUND", "Unknown Menace tool.", 404);
     const name = tool as ToolName;

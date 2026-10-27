@@ -32,7 +32,7 @@ const profile = async (id: string) =>
 
 beforeAll(async () => {
   db = await PGlite.create();
-  await db.exec(fs.readFileSync(path.join(root, "src/lib/server/demo/shim.sql"), "utf8"));
+  await db.exec(fs.readFileSync(path.join(root, "src/lib/database/postgres-shim.sql"), "utf8"));
   for (const f of ["0001_core.sql", "0003_yoru_features.sql", "0004_open_signup.sql", "0004_open_signup.sql"]) {
     await db.exec(fs.readFileSync(path.join(root, "supabase/migrations", f), "utf8"));
   }

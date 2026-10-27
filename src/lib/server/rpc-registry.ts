@@ -178,3 +178,14 @@ export type RpcName = keyof typeof RPC_SCHEMAS;
 export function isRpcName(name: string): name is RpcName {
   return Object.prototype.hasOwnProperty.call(RPC_SCHEMAS, name);
 }
+
+// Functions that only read. Everything else is paused while
+// MAINTENANCE_READ_ONLY=true (database cutover window, see
+// docs/database-migration.md).
+export const READ_RPCS: ReadonlySet<RpcName> = new Set<RpcName>([
+  "get_me", "get_feed", "get_post", "get_comments", "get_stories", "get_channels", "get_channel",
+  "get_messages", "get_message", "get_notifications", "get_members", "get_profile", "get_leaderboard",
+  "get_trending_tags", "search_profiles", "get_blocked", "get_ai_history", "admin_overview", "get_site",
+  "get_my_progress", "get_profile_extras", "get_featured", "get_level_board", "admin_get_site",
+  "admin_stats", "admin_audit", "admin_member_extras", "admin_support_inbox",
+]);

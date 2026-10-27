@@ -1,25 +1,33 @@
 import fs from "node:fs";
 import { Readable } from "node:stream";
 import { NextRequest, NextResponse } from "next/server";
-import { appMode } from "@/lib/config";
-import { getUserDb } from "@/lib/server/db";
+import { appMode, dataBackend } from "@/lib/config";
+import { getUserDb, serviceQuery } from "@/lib/server/db";
 import { errorResponse, AppError } from "@/lib/server/errors";
-import { supabaseForRequest } from "@/lib/server/supabase";
+import { supabaseAdmin, supabaseForRequest } from "@/lib/server/supabase";
 import { demoUploadFile, MIME_BY_EXT, UPLOAD_PATH_RE } from "@/lib/server/uploads";
 
 // Members-only media. Supabase: redirect to a short-lived signed URL (the
-// bucket's RLS policy re-checks membership). Demo: stream from disk with
-// Range support so videos can seek.
+// bucket's RLS policy re-checks membership). Neon: membership lives in Neon,
+// so it is checked there and the URL is signed with the server key. Demo:
+// stream from disk with Range support so videos can seek.
 export async function GET(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
   try {
     const { path } = await ctx.params;
     const p = path.join("/");
     if (!UPLOAD_PATH_RE.test(p)) throw new AppError("NOT_FOUND", "No such file.", 404);
-    await getUserDb();
+    const db = await getUserDb();
 
     if (appMode() === "supabase") {
-      const sb = await supabaseForRequest();
-      const { data, error } = await sb.storage.from("media").createSignedUrl(p, 3600);
+      let storage;
+      if (dataBackend() === "postgres") {
+        const ok = await serviceQuery("select 1 from public.profiles where id = $1 and not banned and not is_bot", [db.userId]);
+        if (!ok.rows.length) throw new AppError("NOT_MEMBER", "Members only.", 401);
+        storage = supabaseAdmin().storage;
+      } else {
+        storage = (await supabaseForRequest()).storage;
+      }
+      const { data, error } = await storage.from("media").createSignedUrl(p, 3600);
       if (error || !data) throw new AppError("NOT_FOUND", "That file vanished.", 404);
       return NextResponse.redirect(data.signedUrl, {
         status: 302,
