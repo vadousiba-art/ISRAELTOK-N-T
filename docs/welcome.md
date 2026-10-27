@@ -85,3 +85,15 @@ physical Android device; tested in Chromium at phone size.
 - `tests/db/welcome.test.ts`: the preference, account age, input validation, signed-out refusal.
 - `tests/unit/welcome.test.ts`: config validity, captions translatable and inside the film, no price, policy, source choice.
 - `tests/e2e/flows.spec.ts`: a new account sees the film once (muted start, playback, sound toggle, skip), it isn't shown again after reload, replay hub (short cut, read notes), fallback when the files can't load, captions in Japanese, the landing-page intro.
+
+## Production check (2026-10-27)
+
+Migration 0008 applied to the live database (backed up first; account,
+post and message counts unchanged; RLS on every table; signed-out callers
+refused). Deployed to yoru-social.vercel.app, then checked on the live site
+with a throwaway account in a phone-sized Chromium:
+
+- `/about` → "Watch the 80-second intro" plays for a signed-out visitor (portrait WebM chosen).
+- A new account sees "Enter the Night" right after joining; it plays; Skip closes it; after a reload it does not come back.
+- The test account was then deleted through Settings → Delete my account; the database shows no trace of it.
+- Film files are served with `200`, the right content types, a one-year immutable cache and range requests (`206`).
