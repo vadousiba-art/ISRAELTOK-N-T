@@ -177,6 +177,8 @@ export const RPC_SCHEMAS = {
   // Open Gates (migration 0007)
   open_gates_version: none,
   get_my_identity: none,
+  get_welcome_state: none,
+  mark_welcome_seen: z.object({ p_version: z.string().regex(/^[0-9]{1,4}(\.[0-9]{1,3})?$/) }),
   update_my_identity: z.object({
     p: z
       .object({
@@ -251,5 +253,5 @@ export const READ_RPCS: ReadonlySet<RpcName> = new Set<RpcName>([
   "admin_stats", "admin_audit", "admin_member_extras", "admin_support_inbox",
   "open_gates_version", "get_my_identity", "get_profile_identity", "get_discover", "get_my_collections",
   "get_collection", "get_my_themes", "get_my_creator_application", "admin_creator_queue", "admin_pro_members",
-  "admin_report_flags",
+  "admin_report_flags", "get_welcome_state",
 ]);

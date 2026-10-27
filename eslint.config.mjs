@@ -17,6 +17,8 @@ const eslintConfig = defineConfig([
     "teaser-002/**",
     "break-the-feed/**",
     "promo-03/**",
+    // Welcome film project (capture, canvas composition, render scripts).
+    "welcome/**",
   ]),
 ]);
 
