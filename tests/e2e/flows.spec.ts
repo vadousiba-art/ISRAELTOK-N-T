@@ -352,6 +352,12 @@ test("visitors can watch the intro from the landing page before joining", async 
   const film = page.getByRole("dialog", { name: "Enter the Night" });
   await expect(film).toBeVisible();
   await expect(film.getByRole("button", { name: /Join YORU/ })).toBeVisible();
+  // The film files are public: they really play for a signed-out visitor.
+  await expect.poll(() => film.locator("video").evaluate((v: HTMLVideoElement) => v.currentTime), { timeout: 15_000 }).toBeGreaterThan(0.5);
+  for (const f of ["poster-land.jpg", "og.jpg", "full-land.webm"]) {
+    const res = await page.request.get(`/welcome/v${cues.version}/${f}`, { maxRedirects: 0 });
+    expect(res.status(), f).toBe(200);
+  }
   await film.getByRole("button", { name: "Close" }).click();
   await expect(film).toBeHidden();
 });
