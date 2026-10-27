@@ -17,6 +17,14 @@ export interface ProfileLite {
   level?: number;
   accent_hue?: number;
   flair?: string;
+  // Pro Universe (migration 0009): the public look, effective items only.
+  look?: PublicLook | null;
+}
+
+export interface PublicLook {
+  ring?: string;
+  nameplate?: string;
+  badge?: string;
 }
 
 export type CurrentlyKind = "watching" | "reading" | "listening" | "playing";

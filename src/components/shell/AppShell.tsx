@@ -21,6 +21,7 @@ import { Celebrations } from "@/components/fx/Celebrations";
 import { CommandPalette } from "@/components/fx/CommandPalette";
 import { AccentStyle, AnnouncementBanner } from "@/components/yoru/Progression";
 import { WelcomeExperience } from "@/components/welcome/WelcomeExperience";
+import { ProRuntime } from "@/components/pro/ProRuntime";
 import { LocaleSync } from "@/components/yoru/LocaleSync";
 import type { Me } from "@/lib/types";
 
@@ -79,6 +80,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <LiveProvider userId={me.id}>
         <AccentStyle />
         <Ambience mode={ambience} />
+        <ProRuntime />
         {config.mode === "demo" && (
           <div className="relative z-30 border-b border-line bg-bg-2 px-3 py-1 text-center text-[11px] font-medium tracking-wide text-muted">
             DEMO MODE · local test login · anyone can log in as anyone ·{" "}

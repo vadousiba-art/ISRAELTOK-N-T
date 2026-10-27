@@ -26,6 +26,7 @@ import {
 import clsx from "clsx";
 import { useSWRConfig } from "swr";
 import { Avatar } from "@/components/ui/Avatar";
+import { ProBadgeMark, ProNameplateMark } from "@/components/pro/ProMarks";
 import { NameLink, TimeAgo, VerifiedBadge } from "@/components/ui/bits";
 import { RichText } from "@/components/ui/RichText";
 import { Menu, type MenuItem } from "@/components/ui/Menu";
@@ -390,7 +391,7 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
       )}
       <div className="flex gap-3">
         <Link href={`/u/${shown.author.username}`} onClick={(e) => e.stopPropagation()} aria-label={shown.author.display_name}>
-          <Avatar src={shown.author.avatar_url} name={shown.author.display_name} size={detail ? 52 : 50} />
+          <Avatar src={shown.author.avatar_url} name={shown.author.display_name} size={detail ? 52 : 50} proRing={shown.author.look?.ring} />
         </Link>
         <div className="min-w-0 flex-1">
           <div className="flex items-start gap-2">
@@ -400,6 +401,7 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
               </NameLink>
               {shown.author.badge && <span className="text-[15px] leading-none">{shown.author.badge !== "🤖" && shown.author.badge}</span>}
               {shown.author.verified && <VerifiedBadge size={17} />}
+              <ProBadgeMark id={shown.author.look?.badge} />
               {!shown.author.is_bot && <LevelChip level={shown.author.level} />}
               {shown.author.flair && <span className="hidden shrink-0 text-xs text-brand-2 sm:inline">{shown.author.flair}</span>}
               <span className="min-w-0 truncate text-muted">@{shown.author.username}</span>
@@ -411,6 +413,7 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
             </div>
             <Menu trigger={<MoreHorizontal size={20} />} items={menuItems} />
           </div>
+          {detail && shown.author.look?.nameplate && <ProNameplateMark id={shown.author.look.nameplate} className="mt-0.5" still />}
           {shown.body && (
             <RichText
               text={shown.body}

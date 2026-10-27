@@ -10,6 +10,7 @@ import { ai, rpc } from "@/lib/client/api";
 import { useApp } from "@/components/providers/AppProvider";
 import { useShell } from "@/components/shell/AppShell";
 import { Avatar } from "@/components/ui/Avatar";
+import { ProBadgeMark } from "@/components/pro/ProMarks";
 import { Empty, NameLink, TimeAgo, VerifiedBadge } from "@/components/ui/bits";
 import { RichText } from "@/components/ui/RichText";
 import { Menu } from "@/components/ui/Menu";
@@ -128,7 +129,7 @@ function CommentItem({ node, depth, postId, refresh }: { node: Node; depth: numb
     <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} className={clsx(depth > 0 && "ml-5 border-l-2 border-line pl-3 sm:ml-8")}>
       <div className={clsx("group flex gap-2.5 py-2.5", node.is_ai && "rounded-2xl bg-roast/5 px-2 ring-1 ring-roast/30")}>
         <Link href={`/u/${node.author.username}`}>
-          <Avatar src={node.author.avatar_url} name={node.author.display_name} size={34} ring={node.is_ai ? "gradient" : "none"} />
+          <Avatar src={node.author.avatar_url} name={node.author.display_name} size={34} ring={node.is_ai ? "gradient" : "none"} proRing={node.author.look?.ring} />
         </Link>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 text-sm">
@@ -136,6 +137,7 @@ function CommentItem({ node, depth, postId, refresh }: { node: Node; depth: numb
               {node.author.display_name}
             </NameLink>
             {node.author.verified && <VerifiedBadge size={14} />}
+            <ProBadgeMark id={node.author.look?.badge} size={14} />
             {node.is_ai && <span className="sticker rounded bg-roast px-1 text-[10px] text-white">ROAST</span>}
             <span className="text-muted">·</span>
             <TimeAgo iso={node.created_at} className="text-muted" />
