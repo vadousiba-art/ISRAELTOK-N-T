@@ -4,9 +4,11 @@ Last reviewed: 2026-10-27. Provider limits are summarised in [free-tier-limits.m
 
 ## TL;DR
 
-- **Production today (unchanged):** Vercel (Next.js 16) + Supabase (Postgres, Auth, Storage, Realtime). This stays the recommended production setup on a zero budget. The reasons are in [Decision](#decision-supabase-stays-primary-for-now).
-- **Neon-ready (implemented, tested, off by default):** setting `DATA_BACKEND=neon` moves app data to Neon Postgres. Supabase keeps login, file storage and realtime delivery. The same SQL schema, RLS policies and functions run on both databases.
-- One source of truth per kind of data. Nothing is ever written to two databases at the same time.
+- **YORU runs 100% on Supabase**, across seven Supabase projects (decision of 2026-10-27). Details: [seven-projects.md](seven-projects.md).
+  - **Project 7, the original** (`xxvyoksevysyyzyonbxg`), keeps Auth and every table: one source of truth, unchanged.
+  - **Projects 1–6** share the traffic that can be spread safely: live-update connections and messages (each person and each chat is assigned to one project), and new photo and video uploads (projects with a secret key).
+- Hosting stays on Vercel (Next.js 16).
+- The Neon backend described further down is still in the code and tested, but **not used** (`DATA_BACKEND` unset). It stays off.
 
 ## What the audit found
 

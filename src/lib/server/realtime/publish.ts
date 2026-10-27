@@ -2,6 +2,7 @@ import "server-only";
 import { realtimeTransport, supabaseServiceKey, supabaseUrl } from "@/lib/config";
 import { liveBus } from "./bus";
 import { byTopic, type Delivery } from "./routing";
+import { publishSharded } from "./shards";
 
 // Sends routed live events. Best effort: the write already committed, and
 // every screen also refreshes on its own, so a failed send is logged and never
@@ -13,7 +14,8 @@ export async function publish(deliveries: Delivery[]): Promise<void> {
     for (const d of deliveries) liveBus().emit("delivery", d);
     return;
   }
-  if (transport === "broadcast") await broadcast(deliveries);
+  if (transport === "sharded") await publishSharded(deliveries);
+  else if (transport === "broadcast") await broadcast(deliveries);
 }
 
 let warned = false;

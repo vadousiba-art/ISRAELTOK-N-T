@@ -4,7 +4,8 @@ import { createContext, useCallback, useContext, useEffect, useRef } from "react
 import { useSWRConfig } from "swr";
 import { useApp } from "./AppProvider";
 import { byFn, refreshFeeds } from "@/lib/client/hooks";
-import { rpc } from "@/lib/client/api";
+import { get, rpc } from "@/lib/client/api";
+import { shardClient, type Shard } from "@/lib/client/shards";
 import type { LiveEvent } from "@/lib/types";
 import { celebrateLevelUp } from "@/lib/progress";
 
@@ -18,6 +19,9 @@ const Ctx = createContext<LiveCtx | null>(null);
 //                     Broadcast topics (this user's own, and all members); Realtime
 //                     Authorization only lets a user join their own user topic
 //   sse               demo login: the /api/live Server-Sent Events stream
+//   sharded           live updates spread over the Supabase projects: this user
+//                     listens on one project, on two secret topics (their own
+//                     and all members') handed out by /api/live/topics
 export function LiveProvider({ userId, children }: { userId: string; children: React.ReactNode }) {
   const { config, supabase, toast } = useApp();
   const listeners = useRef(new Set<Listener>());
@@ -72,6 +76,27 @@ export function LiveProvider({ userId, children }: { userId: string; children: R
         closed = true;
         clearTimeout(retry);
         es?.close();
+      };
+    }
+    if (config.realtime === "sharded") {
+      let cancelled = false;
+      let cleanup = () => {};
+      const onLive = ({ payload }: { payload: { events?: LiveEvent[] } }) => {
+        for (const e of payload?.events ?? []) emit(e);
+      };
+      get<{ project: Shard; userTopic: string; allTopic: string }>("/api/live/topics")
+        .then(({ project, userTopic, allTopic }) => {
+          if (cancelled) return;
+          const sc = shardClient(project);
+          const chans = [userTopic, allTopic].map((t) => sc.channel(t).on("broadcast", { event: "live" }, onLive).subscribe());
+          cleanup = () => chans.forEach((c) => sc.removeChannel(c));
+        })
+        .catch(() => {
+          /* screens still refresh on their own */
+        });
+      return () => {
+        cancelled = true;
+        cleanup();
       };
     }
     const sb = supabase();

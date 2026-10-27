@@ -21,6 +21,10 @@
 | Upgrade path | Pro | Pro | Launch (paid, usage-based) |
 | Sources | [limits](https://vercel.com/docs/limits), [fair use](https://vercel.com/docs/limits/fair-use-guidelines), [cron](https://vercel.com/docs/cron-jobs/usage-and-pricing) | [pricing](https://supabase.com/pricing) | [pricing](https://neon.com/pricing), [plans](https://neon.com/docs/introduction/plans), [pooling](https://neon.com/docs/connect/connection-pooling) |
 
+## Seven projects
+
+YORU spreads realtime (and, with secret keys, storage and egress) across seven Supabase Free projects; the totals are in [seven-projects.md](seven-projects.md#capacity-supabase-free-per-project-see-free-tier-limitsmd). Database size and Auth MAU stay single-project limits. Supabase's Free plan allows two free projects **per person** across organisations; read the account note there.
+
 ## Evaluated and not used
 
 | | Cloudflare R2 | Upstash Redis |

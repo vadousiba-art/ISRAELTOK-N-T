@@ -43,14 +43,93 @@ export function dataBackend(): DataBackend {
   return mode === "supabase" ? "supabase" : "pglite";
 }
 
+// ── Seven Supabase projects ──────────────────────────────────────────────────
+// Project 7 is always the ORIGINAL project (NEXT_PUBLIC_SUPABASE_URL): it keeps
+// Auth and every relational table. Projects 1-6 (SUPABASE_PROJECT_n_*) add
+// capacity for the workloads that can be spread safely:
+//   realtime  per-user live-update topics and chat typing (publishable key)
+//   storage   new photo/video uploads (needs that project's secret key)
+// See docs/seven-projects.md.
+export type SupabaseProject = {
+  n: number;
+  ref: string;
+  url: string;
+  publishableKey: string;
+  secretKey?: string;
+  primary: boolean;
+  realtime: boolean;
+  storage: boolean;
+};
+
+const PROJECT_URL = /^https:\/\/([a-z0-9]{20})\.supabase\.co\/?$/;
+const refOf = (url?: string) => url?.match(PROJECT_URL)?.[1];
+
+export function supabaseProjects(): SupabaseProject[] {
+  const out: SupabaseProject[] = [];
+  const primaryRef = refOf(supabaseUrl());
+  for (let n = 1; n <= 6; n++) {
+    const url = env(`SUPABASE_PROJECT_${n}_URL`);
+    const key = env(`SUPABASE_PROJECT_${n}_PUBLISHABLE_KEY`);
+    const ref = refOf(url);
+    if (!ref || !key || ref === primaryRef || out.some((p) => p.ref === ref)) continue;
+    const secretKey = env(`SUPABASE_PROJECT_${n}_SECRET_KEY`);
+    out.push({
+      n,
+      ref,
+      url: `https://${ref}.supabase.co`,
+      publishableKey: key,
+      secretKey,
+      primary: false,
+      realtime: env(`SUPABASE_PROJECT_${n}_REALTIME`) !== "off",
+      storage: Boolean(secretKey) && env(`SUPABASE_PROJECT_${n}_STORAGE`) !== "off",
+    });
+  }
+  if (primaryRef && supabaseAnonKey()) {
+    out.push({
+      n: 7,
+      ref: primaryRef,
+      url: `https://${primaryRef}.supabase.co`,
+      publishableKey: supabaseAnonKey()!,
+      secretKey: supabaseServiceKey(),
+      primary: true,
+      realtime: env("SUPABASE_PROJECT_7_REALTIME") !== "off",
+      storage: true,
+    });
+  }
+  return out;
+}
+
+export const primaryProject = () => supabaseProjects().find((p) => p.primary);
+
+// Realtime sharding is opt-in (REALTIME_SHARDS=on) because with Supabase data
+// it needs migration 0006 applied to the original project first.
+export function realtimeShards(): SupabaseProject[] {
+  if (env("REALTIME_SHARDS") !== "on") return [];
+  return supabaseProjects().filter((p) => p.realtime);
+}
+
+// Projects that receive NEW uploads. Existing files never move. Optional
+// STORAGE_UPLOAD_PROJECTS=1,3,7 limits the list (e.g. to skip a full project).
+export function uploadProjects(): SupabaseProject[] {
+  if (appMode() !== "supabase") return [];
+  const only = env("STORAGE_UPLOAD_PROJECTS")
+    ?.split(",")
+    .map((x) => Number(x.trim()))
+    .filter(Boolean);
+  return supabaseProjects().filter((p) => p.storage && (!only?.length || only.includes(p.n)));
+}
+
 // How the browser receives live updates:
+//   sharded           live updates spread over the Supabase projects: each user
+//                     listens on one project (REALTIME_SHARDS=on)
 //   postgres_changes  Supabase Realtime streams table changes (data on Supabase)
 //   broadcast         the server relays changes over Supabase Realtime Broadcast
 //                     to private per-user topics (data on Neon, auth on Supabase)
 //   sse               /api/live Server-Sent Events (demo login, single server)
-export type RealtimeTransport = "postgres_changes" | "broadcast" | "sse";
+export type RealtimeTransport = "sharded" | "postgres_changes" | "broadcast" | "sse";
 
 export function realtimeTransport(): RealtimeTransport {
+  if (appMode() !== "unconfigured" && realtimeShards().length) return "sharded";
   if (appMode() !== "supabase") return "sse";
   return dataBackend() === "postgres" ? "broadcast" : "postgres_changes";
 }
@@ -70,6 +149,32 @@ export function configProblems(): string[] {
     }
   }
   return problems;
+}
+
+// Non-blocking: an extra project with a bad setting is skipped, never allowed
+// to take the app down. Shown on /setup and /api/health.
+export function configWarnings(): string[] {
+  const warnings: string[] = [];
+  // The original project must never be replaced by one of the extra projects.
+  const p7 = refOf(env("SUPABASE_PROJECT_7_URL"));
+  if (env("SUPABASE_PROJECT_7_URL") && p7 !== refOf(supabaseUrl())) {
+    warnings.push("SUPABASE_PROJECT_7_URL must be the original project (the same as NEXT_PUBLIC_SUPABASE_URL).");
+  }
+  const seen = new Map<string, number>();
+  for (let n = 1; n <= 6; n++) {
+    const raw = env(`SUPABASE_PROJECT_${n}_URL`);
+    if (!raw) continue;
+    const ref = refOf(raw);
+    if (!ref) warnings.push(`SUPABASE_PROJECT_${n}_URL is not a https://<ref>.supabase.co URL.`);
+    else if (ref === refOf(supabaseUrl())) warnings.push(`SUPABASE_PROJECT_${n}_URL is the original project; projects 1-6 must be the extra ones.`);
+    else if (seen.has(ref)) warnings.push(`SUPABASE_PROJECT_${n}_URL repeats project ${seen.get(ref)}.`);
+    else seen.set(ref, n);
+    if (!env(`SUPABASE_PROJECT_${n}_PUBLISHABLE_KEY`)) warnings.push(`SUPABASE_PROJECT_${n}_PUBLISHABLE_KEY is missing (project ${n} is skipped).`);
+  }
+  if (env("REALTIME_SHARDS") === "on" && !supabaseProjects().some((p) => p.realtime)) {
+    warnings.push("REALTIME_SHARDS=on but no Supabase project is configured for realtime.");
+  }
+  return warnings;
 }
 
 export const aiConfig = () => ({

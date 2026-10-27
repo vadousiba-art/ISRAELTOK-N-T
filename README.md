@@ -51,14 +51,19 @@ Demo mode lets anyone log in as anyone. It turns itself off in production unless
 
 ---
 
+## Seven Supabase projects
+
+YORU runs entirely on Supabase. The original project keeps logins and all data; six extra projects share live-update connections and messages (and new uploads, when given secret keys), multiplying those free-tier limits. Setup, verification results and the switch-on steps: [docs/seven-projects.md](docs/seven-projects.md). `npm run shards:check` verifies every project live.
+
 ## Database options (Supabase or Neon)
 
 By default all app data lives in Supabase Postgres. Setting `DATA_BACKEND=neon` plus `DATABASE_URL` keeps app data on **Neon** instead. Supabase still handles login, files and realtime delivery. The same migrations, RLS policies and functions run on both, user ids don't change, and passwords never leave Supabase.
 
-**Production stays on Supabase for now.** Neon's free plan caps compute at 100 CU-hours a month, which an always-online YORU would likely exhaust mid-month. Everything is built, tested and documented, ready for when it makes sense:
+**Production stays on Supabase (decided: 100% Supabase).** Neon's free plan caps compute at 100 CU-hours a month, which an always-online YORU would likely exhaust mid-month. Everything is built, tested and documented, ready for when it makes sense:
 
 | Doc | What's in it |
 | --- | --- |
+| [docs/seven-projects.md](docs/seven-projects.md) | The seven-project setup: what runs where, capacity, verification, how to turn it on |
 | [docs/architecture.md](docs/architecture.md) | Audit findings, the decision, service responsibilities, auth/media/realtime flows, outage behaviour |
 | [docs/database-migration.md](docs/database-migration.md) | Backup, provision, copy, verify, cutover (read-only window), monitor; local rehearsal |
 | [docs/api-integrations.md](docs/api-integrations.md) | Every provider API used, where, and how errors and retries work |
@@ -159,6 +164,7 @@ tests/unit|db|e2e      Vitest unit tests, SQL security tests (PGlite), Playwrigh
 | `npm run demo:reset` | Wipe the local demo database |
 | `npm run db:local` / `db:migrate` / `db:copy` / `db:rehearse` | Postgres/Neon tooling (see Database options) |
 | `npm run test:pg` | Neon adapter tests against a real Postgres (`TEST_DATABASE_URL`) |
+| `npm run shards:check` / `shards:setup` | Verify the seven Supabase projects live / create the media buckets in the extra projects |
 | `npm run load-test -- --url http://localhost:3000` | Lightweight load test against a demo-mode server |
 
 ## Content note

@@ -55,10 +55,11 @@ export function newUploadPath(userId: string, mime: string) {
   return `u/${userId}/${crypto.randomUUID()}.${EXT[mime]}`;
 }
 
-export const UPLOAD_PATH_RE = /^u\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|png|webp|gif|mp4|webm|mov)$/;
+// u/<user>/<file> in the original project, or s<n>/u/<user>/<file> in project n.
+export const UPLOAD_PATH_RE = /^(s[1-7]\/)?u\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|png|webp|gif|mp4|webm|mov)$/;
 
 export function demoUploadFile(p: string) {
-  if (!UPLOAD_PATH_RE.test(p)) throw new Error("bad path");
+  if (!UPLOAD_PATH_RE.test(p) || !p.startsWith("u/")) throw new Error("bad path");
   return path.join(/*turbopackIgnore: true*/ process.cwd(), demoDataDir(), "uploads", p);
 }
 
@@ -96,7 +97,7 @@ export async function verifyUploads(
   sniffRemote: ((path: string) => Promise<Uint8Array | null>) | null,
 ): Promise<string | null> {
   for (const p of paths) {
-    if (!p.startsWith(`u/${userId}/`)) return "That file belongs to someone else's upload.";
+    if (!p.replace(/^s[1-7]\//, "").startsWith(`u/${userId}/`)) return "That file belongs to someone else's upload.";
     if (!sniffRemote || verified.has(p)) continue;
     let head: Uint8Array | null;
     try {

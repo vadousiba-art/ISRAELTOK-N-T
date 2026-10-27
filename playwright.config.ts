@@ -8,6 +8,11 @@ const PORT = 3100;
 const pgEnv: Record<string, string> = process.env.E2E_DATABASE_URL
   ? { DATA_BACKEND: "neon", DATABASE_URL: process.env.E2E_DATABASE_URL }
   : {};
+// Optional: run the flows with live updates spread over real Supabase projects
+// (SUPABASE_PROJECT_n_* and REALTIME_SHARDS=on in the environment).
+const shardEnv = Object.fromEntries(
+  Object.entries(process.env).filter(([k, v]) => v && (k.startsWith("SUPABASE_PROJECT_") || k.startsWith("REALTIME_"))),
+) as Record<string, string>;
 
 export default defineConfig({
   testDir: "tests/e2e",
@@ -27,6 +32,6 @@ export default defineConfig({
     url: `http://localhost:${PORT}/api/health`,
     reuseExistingServer: false,
     timeout: 120_000,
-    env: { DEMO_MODE: "true", DEMO_DATA_DIR: ".data-e2e", ANTHROPIC_API_KEY: "", ...pgEnv },
+    env: { DEMO_MODE: "true", DEMO_DATA_DIR: ".data-e2e", ANTHROPIC_API_KEY: "", ...pgEnv, ...shardEnv },
   },
 });

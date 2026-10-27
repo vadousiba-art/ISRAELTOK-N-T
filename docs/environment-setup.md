@@ -9,7 +9,10 @@ Never commit `.env*` files (they are git-ignored, except `.env.example`). Never 
 | `NEXT_PUBLIC_SUPABASE_URL` | Production (always) | Supabase → Project Settings → API | Public |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` (or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) | Production (always) | Supabase → Project Settings → API Keys | Public (RLS protects data) |
 | `SUPABASE_SERVICE_ROLE_KEY` (or `SUPABASE_SECRET_KEY`) | Production (always). Required for sign-up, uploads, the bot, and Neon mode | Supabase → API Keys (secret) | **Server only** |
-| `DATA_BACKEND` | Only to switch app data to Neon: `neon` | You | Server |
+| `SUPABASE_PROJECT_n_URL`, `SUPABASE_PROJECT_n_PUBLISHABLE_KEY` (n = 1–6) | Seven-project setup | Each extra project's dashboard → API | Public |
+| `SUPABASE_PROJECT_n_SECRET_KEY` | Spreading uploads to project n | That project → API Keys → Secret | **Server only** |
+| `REALTIME_SHARDS`, `REALTIME_TOPIC_SECRET`, `STORAGE_UPLOAD_PROJECTS` | Seven-project setup ([seven-projects.md](seven-projects.md)) | You | Server |
+| `DATA_BACKEND` | Only to switch app data to Neon: `neon` (not used) | You | Server |
 | `DATABASE_URL` | With `DATA_BACKEND=neon` | Neon → Connect → **Pooled** connection (host has `-pooler`) | **Server only** |
 | `DATABASE_URL_DIRECT` | Only for `npm run db:migrate` / `db:copy` on your machine | Neon → Connect → direct connection | **Never in Vercel** (local use only) |
 | `SOURCE_DATABASE_URL` | Only for `npm run db:copy` | Supabase → Project Settings → Database → connection string (Session pooler) | **Local only**, contains the DB password |

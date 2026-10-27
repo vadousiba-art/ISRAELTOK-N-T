@@ -3,7 +3,7 @@ import { z } from "zod";
 import { appMode, uploadConfig } from "@/lib/config";
 import { getUserDb } from "@/lib/server/db";
 import { AppError, assertWritable, handle } from "@/lib/server/errors";
-import { supabaseAdmin } from "@/lib/server/supabase";
+import { newMediaLocation, storageFor } from "@/lib/server/storage";
 import { maxBytesFor, mediaKind, newUploadPath, signDemoUpload } from "@/lib/server/uploads";
 
 const Req = z.object({ type: z.string().max(60), size: z.number().int().positive() });
@@ -35,9 +35,19 @@ export async function POST(req: NextRequest) {
 
     const path = newUploadPath(db.userId, type);
     if (appMode() === "supabase") {
-      const { data, error } = await supabaseAdmin().storage.from("media").createSignedUploadUrl(path);
+      // New uploads are spread over the Supabase projects that accept them.
+      const where = newMediaLocation(path);
+      const { bucket, objectPath } = storageFor(where.path);
+      const { data, error } = await bucket.createSignedUploadUrl(objectPath);
       if (error || !data) throw new AppError("INTERNAL", "Storage refused the upload. Is the media bucket set up?", 500);
-      return { mode: "supabase", path, token: data.token, kind };
+      return {
+        mode: "supabase",
+        path: where.path,
+        objectPath,
+        token: data.token,
+        kind,
+        project: where.project ? { n: where.project.n, url: where.project.url, key: where.project.publishableKey } : null,
+      };
     }
     const exp = Date.now() + 10 * 60_000;
     const sig = signDemoUpload(path, type, exp);

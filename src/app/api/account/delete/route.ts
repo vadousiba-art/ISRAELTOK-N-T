@@ -7,6 +7,7 @@ import { DEMO_COOKIE, getUserDb, serviceQuery, serviceRpc } from "@/lib/server/d
 import { AppError, assertWritable, errorResponse } from "@/lib/server/errors";
 import { clientIp, limit } from "@/lib/server/ratelimit";
 import { supabaseAdmin, supabaseForRequest } from "@/lib/server/supabase";
+import { allMediaBuckets } from "@/lib/server/storage";
 
 const Body = z.object({ confirm: z.string().max(40) });
 
@@ -38,10 +39,13 @@ export async function POST(req: NextRequest) {
     if (dataBackend() === "postgres") await serviceQuery("delete from auth.users where id = $1", [db.userId]);
     const admin = supabaseAdmin();
     const folder = `u/${db.userId}`;
-    for (let i = 0; i < 20; i++) {
-      const { data: files } = await admin.storage.from("media").list(folder, { limit: 100 });
-      if (!files?.length) break;
-      await admin.storage.from("media").remove(files.map((f) => `${folder}/${f.name}`));
+    // Files may be spread over several Supabase projects.
+    for (const { bucket } of allMediaBuckets()) {
+      for (let i = 0; i < 20; i++) {
+        const { data: files } = await bucket.list(folder, { limit: 100 });
+        if (!files?.length) break;
+        await bucket.remove(files.map((f) => `${folder}/${f.name}`));
+      }
     }
     const { error } = await admin.auth.admin.deleteUser(db.userId);
     if (error) console.error("[yoru] auth user delete failed", error.message);

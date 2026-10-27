@@ -4,13 +4,14 @@ import { getUserDb } from "@/lib/server/db";
 import { AppError, assertWritable, handle } from "@/lib/server/errors";
 import { limit } from "@/lib/server/ratelimit";
 import { READ_RPCS, RPC_SCHEMAS, isRpcName } from "@/lib/server/rpc-registry";
-import { supabaseAdmin } from "@/lib/server/supabase";
+import { storageFor } from "@/lib/server/storage";
 import { uploadPathsIn, verifyUploads } from "@/lib/server/uploads";
 
 // First bytes of an object in the private media bucket (signed URL + Range).
 // null = the object does not exist; throws when storage cannot be reached.
 async function storedHead(path: string): Promise<Uint8Array | null> {
-  const { data, error } = await supabaseAdmin().storage.from("media").createSignedUrl(path, 60);
+  const { bucket, objectPath } = storageFor(path);
+  const { data, error } = await bucket.createSignedUrl(objectPath, 60);
   if (error || !data) {
     if (/not found/i.test(error?.message ?? "")) return null;
     throw new Error(error?.message ?? "no signed url");

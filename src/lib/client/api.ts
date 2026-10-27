@@ -1,6 +1,7 @@
 "use client";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { shardClient, type Shard } from "./shards";
 
 export class ApiError extends Error {
   constructor(
@@ -60,7 +61,15 @@ export type AiResponse = {
 };
 
 type SignResult =
-  | { mode: "supabase"; path: string; token: string; kind: "image" | "video" | "gif" }
+  | {
+      mode: "supabase";
+      path: string;
+      objectPath?: string;
+      token: string;
+      kind: "image" | "video" | "gif";
+      // Set when the file goes to one of the extra Supabase projects.
+      project?: Shard | null;
+    }
   | { mode: "demo"; path: string; uploadUrl: string; kind: "image" | "video" | "gif" };
 
 // Large photos are downscaled in the browser before upload (longest side
@@ -97,9 +106,9 @@ export async function uploadFile(
   const file = await optimizeImage(original);
   const slot = await post<SignResult>("/api/upload/sign", { type: file.type, size: file.size });
   if (slot.mode === "supabase") {
-    const sb = getSupabase();
+    const sb = slot.project ? shardClient(slot.project) : getSupabase();
     if (!sb) throw new ApiError("NOT_CONFIGURED", "Supabase client unavailable.", 500);
-    const { error } = await sb.storage.from("media").uploadToSignedUrl(slot.path, slot.token, file, {
+    const { error } = await sb.storage.from("media").uploadToSignedUrl(slot.objectPath ?? slot.path, slot.token, file, {
       contentType: file.type,
     });
     if (error) throw new ApiError("UPLOAD", `Upload failed: ${error.message}`, 400);

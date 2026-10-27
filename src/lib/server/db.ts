@@ -6,6 +6,11 @@ import { supabaseAdmin, supabaseForRequest } from "./supabase";
 import { demoDb, demoRpc } from "./demo/pglite";
 import { pgQuery, pgRpc } from "./postgres";
 import { ensureDemoSeeded } from "./demo/seed";
+import { READ_RPCS, type RpcName } from "./rpc-registry";
+import { scheduleDrain } from "./realtime/outbox";
+
+// Server-side functions that write (and so may produce live events).
+const SERVICE_WRITES = /^(bot_|delete_account$|submit_support$)/;
 
 export const DEMO_COOKIE = "itn_demo_uid";
 
@@ -106,6 +111,7 @@ export async function getUserDb(): Promise<Db> {
   return rpcVia(uid, async (fn, args) => {
     const { data: out, error } = await sb.rpc(fn, args);
     if (error) throw error;
+    if (!READ_RPCS.has(fn as RpcName)) scheduleDrain();
     return out;
   });
 }
@@ -119,6 +125,7 @@ export async function serviceRpc<T = unknown>(fn: string, args: Record<string, u
     if (backend === "postgres") return await pgRpc<T>(null, fn, args);
     const { data, error } = await supabaseAdmin().rpc(fn, args);
     if (error) throw error;
+    if (SERVICE_WRITES.test(fn)) scheduleDrain();
     return data as T;
   } catch (err) {
     throw toAppError(err);

@@ -5,6 +5,19 @@ import { appMode, dataBackend } from "@/lib/config";
 import { getUserDb, serviceQuery } from "@/lib/server/db";
 import { errorResponse, AppError } from "@/lib/server/errors";
 import { supabaseAdmin, supabaseForRequest } from "@/lib/server/supabase";
+import { splitMediaPath, storageFor } from "@/lib/server/storage";
+
+// Members-only check for files in the extra projects (their buckets cannot
+// see who is a member). Cached briefly per server instance so a feed full of
+// images costs one check, not one per image.
+const memberUntil = new Map<string, number>();
+async function assertMember(db: Awaited<ReturnType<typeof getUserDb>>) {
+  const until = memberUntil.get(db.userId) ?? 0;
+  if (until > Date.now()) return;
+  await db.rpc("get_site"); // raises NOT_MEMBER for banned or unknown accounts
+  memberUntil.set(db.userId, Date.now() + 60_000);
+  if (memberUntil.size > 20_000) memberUntil.clear();
+}
 import { demoUploadFile, MIME_BY_EXT, UPLOAD_PATH_RE } from "@/lib/server/uploads";
 
 // Members-only media. Supabase: redirect to a short-lived signed URL (the
@@ -17,6 +30,14 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ path: strin
     const p = path.join("/");
     if (!UPLOAD_PATH_RE.test(p)) throw new AppError("NOT_FOUND", "No such file.", 404);
     const db = await getUserDb();
+
+    if (appMode() === "supabase" && splitMediaPath(p).n !== null) {
+      await assertMember(db);
+      const { bucket, objectPath } = storageFor(p);
+      const { data, error } = await bucket.createSignedUrl(objectPath, 3600);
+      if (error || !data) throw new AppError("NOT_FOUND", "That file vanished.", 404);
+      return NextResponse.redirect(data.signedUrl, { status: 302, headers: { "Cache-Control": "private, max-age=3000" } });
+    }
 
     if (appMode() === "supabase") {
       let storage;

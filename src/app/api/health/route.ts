@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { aiConfig, appMode, configProblems, dataBackend, realtimeTransport, supabaseServiceKey } from "@/lib/config";
+import { aiConfig, appMode, configProblems, configWarnings, dataBackend, realtimeTransport, supabaseProjects, supabaseServiceKey, uploadProjects } from "@/lib/config";
 import { pgHealth } from "@/lib/server/postgres";
 
 export const dynamic = "force-dynamic";
@@ -28,6 +28,10 @@ export async function GET(req: NextRequest) {
     ai: Boolean(aiConfig().apiKey),
     serviceRole: mode === "supabase" ? Boolean(supabaseServiceKey()) : null,
     problems,
+    warnings: configWarnings(),
+    // Project numbers and refs only (refs are part of the public URLs).
+    projects: supabaseProjects().map((p) => ({ n: p.n, ref: p.ref, original: p.primary, realtime: p.realtime, storage: p.storage })),
+    uploads_to: uploadProjects().map((p) => p.n),
   };
   if (deep(req) && dataBackend() === "postgres" && problems.length === 0) {
     try {

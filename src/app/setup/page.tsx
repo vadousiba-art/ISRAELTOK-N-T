@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { aiConfig, appMode, configProblems, dataBackend, databaseUrl, supabaseServiceKey } from "@/lib/config";
+import { aiConfig, appMode, configProblems, configWarnings, dataBackend, databaseUrl, realtimeShards, supabaseProjects, supabaseServiceKey, uploadProjects } from "@/lib/config";
 import { Logo, Tagline } from "@/components/ui/Logo";
 
 export const metadata = { title: "Setup" };
@@ -50,6 +50,14 @@ export default function SetupPage() {
             label={`Primary database: ${backend === "postgres" ? "Neon (Postgres)" : backend === "supabase" ? "Supabase Postgres" : backend === "pglite" ? "embedded demo database" : "none"}`}
             hint="Optional: set DATA_BACKEND=neon and DATABASE_URL (Neon pooled connection string) to keep app data on Neon while Supabase handles login, files and realtime. See docs/database-migration.md."
           />
+          <Row
+            ok={supabaseProjects().length > 1}
+            label={`Supabase projects: ${supabaseProjects().length} of 7 configured`}
+            hint={`Live updates spread over: ${realtimeShards().map((p) => p.n).join(", ") || "off (REALTIME_SHARDS)"} · new uploads go to: ${uploadProjects().map((p) => p.n).join(", ") || "the original project"}. See docs/seven-projects.md.`}
+          />
+          {configWarnings().map((w) => (
+            <Row key={w} ok={false} label="Supabase project skipped" hint={w} />
+          ))}
           {problems.map((p) => (
             <Row key={p} ok={false} label="Configuration problem" hint={p} />
           ))}

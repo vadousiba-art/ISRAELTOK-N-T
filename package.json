@@ -17,6 +17,8 @@
     "db:rehearse": "tsx scripts/db/rehearse.mts",
     "test:pg": "TEST_DATABASE_URL=${TEST_DATABASE_URL:-postgres://neondb_owner@127.0.0.1:54329/yoru_test} vitest run tests/db/postgres-adapter.test.ts",
     "load-test": "tsx scripts/load-test.mts",
+    "shards:check": "tsx scripts/shards-check.mts",
+    "shards:setup": "tsx scripts/shards-setup.mts",
     "demo:reset": "node -e \"require('fs').rmSync('.data',{recursive:true,force:true});console.log('Demo data wiped. It will re-seed on next start.')\""
   },
   "dependencies": {
