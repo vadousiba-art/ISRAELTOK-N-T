@@ -12,7 +12,7 @@ export type CollectionP = {
   cover: "panels" | "shelf" | "frames" | "wave" | "grid" | "board" | "halftone" | "cards" | "stars" | "plain" | "stamp" | "rain" | "petals" | "pixel" | "ink";
   a: string;
   b: string;
-  sort: "added_desc" | "added_asc" | "popular" | "title";
+  sort: "added_desc" | "added_asc" | "popular";
   visibility: "private" | "members";
 };
 export const collectionTemplates = mk<CollectionP>("collection", [
@@ -25,7 +25,7 @@ export const collectionTemplates = mk<CollectionP>("collection", [
   ["Artwork Gallery", "A gallery wall of saved art.", "R", "the_archive", P, { emoji: "🖼️", title: "Artwork Gallery", about: "Art I want to look at again.", cover: "frames", a: "#e0b54f", b: "#141008", sort: "popular", visibility: "members" }],
   ["Inspiration Board", "References and sparks for your own work.", "U", "the_archive", F, { emoji: "📌", title: "Inspiration Board", about: "Things that make me want to make things.", cover: "board", a: "#ff6b3d", b: "#1f0d06", sort: "added_desc", visibility: "private" }],
   ["Memes After Dark", "The ones that got you at 2am.", "U", "the_archive", P, { emoji: "🐸", title: "Memes After Dark", about: "The ones that got me at 2am.", cover: "halftone", a: "#ffd23f", b: "#0a0a0a", sort: "added_desc", visibility: "members" }],
-  ["Character Archive", "Characters, designs and fan art.", "R", "the_archive", P, { emoji: "🎭", title: "Character Archive", about: "Characters and designs I love.", cover: "cards", a: "#c48cff", b: "#160d22", sort: "title", visibility: "members" }],
+  ["Character Archive", "Characters, designs and fan art.", "R", "the_archive", P, { emoji: "🎭", title: "Character Archive", about: "Characters and designs I love.", cover: "cards", a: "#c48cff", b: "#160d22", sort: "added_asc", visibility: "members" }],
   ["Recommendations", "Things you'd tell a friend to try.", "C", "the_archive", F, { emoji: "⭐", title: "Recommendations", about: "If you only try a few things, try these.", cover: "stars", a: "#f5b301", b: "#1f1600", sort: "popular", visibility: "members" }],
   ["Weekend Queue", "Saved for when you have time.", "U", "the_archive", P, { emoji: "🛋️", title: "Weekend Queue", about: "Saved for the weekend.", cover: "plain", a: "#3d8bff", b: "#081428", sort: "added_asc", visibility: "private" }],
   ["Creative References", "Poses, palettes, techniques.", "R", "night_studio", P, { emoji: "✏️", title: "Creative References", about: "Poses, palettes and techniques.", cover: "grid", a: "#f4f2ee", b: "#1a1a1a", sort: "added_desc", visibility: "private" }],

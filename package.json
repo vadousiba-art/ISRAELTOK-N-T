@@ -19,6 +19,7 @@
     "load-test": "tsx scripts/load-test.mts",
     "shards:check": "tsx scripts/shards-check.mts",
     "shards:setup": "tsx scripts/shards-setup.mts",
+    "pro:catalog": "tsx scripts/pro-catalog-sql.mts",
     "demo:reset": "node -e \"require('fs').rmSync('.data',{recursive:true,force:true});console.log('Demo data wiped. It will re-seed on next start.')\""
   },
   "dependencies": {
