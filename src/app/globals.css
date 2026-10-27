@@ -392,3 +392,79 @@ body {
 [dir="rtl"] :where(p, h1, h2, h3, h4, span, a, label, li, button, input, textarea) {
   unicode-bidi: plaintext;
 }
+
+/* ---------- YORU Pro cosmetics ------------------------------------------ */
+/* Motion is slow and never flashes (no more than one change a second).
+   The reduced-motion rules above stop all of it; .pro-still stops it too. */
+
+@keyframes pro-spin { to { transform: rotate(360deg); } }
+@keyframes pro-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+@keyframes pro-flicker { 0%, 100% { opacity: 1; } 46% { opacity: 1; } 50% { opacity: 0.6; } 54% { opacity: 1; } }
+@keyframes pro-drift { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+@keyframes pro-rain { from { transform: translate(0, -20px); } to { transform: translate(-8px, 20px); } }
+@keyframes pro-scroll-y { from { transform: translateY(0); } to { transform: translateY(18px); } }
+@keyframes pro-scan { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(3px); } }
+@keyframes pro-aurora { 0%, 100% { transform: translateX(-12px); opacity: 0.85; } 50% { transform: translateX(12px); opacity: 1; } }
+@keyframes pro-petals { from { transform: translate(0, -10px); } to { transform: translate(-20px, 30px); } }
+@keyframes pro-sweep { from { background-position: 200% 0; } to { background-position: -100% 0; } }
+
+.pro-spin { animation: pro-spin 14s linear infinite; transform-box: view-box; }
+.pro-spin-slow { animation: pro-spin 30s linear infinite; transform-box: view-box; }
+.pro-pulse { animation: pro-pulse 3.2s ease-in-out infinite; }
+.pro-flicker { animation: pro-flicker 4s steps(1) infinite; }
+.pro-drift { animation: pro-drift 9s ease-in-out infinite; transform-box: view-box; transform-origin: 50% 50%; }
+.pro-rain { animation: pro-rain 1.6s linear infinite; }
+.pro-scroll-y { animation: pro-scroll-y 3s linear infinite; }
+.pro-scan { animation: pro-scan 5s ease-in-out infinite; }
+.pro-aurora { animation: pro-aurora 14s ease-in-out infinite; }
+.pro-petals { animation: pro-petals 12s linear infinite alternate; }
+.pro-neon { animation: pro-pulse 5s ease-in-out infinite; }
+.pro-neon-b { animation: pro-pulse 7s ease-in-out infinite 1s; }
+.pro-blink { animation: pro-pulse 4s ease-in-out infinite; }
+.pro-still, .pro-still * { animation: none !important; }
+
+/* Nameplates */
+.pro-np { display: inline-flex; align-items: center; gap: 0.35em; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; line-height: 1.2; padding: 0.18em 0.55em; border-radius: 0.4em; color: var(--np-a); white-space: nowrap; max-width: 100%; }
+.pro-np-text { overflow: hidden; text-overflow: ellipsis; }
+.pro-np-emblem { font-size: 0.95em; }
+.pro-np-font-display { font-family: inherit; text-transform: uppercase; }
+.pro-np-font-serif { font-family: ui-serif, Georgia, "Noto Serif JP", serif; font-style: italic; letter-spacing: 0.02em; }
+.pro-np-font-mono { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; letter-spacing: 0.04em; }
+.pro-np-font-condensed { text-transform: uppercase; letter-spacing: 0.18em; font-stretch: condensed; }
+.pro-np-font-jp { letter-spacing: 0.12em; text-transform: uppercase; }
+.pro-np-border-line { border-bottom: 1px solid color-mix(in srgb, var(--np-a) 50%, transparent); border-radius: 0; }
+.pro-np-border-bracket::before { content: "["; opacity: 0.7; }
+.pro-np-border-bracket::after { content: "]"; opacity: 0.7; }
+.pro-np-border-slash { background: linear-gradient(100deg, transparent 0 6%, color-mix(in srgb, var(--np-b) 35%, transparent) 6% 94%, transparent 94%); }
+.pro-np-border-tube { border: 1.5px solid var(--np-a); box-shadow: 0 0 6px -1px var(--np-a), inset 0 0 6px -2px var(--np-b); border-radius: 999px; }
+.pro-np-border-tag { background: var(--np-a); color: var(--np-b) !important; -webkit-text-fill-color: var(--np-b) !important; }
+.pro-np-border-double { border: 3px double color-mix(in srgb, var(--np-a) 70%, transparent); }
+.pro-np-metal .pro-np-text, .pro-np-legend .pro-np-text, .pro-np-blood .pro-np-text, .pro-np-silver .pro-np-text, .pro-np-wave .pro-np-text, .pro-np-stars .pro-np-text {
+  background: linear-gradient(180deg, var(--np-a), var(--np-b)); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+}
+.pro-np-legend .pro-np-text { background-image: linear-gradient(100deg, var(--np-a) 30%, var(--np-b) 50%, var(--np-a) 70%); background-size: 200% 100%; animation: pro-sweep 6s linear infinite; }
+.pro-np-glitch .pro-np-text, .pro-np-rgb .pro-np-text { text-shadow: -1.5px 0 var(--np-a), 1.5px 0 var(--np-b); color: #fff; }
+.pro-np-scan .pro-np-text { background: repeating-linear-gradient(0deg, var(--np-a) 0 1px, color-mix(in srgb, var(--np-a) 55%, transparent) 1px 2px); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+.pro-np-scan .pro-np-text::after { content: "_"; margin-left: 1px; animation: pro-pulse 2s steps(1) infinite; color: var(--np-a); -webkit-text-fill-color: var(--np-a); }
+.pro-np-eclipse .pro-np-text { color: #0a0a0a; text-shadow: 0 0 4px var(--np-b), 0 0 1px var(--np-a); -webkit-text-stroke: 0.4px var(--np-a); }
+.pro-np-neon .pro-np-text { color: #fff; text-shadow: 0 0 3px var(--np-a), 0 0 8px var(--np-a), 0 0 12px var(--np-b); }
+.pro-np-ink { color: var(--np-a); }
+.pro-np-underline { border-bottom: 2px solid var(--np-b); border-radius: 0; color: var(--np-a); }
+.pro-np-echo .pro-np-text { text-shadow: 3px 0 color-mix(in srgb, var(--np-a) 45%, transparent), 6px 0 color-mix(in srgb, var(--np-a) 20%, transparent); }
+.pro-np-shatter .pro-np-text { background: linear-gradient(170deg, var(--np-a) 48%, transparent 48% 52%, var(--np-a) 52%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+.pro-np-obsidian { background: linear-gradient(180deg, #1c1c1c, #050505); color: var(--np-a); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12); }
+.pro-np-halo .pro-np-text { color: var(--np-a); text-shadow: 0 0 8px color-mix(in srgb, var(--np-a) 80%, transparent); }
+.pro-np-smallcaps { font-variant: small-caps; text-transform: none; }
+.pro-np-velvet .pro-np-text { color: var(--np-a); text-shadow: 0 1px 0 var(--np-b); }
+.pro-np-plain { color: var(--np-a); }
+/* Nameplates are designed on night colours; on light themes they sit on a dark chip so they stay readable. */
+:root:not([data-theme="dark"]) .pro-np:not(.pro-np-border-tag) { background-color: #141414; }
+@media (prefers-reduced-motion: reduce) { :root:not([data-motion="full"]) .pro-np-legend .pro-np-text { animation: none; } }
+
+/* Page transitions (one short play, under half a second) */
+@keyframes pro-fade-out { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes pro-shard { from { transform: translate(0, 0); } to { transform: translate(var(--dx), var(--dy)); } }
+@keyframes pro-eclipse { from { transform: translateX(-160px); } to { transform: translateX(160px); } }
+.pro-transition { animation: pro-fade-out 0.5s ease-out forwards; }
+.pro-shard { animation: pro-shard 0.5s ease-out forwards; transform-box: view-box; }
+.pro-eclipse { animation: pro-eclipse 0.5s ease-in-out forwards; opacity: 0.85; }
