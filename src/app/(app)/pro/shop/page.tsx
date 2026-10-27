@@ -149,7 +149,7 @@ function Shop() {
       </div>
 
       {view === "sets" ? (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {SETS.map((s) => <SetCard key={s.id} s={s} me={me} />)}
         </div>
       ) : (

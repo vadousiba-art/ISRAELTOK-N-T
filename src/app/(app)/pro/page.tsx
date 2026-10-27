@@ -42,8 +42,8 @@ function Hero() {
     <section className="relative overflow-hidden rounded-3xl border border-line bg-[#050505] text-white">
       <BannerArt p={ITEM_BY_ID[set.look!.banner].p as BannerP} className="absolute inset-0 opacity-40" />
       <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent" />
-      <div className="relative grid gap-6 p-6 sm:grid-cols-[1.1fr_1fr] sm:p-8">
-        <div className="flex flex-col justify-end">
+      <div className="relative grid grid-cols-1 gap-6 p-6 sm:grid-cols-[1.1fr_1fr] sm:p-8">
+        <div className="flex min-w-0 flex-col justify-end">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.3em] text-white/70">
             <Moon size={14} className="text-brand" /> YORU Pro
           </div>
@@ -64,7 +64,7 @@ function Hero() {
             </a>
           </div>
         </div>
-        <div>
+        <div className="min-w-0">
           <ProfileMock look={set.look!} name={me.display_name} username={me.username} avatar={me.avatar_url} />
           <div className="mt-3 flex items-center justify-between gap-2">
             <div className="min-w-0">
@@ -93,9 +93,9 @@ function BeforeAfter() {
     <section className="card p-5">
       <h2 className="text-lg font-black">Before and after</h2>
       <p className="text-sm text-muted">The same profile, with the {LOOKS[3].name} look. Drag to compare.</p>
-      <div className="relative mt-3 overflow-hidden rounded-2xl">
-        <ProfileMock look={{}} name={me.display_name} username={me.username} avatar={me.avatar_url} still />
-        <div className="absolute inset-0" style={{ clipPath: `inset(0 0 0 ${x}%)` }}>
+      <div className="relative mt-3 grid overflow-hidden rounded-2xl">
+        <ProfileMock look={{}} name={me.display_name} username={me.username} avatar={me.avatar_url} still className="[grid-area:1/1]" />
+        <div className="[grid-area:1/1]" style={{ clipPath: `inset(0 0 0 ${x}%)` }}>
           <ProfileMock look={look} name={me.display_name} username={me.username} avatar={me.avatar_url} still className="h-full" />
         </div>
         <div className="pointer-events-none absolute inset-y-0 w-0.5 bg-white shadow" style={{ left: `${x}%` }} />
@@ -117,7 +117,7 @@ function TryOnLive() {
     <section id="try" className="card scroll-mt-20 p-5">
       <h2 className="text-lg font-black">Try it on yourself</h2>
       <p className="text-sm text-muted">Tap to preview on your own profile. Only you see it, nothing is saved or unlocked.</p>
-      <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_1fr]">
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <ProfileMock look={look} name={me.display_name} username={me.username} avatar={me.avatar_url} />
         <div className="space-y-3">
           <Picker label="Ring" items={ringPick} active={t.ring} onPick={(id) => tryOn.set("ring", id)} />

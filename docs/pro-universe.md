@@ -44,8 +44,8 @@ filters, rarity filters, collection pages with completion and "Try the look"
 
 ## 2. Catalog counts
 
-400 items, stable ids `category.slug` (e.g. `ring.crimson_eclipse`), 119 free
-for everyone, 56 earned by milestones, 225 Pro, 6 experimental.
+400 items, stable ids `category.slug` (e.g. `ring.crimson_eclipse`), 115 free
+for everyone, 56 earned by milestones, 229 Pro, 6 experimental.
 
 | Category | Items | Free | Pro | Earned | Experimental |
 |---|---|---|---|---|---|

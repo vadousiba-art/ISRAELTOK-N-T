@@ -192,7 +192,7 @@ function Lab() {
       </Tool>
 
       <Tool i={lab("lab.nameplate_preview")}>
-        <div className="grid gap-1.5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
           {nameplates.map((n) => (
             <div key={n.id} className="flex items-center gap-2 rounded-xl bg-[#0b0b0b] px-3 py-2">
               <span className="text-sm font-bold text-white">{profile.display_name}</span><Nameplate p={n.p} />
@@ -305,7 +305,7 @@ function Lab() {
       </Tool>
 
       <Tool i={lab("lab.customization_sandbox")}>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {(["ring", "banner", "nameplate", "badge"] as const).map((s) => (
             <Pick key={s} items={BY_CATEGORY[s]} value={sandbox[s] ?? ""} onChange={(id) => setSandbox((x) => ({ ...x, [s]: id }))} label={s} />
           ))}

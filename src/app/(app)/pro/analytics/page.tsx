@@ -60,7 +60,7 @@ export default function AnalyticsPage() {
 
 function Card({ title, note, children, wide }: { title: string; note?: string; children: React.ReactNode; wide?: boolean }) {
   return (
-    <section className={clsx("card p-4", wide && "sm:col-span-2")}>
+    <section className={clsx("card min-w-0 p-4", wide && "sm:col-span-2")}>
       <h3 className="text-sm font-bold">{title}</h3>
       {note && <p className="mb-2 text-[11px] text-muted">{note}</p>}
       <div className={note ? "" : "mt-2"}>{children}</div>
@@ -294,7 +294,7 @@ function Board({ kind, a, me }: { kind: "dashboard" | "insight"; a: Analytics; m
               </div>
             </div>
           )}
-          <div className="grid gap-3 sm:grid-cols-2">{widgets.map((w) => <WidgetView key={w} w={w} a={a} me={me} />)}</div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{widgets.map((w) => <WidgetView key={w} w={w} a={a} me={me} />)}</div>
         </>
       )}
     </div>
