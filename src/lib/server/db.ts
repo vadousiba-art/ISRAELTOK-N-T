@@ -10,7 +10,7 @@ import { READ_RPCS, type RpcName } from "./rpc-registry";
 import { scheduleDrain } from "./realtime/outbox";
 
 // Server-side functions that write (and so may produce live events).
-const SERVICE_WRITES = /^(bot_|delete_account$|submit_support$)/;
+const SERVICE_WRITES = /^(bot_|delete_account$|submit_support$|pro_publish_due$)/;
 
 export const DEMO_COOKIE = "itn_demo_uid";
 
