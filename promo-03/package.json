@@ -1,0 +1,14 @@
+{
+  "name": "yoru-promo-03",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "capture": "node capture/capture.mjs",
+    "audio": "python3 film/audio/synth.py",
+    "preview": "node film/render.mjs --preview",
+    "render": "node film/render.mjs"
+  },
+  "dependencies": {
+    "three": "0.170.0"
+  }
+}

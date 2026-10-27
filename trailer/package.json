@@ -1,0 +1,14 @@
+{
+  "name": "yoru-trailer",
+  "private": true,
+  "description": "YORU 20s vertical launch trailer: Three.js/HTML composition rendered frame by frame, procedural soundtrack.",
+  "type": "module",
+  "scripts": {
+    "audio": "python3 audio/synth.py",
+    "render": "node render.mjs",
+    "preview": "node render.mjs --preview"
+  },
+  "dependencies": {
+    "three": "0.170.0"
+  }
+}

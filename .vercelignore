@@ -1,0 +1,14 @@
+.data*
+.next
+node_modules
+test-results
+playwright-report
+.pgtest
+*.tsbuildinfo
+android
+# Video production projects (not part of the web app)
+trailer
+promo-03
+break-the-feed
+teaser-002
+supabase/.temp

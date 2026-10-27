@@ -1,0 +1,394 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ---------- Tokens ---------------------------------------------------- */
+
+/*
+ * Every accent comes from one hue. The default, 351.4, is YORU red: #F20D2F
+ * (brand) and #A30F25 (dark red). Members can move it with the color slider
+ * in Settings; the app then sets --accent-h on <html>.
+ */
+:root {
+  --accent-h: 351.4;
+  /* YORU light (secondary theme) */
+  --bg: #f5f5f5;
+  --bg-2: #ffffff;
+  --card: #ffffff;
+  --card-2: #f0f0f0;
+  --line: #e2e2e2;
+  --ink: #111111;
+  --ink-2: #2b2b2b;
+  --muted: #6b6b6b;
+  --brand: hsl(var(--accent-h), 90%, 44%);
+  --brand-2: hsl(var(--accent-h), 90%, 50%);
+  --ring-a: hsl(var(--accent-h), 90%, 50%);
+  --ring-b: hsl(var(--accent-h), 83%, 35%);
+  --heart: hsl(var(--accent-h), 91%, 46%);
+  --roast: var(--brand);
+  --roast-label: var(--brand);
+  --online: #16a34a;
+  --lime: #111111;
+  --hot: var(--brand);
+  --volt: var(--ring-b);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 6px 20px rgb(0 0 0 / 0.05);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  /* YORU 夜 — the internet after dark */
+  --bg: #080808;
+  --bg-2: #0c0c0c;
+  --card: #121212;
+  --card-2: #1a1a1a;
+  --line: #292929;
+  --ink: #f5f5f5;
+  --ink-2: #d6d6d6;
+  --muted: #999999;
+  --brand: hsl(var(--accent-h), 90%, 50%);
+  --brand-2: hsl(var(--accent-h), 100%, 60%);
+  --ring-a: var(--brand);
+  --ring-b: hsl(var(--accent-h), 83%, 35%);
+  --heart: var(--brand);
+  --roast: var(--brand);
+  --roast-label: hsl(var(--accent-h), 100%, 65%);
+  --online: #22c55e;
+  --lime: #ededed;
+  --hot: var(--brand);
+  --volt: var(--ring-b);
+  --shadow: none;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-card: var(--card);
+  --color-card-2: var(--card-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-brand: var(--brand);
+  --color-brand-2: var(--brand-2);
+  --color-heart: var(--heart);
+  --color-roast: var(--roast);
+  --color-roast-label: var(--roast-label);
+  --color-online: var(--online);
+  --color-lime: var(--lime);
+  --color-hot: var(--hot);
+  --color-volt: var(--volt);
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-meme: "Inter Variable", ui-sans-serif, system-ui;
+  --font-marker: "Inter Variable", ui-sans-serif, system-ui;
+}
+
+/* ---------- Base ------------------------------------------------------ */
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+::selection {
+  background: var(--brand);
+  color: white;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand-2);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+/* Raster brand art (logo, mark) follows the member's color. */
+.hue-follow {
+  filter: hue-rotate(calc((var(--accent-h) - 351.4) * 1deg));
+}
+
+/* Rainbow track for the color slider. */
+.hue-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 14px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, hsl(0,90%,50%), hsl(60,90%,50%), hsl(120,90%,50%), hsl(180,90%,50%), hsl(240,90%,50%), hsl(300,90%,50%), hsl(359,90%,50%));
+  cursor: pointer;
+}
+.hue-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 9999px;
+  background: var(--brand);
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.4), 0 0 16px var(--brand);
+}
+.hue-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  background: var(--brand);
+  border: 3px solid #fff;
+  box-shadow: 0 0 16px var(--brand);
+}
+
+/* The command palette's search box sits inside its own framed dialog. */
+.palette-input:focus-visible {
+  outline: none;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.ring-gradient {
+  background: conic-gradient(from 200deg, var(--ring-a), var(--ring-b), var(--ring-a));
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Roast-of-the-day box: hot pink frame */
+.roast-box {
+  border: 1px solid color-mix(in srgb, var(--roast) 55%, transparent);
+  border-radius: 0.8rem;
+  background: color-mix(in srgb, var(--roast) 6%, transparent);
+}
+
+/* ---------- Motion & accents (kept subtle: 120–220ms, no constant motion) */
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee {
+  animation: marquee 60s linear infinite;
+}
+@keyframes marquee-rev {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Rotating gradient border on the landing page buttons. */
+@keyframes yoru-rotate {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Legacy effect hooks, intentionally calm in the YORU identity. */
+.glitch::before,
+.glitch::after {
+  content: none;
+}
+.wobble,
+.spin-slow {
+  animation: none;
+}
+.float-meme {
+  display: none;
+}
+
+@keyframes ring-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 0%, transparent); }
+  50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent); }
+}
+.story-ring-new {
+  animation: ring-pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--card-2) 25%, var(--line) 50%, var(--card-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 0.6rem;
+}
+
+/* A slow sheen across event banners and featured cards. */
+@keyframes sheen {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(220%); }
+}
+.shimmer {
+  overflow: hidden;
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.07), transparent);
+  animation: sheen 3.6s ease-in-out infinite;
+}
+
+/* ||spoilers||: blurred until tapped. */
+.spoiler {
+  border-radius: 0.3rem;
+  padding: 0 0.15rem;
+  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  filter: blur(5px);
+  cursor: pointer;
+  transition: filter 180ms ease, background-color 180ms ease;
+  user-select: none;
+}
+.spoiler[data-open="true"] {
+  filter: none;
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+  cursor: text;
+  user-select: text;
+}
+
+/* Level ring around profile avatars (progress set via --p, 0–1). */
+.level-ring {
+  background: conic-gradient(var(--brand) calc(var(--p, 0) * 360deg), var(--line) 0);
+  border-radius: 9999px;
+}
+
+/* Long-form public pages (privacy, terms, FAQ). */
+.legal h1 {
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.legal h2 {
+  margin-top: 2.2rem;
+  font-size: 1.15rem;
+  font-weight: 650;
+}
+.legal h3 {
+  margin-top: 1.4rem;
+  font-weight: 600;
+}
+.legal p,
+.legal li {
+  color: var(--ink-2);
+  line-height: 1.65;
+  font-size: 0.95rem;
+}
+.legal p {
+  margin-top: 0.7rem;
+}
+.legal ul {
+  margin-top: 0.6rem;
+  padding-left: 1.2rem;
+  list-style: disc;
+}
+.legal li {
+  margin-top: 0.3rem;
+}
+.legal li::marker {
+  color: var(--brand);
+}
+.legal a {
+  color: var(--brand-2);
+  text-decoration: underline;
+}
+.legal table {
+  margin-top: 0.8rem;
+  width: 100%;
+  font-size: 0.85rem;
+  border-collapse: collapse;
+}
+.legal th,
+.legal td {
+  border: 1px solid var(--line);
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+  color: var(--ink-2);
+}
+.legal th {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Small uppercase label (replaces the old meme-font stickers). */
+.sticker {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.68em;
+}
+
+.tagline {
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* ---------- Reduced motion -------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) *,
+  :root:not([data-motion="full"]) *::before,
+  :root:not([data-motion="full"]) *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  :root:not([data-motion="full"]) .float-meme {
+    display: none;
+  }
+}
+
+:root[data-motion="reduce"] *,
+:root[data-motion="reduce"] *::before,
+:root[data-motion="reduce"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+:root[data-motion="reduce"] .float-meme {
+  display: none;
+}
+
+/* Manga speed lines for cinematic panels (What's new). Purely decorative. */
+.speedlines {
+  background: repeating-conic-gradient(from 0deg at 85% 15%, #fff 0deg 0.6deg, transparent 0.6deg 7deg);
+  mask-image: radial-gradient(circle at 85% 15%, transparent 18%, #000 70%);
+}
+
+/* Right-to-left languages: text that is not in the interface language
+   (posts, @handles, #tags, strings not translated yet) takes its direction
+   from its own content, so "@name" or "What's on your mind?" keep their
+   punctuation in place instead of being mirrored. */
+[dir="rtl"] :where(p, h1, h2, h3, h4, span, a, label, li, button, input, textarea) {
+  unicode-bidi: plaintext;
+}

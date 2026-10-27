@@ -1,0 +1,24 @@
+import type { Metadata } from "next";
+import QRCode from "qrcode";
+import { Landing } from "@/components/landing/Landing";
+
+export const metadata: Metadata = {
+  title: "YORU — The internet after dark",
+  description:
+    "YORU (夜) is a free social network for anime, manga, music, Vocaloid, gaming and art fans. Posts, stories, group chats, nightly streaks and an AI comedian. Use it on the web or download the Android app.",
+  robots: { index: true, follow: true },
+  openGraph: {
+    title: "YORU — The internet after dark",
+    description: "Find your people. A free social network for anime, manga, Vocaloid, gaming and art fans.",
+    images: [{ url: "/brand/yoru/feature-graphic.png", width: 1024, height: 500, alt: "YORU" }],
+  },
+  twitter: { card: "summary_large_image", images: ["/brand/yoru/feature-graphic.png"] },
+};
+
+const SITE = "https://yoru-social.vercel.app";
+
+export default async function AboutPage({ searchParams }: { searchParams: Promise<{ deleted?: string }> }) {
+  const { deleted } = await searchParams;
+  const qrSvg = await QRCode.toString(`${SITE}/download/yoru.apk`, { type: "svg", margin: 0, color: { dark: "#080808", light: "#ffffff" } });
+  return <Landing qrSvg={qrSvg} deleted={Boolean(deleted)} />;
+}

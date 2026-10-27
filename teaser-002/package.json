@@ -1,0 +1,13 @@
+{
+  "name": "yoru-teaser-002",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "audio": "python3 audio/synth.py",
+    "preview": "node render.mjs --preview",
+    "render": "node render.mjs"
+  },
+  "dependencies": {
+    "three": "0.170.0"
+  }
+}
