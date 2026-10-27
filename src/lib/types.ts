@@ -49,6 +49,8 @@ export interface CheckinResult {
   xp: number;
   level: number;
   leveled_up?: boolean;
+  // Night Pass streak shield used (Open Gates, migration 0007).
+  shielded?: boolean;
 }
 
 export interface Announcement {

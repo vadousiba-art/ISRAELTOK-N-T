@@ -18,8 +18,12 @@ import { SupportInbox } from "@/components/admin/SupportInbox";
 import { MemberToolsDialog } from "@/components/admin/MemberTools";
 import { LevelChip } from "@/components/yoru/Progression";
 import type { AdminOverview, MemberExtras, ProfileLite } from "@/lib/types";
+import { useOpenGates } from "@/lib/client/gates";
+import { AdminCreators, AdminPro } from "@/components/admin/OpenGatesAdmin";
+import en from "@/lib/i18n/messages/en";
 
-type Tab = "overview" | "controls" | "members" | "invites" | "reports" | "inbox" | "log";
+type Tab = "overview" | "controls" | "members" | "invites" | "reports" | "creators" | "pro" | "inbox" | "log";
+type ReportFlag = { category: string; escalated: boolean; same_target: number };
 
 export default function AdminPage() {
   const { me } = useShell();
@@ -32,6 +36,8 @@ export default function AdminPage() {
   const [hours, setHours] = useState(168);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
+  const { available: gates } = useOpenGates();
+  const { data: flags, mutate: mutateFlags } = useRpc<Record<string, ReportFlag>>(gates && me.role !== "member" ? "admin_report_flags" : null);
 
   if (me.role === "member") return <Empty emoji="🛂" text="Admins only. Nice try, intern." />;
   if (error) return <Empty emoji="🛂" text={error.message} />;
@@ -80,6 +86,7 @@ export default function AdminPage() {
             ["members", `Members (${data.members.length})`],
             ["invites", "Invites"],
             ["reports", `Reports${openReports ? ` (${openReports})` : ""}`],
+            ...(gates ? ([["creators", "Creators"], ["pro", "Pro"]] as const) : []),
             ["inbox", "Inbox"],
             ["log", "Audit log"],
           ] as const
@@ -253,14 +260,23 @@ export default function AdminPage() {
       {tab === "reports" && (
         <div className="space-y-2">
           {data.reports.length === 0 && <Empty emoji="😇" text="No reports. Suspiciously wholesome." />}
-          {data.reports.map((r) => (
-            <div key={r.id} className={clsx("card p-3", r.status !== "open" && "opacity-60")}>
-              <div className="flex items-center gap-2 text-xs">
+          {[...data.reports]
+            .sort((a, b) => Number(b.status === "open" && !!flags?.[b.id]?.escalated) - Number(a.status === "open" && !!flags?.[a.id]?.escalated))
+            .map((r) => (
+            <div key={r.id} className={clsx("card p-3", r.status !== "open" && "opacity-60", r.status === "open" && flags?.[r.id]?.escalated && "border-brand")}>
+              <div className="flex flex-wrap items-center gap-2 text-xs">
                 <span className="rounded-full bg-hot/15 px-2 py-0.5 font-bold uppercase text-hot">{r.target_type}</span>
+                {flags?.[r.id] && (
+                  <span className="rounded-full bg-card-2 px-2 py-0.5 font-semibold">
+                    {en[`report.${flags[r.id].category}` as keyof typeof en] ?? flags[r.id].category}
+                  </span>
+                )}
+                {flags?.[r.id]?.escalated && <span className="rounded-full bg-brand px-2 py-0.5 font-bold text-white">ESCALATED</span>}
+                {(flags?.[r.id]?.same_target ?? 0) > 1 && <span className="text-muted">{flags![r.id].same_target} reporters</span>}
                 <span className="text-muted">
                   reported by <b className="text-ink">{r.reporter.display_name}</b> · <TimeAgo iso={r.created_at} />
                 </span>
-                <span className="ml-auto font-bold uppercase text-muted">{r.status}</span>
+                <span className="ms-auto font-bold uppercase text-muted">{r.status}</span>
               </div>
               <p className="mt-1.5 text-sm font-semibold">“{r.reason}”</p>
               {r.target ? (
@@ -290,6 +306,18 @@ export default function AdminPage() {
                   <Button variant="outline" className="py-1.5 text-xs" onClick={() => act("admin_resolve_report", { p_report_id: r.id, p_action: "dismiss" }, "Dismissed.", "🙄")}>
                     Dismiss
                   </Button>
+                  {flags?.[r.id] && (
+                    <Button
+                      variant="outline"
+                      className="py-1.5 text-xs"
+                      onClick={async () => {
+                        await act("admin_escalate_report", { p_report_id: r.id, p_escalated: !flags[r.id].escalated }, flags[r.id].escalated ? "No longer escalated." : "Escalated.", "🚩");
+                        mutateFlags();
+                      }}
+                    >
+                      {flags[r.id].escalated ? "De-escalate" : "Escalate"}
+                    </Button>
+                  )}
                   {r.target_type !== "user" && (
                     <Button variant="outline" className="py-1.5 text-xs text-hot" onClick={() => act("admin_resolve_report", { p_report_id: r.id, p_action: "delete" }, "Content deleted.", "🗑️")}>
                       <Trash2 size={14} /> Delete content
@@ -310,6 +338,8 @@ export default function AdminPage() {
           ))}
         </div>
       )}
+      {tab === "creators" && gates && <AdminCreators />}
+      {tab === "pro" && gates && <AdminPro members={data.members} />}
       <MemberToolsDialog
         key={tools?.id ?? "none"}
         member={tools}

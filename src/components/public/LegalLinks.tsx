@@ -6,6 +6,7 @@ export const LEGAL_LINKS = [
   { href: "/faq", label: "FAQ" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
+  { href: "/trust", label: "Trust" },
   { href: "/support", label: "Support" },
 ];
 

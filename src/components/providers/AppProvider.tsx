@@ -7,6 +7,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AppMode, RealtimeTransport } from "@/lib/config";
 import { ApiError, rpc } from "@/lib/client/api";
+import { I18nProvider } from "./I18nProvider";
 import type { AmbienceMode } from "@/components/fx/Ambience";
 
 export type PublicConfig = {
@@ -157,7 +158,7 @@ export function AppProvider({ config, children }: { config: PublicConfig; childr
         }}
       >
         <MotionConfig reducedMotion={reducedMotion}>
-          {children}
+          <I18nProvider>{children}</I18nProvider>
           <div
             className="pointer-events-none fixed inset-x-0 top-3 z-[100] flex flex-col items-center gap-2 px-4"
             aria-live="polite"

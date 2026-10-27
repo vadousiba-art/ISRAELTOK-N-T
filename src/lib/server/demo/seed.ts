@@ -60,6 +60,20 @@ export async function seedDemo(db: SqlConn, opts: { transaction?: boolean } = {}
         [ids.you, SEED_UNREAD_NOTIFICATIONS],
       );
       await db.query("delete from public.rate_limits");
+      // Demo only: give the seeded people interests and languages so Discover
+      // has something to show locally (skipped if the Open Gates columns are absent).
+      const hasCol = await db.query<{ ok: boolean }>(
+        "select exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'interests') as ok",
+      );
+      if (hasCol.rows[0]?.ok) {
+        await db.query(`
+          with ranked as (select id, row_number() over (order by created_at, id) as n from public.profiles where not is_bot)
+          update public.profiles p set
+            interests = string_to_array((array['anime,manga,gaming', 'vocaloid,jpop,music', 'art,cosplay,anime',
+                               'gaming,memes,tech', 'manga,writing,film', 'jrock,music,figures'])[(r.n % 6) + 1], ','),
+            locale = (array['en','ja','en','es','fr','en','pt','ko'])[(r.n % 8) + 1]
+          from ranked r where p.id = r.id and r.n > 1`);
+      }
     },
     log: (m) => console.log(`[itn demo seed] ${m}`),
   };

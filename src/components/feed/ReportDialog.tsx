@@ -7,15 +7,14 @@ import { Button } from "@/components/ui/bits";
 import { rpc } from "@/lib/client/api";
 import { useApp } from "@/components/providers/AppProvider";
 import { pickLine, SUCCESS_TOASTS } from "@/lib/jokes";
+import { useT } from "@/components/providers/I18nProvider";
+import { useOpenGates } from "@/lib/client/gates";
+import en from "@/lib/i18n/messages/en";
+import type { ReportCategory } from "@/lib/opengates";
 
-const REASONS = [
-  "Harassment or targeting someone",
-  "Hate based on identity",
-  "Private info / doxxing",
-  "Spam or scam",
-  "Explicit content",
-  "Something else",
-];
+// The category goes to the database (migration 0007) and drives escalation;
+// the stored reason text stays in English so every admin can read it.
+const REASONS: ReportCategory[] = ["harassment", "hate", "privacy", "spam", "explicit", "impersonation", "self_harm", "other"];
 
 export function ReportDialog({
   open,
@@ -29,7 +28,10 @@ export function ReportDialog({
   targetId: string;
 }) {
   const { toast, toastError } = useApp();
-  const [reason, setReason] = useState(REASONS[0]);
+  const t = useT();
+  const { available } = useOpenGates();
+  const reasons = available ? REASONS : REASONS.filter((r) => r !== "impersonation" && r !== "self_harm");
+  const [reason, setReason] = useState<ReportCategory>(REASONS[0]);
   const [details, setDetails] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -39,7 +41,8 @@ export function ReportDialog({
       await rpc("create_report", {
         p_target_type: targetType,
         p_target_id: targetId,
-        p_reason: details.trim() ? `${reason}: ${details.trim()}` : reason,
+        p_reason: details.trim() ? `${en[`report.${reason}`]}: ${details.trim()}` : en[`report.${reason}`],
+        ...(available ? { p_category: reason } : {}),
       });
       toast(pickLine(SUCCESS_TOASTS.report), "success", "🚩");
       setDetails("");
@@ -57,17 +60,17 @@ export function ReportDialog({
         Jokes are fine. Actual harm is not. Admins will review this — the person won&apos;t see who reported.
       </p>
       <div className="space-y-2">
-        {REASONS.map((r) => (
+        {reasons.map((r) => (
           <button
             key={r}
             onClick={() => setReason(r)}
             className={clsx(
-              "w-full rounded-xl border px-3 py-2.5 text-left text-sm font-semibold transition",
+              "w-full rounded-xl border px-3 py-2.5 text-start text-sm font-semibold transition",
               reason === r ? "border-hot bg-hot/10" : "border-line hover:bg-card-2",
             )}
             aria-pressed={reason === r}
           >
-            {r}
+            {t(`report.${r}`)}
           </button>
         ))}
       </div>

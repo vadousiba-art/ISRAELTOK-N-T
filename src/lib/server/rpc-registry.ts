@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { AVATAR_FRAMES, BANNER_STYLES, CREATOR_CATEGORIES, INTERESTS, LOCALE_CODES as LOCALES, REPORT_CATEGORIES } from "@/lib/opengates";
 
 // Every Postgres function the browser may call, with its argument schema.
 // Anything not listed here (bot_*, check_invite, ...) is server-only.
@@ -126,6 +127,7 @@ export const RPC_SCHEMAS = {
     p_target_type: z.enum(["post", "comment", "message", "user", "story"]),
     p_target_id: id,
     p_reason: text(500),
+    p_category: z.enum(REPORT_CATEGORIES).optional(),
   }),
   clear_ai_history: none,
   daily_checkin: z.object({ p_offset_minutes: offset }),
@@ -171,6 +173,65 @@ export const RPC_SCHEMAS = {
   admin_recalculate_xp: none,
   admin_support_inbox: z.object({ p_limit: z.number().int().min(1).max(300).optional() }),
   admin_close_support: z.object({ p_id: id, p_closed: z.boolean().optional() }),
+
+  // Open Gates (migration 0007)
+  open_gates_version: none,
+  get_my_identity: none,
+  update_my_identity: z.object({
+    p: z
+      .object({
+        locale: z.enum(LOCALES).nullable().optional(),
+        interests: z.array(z.enum(INTERESTS)).max(8).optional(),
+        ghost_mode: z.boolean().optional(),
+        discoverable: z.boolean().optional(),
+        banner_style: z.enum(BANNER_STYLES).optional(),
+        avatar_frame: z.enum(AVATAR_FRAMES).optional(),
+        showcase_badges: z.array(z.string().regex(/^[a-z_]{2,30}$/)).max(3).optional(),
+      })
+      .strict(),
+  }),
+  get_profile_identity: z.object({ p_username: text(20) }),
+  get_discover: z.object({
+    p_interest: z.enum(INTERESTS).nullable().optional(),
+    p_locale: z.enum(LOCALES).nullable().optional(),
+    p_creators_only: z.boolean().optional(),
+    p_limit: z.number().int().min(1).max(50).optional(),
+    p_offset: z.number().int().min(0).max(2000).optional(),
+  }),
+  get_my_collections: z.object({ p_post_id: id.nullable().optional() }),
+  get_collection: z.object({ p_id: id, p_before: ts, p_limit: z.number().int().min(1).max(50).optional() }),
+  save_collection: z.object({
+    p_id: id.nullable().optional(),
+    p_name: z.string().trim().min(1).max(40).optional(),
+    p_description: text(200).optional(),
+    p_emoji: text(8).optional(),
+    p_visibility: z.enum(["private", "members"]).optional(),
+  }),
+  delete_collection: z.object({ p_id: id }),
+  set_collection_item: z.object({ p_collection_id: id, p_post_id: id, p_in: z.boolean().optional() }),
+  get_my_themes: none,
+  save_theme: z.object({
+    p_name: z.string().trim().min(1).max(30),
+    p_accent_hue: z.number().int().min(0).max(359),
+    p_theme: z.enum(["dark", "light", "system"]).optional(),
+    p_ambience: z.enum(["off", "stars", "sakura", "rain", "fireflies"]).optional(),
+  }),
+  delete_theme: z.object({ p_id: id }),
+  get_my_creator_application: none,
+  apply_creator: z.object({
+    p_category: z.enum(CREATOR_CATEGORIES),
+    p_portfolio_url: z.url({ protocol: /^https?$/ }).max(300),
+    p_statement: z.string().trim().min(20, "Tell us a little more (20+ characters).").max(600),
+  }),
+  withdraw_creator_application: none,
+  admin_creator_queue: z.object({ p_status: z.enum(["pending", "approved", "rejected", "withdrawn", "revoked"]).optional() }),
+  admin_review_creator: z.object({ p_application_id: id, p_approve: z.boolean(), p_note: text(300).optional() }),
+  admin_revoke_creator: z.object({ p_user: id, p_note: text(300).optional() }),
+  admin_grant_pro: z.object({ p_user: id, p_days: z.number().int().min(1).max(366), p_note: text(200).optional() }),
+  admin_revoke_pro: z.object({ p_user: id }),
+  admin_pro_members: none,
+  admin_report_flags: none,
+  admin_escalate_report: z.object({ p_report_id: id, p_escalated: z.boolean() }),
 } as const;
 
 export type RpcName = keyof typeof RPC_SCHEMAS;
@@ -188,4 +249,7 @@ export const READ_RPCS: ReadonlySet<RpcName> = new Set<RpcName>([
   "get_trending_tags", "search_profiles", "get_blocked", "get_ai_history", "admin_overview", "get_site",
   "get_my_progress", "get_profile_extras", "get_featured", "get_level_board", "admin_get_site",
   "admin_stats", "admin_audit", "admin_member_extras", "admin_support_inbox",
+  "open_gates_version", "get_my_identity", "get_profile_identity", "get_discover", "get_my_collections",
+  "get_collection", "get_my_themes", "get_my_creator_application", "admin_creator_queue", "admin_pro_members",
+  "admin_report_flags",
 ]);

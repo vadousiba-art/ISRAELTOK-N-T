@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import {
   Ban,
   Bookmark,
+  FolderPlus,
   Bot,
   Flag,
   Heart,
@@ -37,6 +38,9 @@ import { LevelChip } from "@/components/yoru/Progression";
 import { pickLine, REACTION_EMOJI, REACTIONS, SUCCESS_TOASTS, AWARD_INFO } from "@/lib/jokes";
 import type { Post, PostCore, ReactionKind } from "@/lib/types";
 import { PollView } from "./PollView";
+import { AddToCollection } from "@/components/collections/AddToCollection";
+import { useOpenGates } from "@/lib/client/gates";
+import { useT } from "@/components/providers/I18nProvider";
 import { ReportDialog } from "./ReportDialog";
 import { AwardDialog } from "./AwardDialog";
 import { QuoteDialog } from "./QuoteDialog";
@@ -134,6 +138,9 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
   const [reportOpen, setReportOpen] = useState(false);
   const [awardOpen, setAwardOpen] = useState(false);
   const [quoteOpen, setQuoteOpen] = useState(false);
+  const [collectOpen, setCollectOpen] = useState(false);
+  const { available: gates } = useOpenGates();
+  const t = useT();
   const [roasting, setRoasting] = useState(false);
   const heartRef = useRef<HTMLButtonElement>(null);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -330,6 +337,7 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
                 { label: "React...", icon: <SmilePlus size={16} />, onSelect: () => setPicker(true) },
                 { label: "Give an award", icon: <Trophy size={16} />, onSelect: () => setAwardOpen(true), hidden: shown.author.id === me.id },
                 { label: "Quote post", icon: <Quote size={16} />, onSelect: () => setQuoteOpen(true) },
+                { label: t("col.addTo"), icon: <FolderPlus size={16} />, onSelect: () => setCollectOpen(true), hidden: !gates },
                 {
                   label: pinned ? "Unpin from profile" : "Pin to profile",
                   icon: <Pin size={16} />,
@@ -548,6 +556,7 @@ export function PostCard({ post: initial, detail, onDeleted }: Props) {
       </div>
 
       <ReportDialog open={reportOpen} onClose={() => setReportOpen(false)} targetType="post" targetId={post.id} />
+      {gates && collectOpen && <AddToCollection postId={shown.id} open={collectOpen} onClose={() => setCollectOpen(false)} />}
       <AwardDialog
         open={awardOpen}
         onClose={() => setAwardOpen(false)}

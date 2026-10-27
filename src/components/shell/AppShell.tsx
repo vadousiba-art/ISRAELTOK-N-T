@@ -20,6 +20,8 @@ import { Ambience } from "@/components/fx/Ambience";
 import { Celebrations } from "@/components/fx/Celebrations";
 import { CommandPalette } from "@/components/fx/CommandPalette";
 import { AccentStyle, AnnouncementBanner } from "@/components/yoru/Progression";
+import { WhatsNew } from "@/components/yoru/WhatsNew";
+import { LocaleSync } from "@/components/yoru/LocaleSync";
 import type { Me } from "@/lib/types";
 
 type ComposerOpts = { tab?: ComposerTab; file?: File | null; text?: string };
@@ -120,6 +122,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <EmojiBurstLayer />
         <Celebrations />
         <CommandPalette />
+        <WhatsNew />
+        <LocaleSync />
       </LiveProvider>
     </Ctx.Provider>
   );

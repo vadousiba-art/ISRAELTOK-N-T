@@ -148,7 +148,11 @@ export function NightlyCard() {
         toast("Already checked in tonight.", "info", "🌙");
       } else {
         burst("🔥", btn.current);
-        toast(`Night ${r.streak} · +${r.gained} XP`, "success", "🔥");
+        toast(
+          r.shielded ? `Night Pass shield kept your streak · Night ${r.streak} · +${r.gained} XP` : `Night ${r.streak} · +${r.gained} XP`,
+          "success",
+          r.shielded ? "🛡️" : "🔥",
+        );
         if (r.leveled_up) celebrateLevelUp(r.level);
       }
       mutate();

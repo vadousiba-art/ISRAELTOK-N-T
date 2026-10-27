@@ -12,6 +12,10 @@ import { Avatar } from "@/components/ui/Avatar";
 import { ChaosLoader, Empty } from "@/components/ui/bits";
 import { CATEGORIES, EMPTY_LINES } from "@/lib/jokes";
 import type { ProfileLite } from "@/lib/types";
+import { useOpenGates } from "@/lib/client/gates";
+import { useT } from "@/components/providers/I18nProvider";
+import { Discover } from "@/components/yoru/Discover";
+import { INTERESTS, type Interest } from "@/lib/opengates";
 
 function useDebounced<T>(value: T, ms: number) {
   const [v, setV] = useState(value);
@@ -27,7 +31,11 @@ function ExploreInner() {
   const router = useRouter();
   const tag = params.get("tag");
   const [q, setQ] = useState(params.get("q") ?? "");
-  const [tab, setTab] = useState<"trending" | "latest" | "squad">("trending");
+  const interestParam = params.get("interest");
+  const initialInterest = (INTERESTS as readonly string[]).includes(interestParam ?? "") ? (interestParam as Interest) : null;
+  const { available } = useOpenGates();
+  const t = useT();
+  const [tab, setTab] = useState<"trending" | "latest" | "squad" | "discover">(initialInterest ? "discover" : "trending");
   const dq = useDebounced(q.trim(), 300);
   const { data: tags } = useRpc<{ tag: string; count: number }[]>("get_trending_tags", { p_limit: 15 });
   const { data: people } = useRpc<ProfileLite[]>(dq.length >= 1 ? "search_profiles" : null, { p_q: dq });
@@ -41,19 +49,19 @@ function ExploreInner() {
       </div>
 
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={20} />
+        <Search className="absolute start-4 top-1/2 -translate-y-1/2 text-muted" size={20} />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value.slice(0, 40))}
           placeholder="Search people, posts, #tags..."
-          className="w-full rounded-full border border-line bg-card py-3 pl-12 pr-10 outline-none focus:border-brand"
+          className="w-full rounded-full border border-line bg-card py-3 pe-10 ps-12 outline-none focus:border-brand"
           aria-label="Search"
           onKeyDown={(e) => {
             if (e.key === "Enter" && q.trim().startsWith("#")) router.push(`/explore?tag=${encodeURIComponent(q.trim().slice(1).toLowerCase())}`);
           }}
         />
         {q && (
-          <button onClick={() => setQ("")} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted" aria-label="Clear search">
+          <button onClick={() => setQ("")} className="absolute end-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted" aria-label="Clear search">
             <X size={18} />
           </button>
         )}
@@ -123,6 +131,7 @@ function ExploreInner() {
                 ["trending", "Trending"],
                 ["latest", "Latest"],
                 ["squad", "People"],
+                ...(available ? ([["discover", t("disc.tab")]] as const) : []),
               ] as const
             ).map(([id, label]) => (
               <button
@@ -138,6 +147,7 @@ function ExploreInner() {
           </div>
           {tab === "trending" && <Feed mode="trending" />}
           {tab === "latest" && <Feed mode="latest" live />}
+          {tab === "discover" && available && <Discover initialInterest={initialInterest} />}
           {tab === "squad" &&
             (!members ? (
               <ChaosLoader />

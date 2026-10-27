@@ -9,7 +9,7 @@ import clsx from "clsx";
 import { useRpc } from "@/lib/client/hooks";
 import { useApp } from "@/components/providers/AppProvider";
 import { useShell } from "@/components/shell/AppShell";
-import { navItems } from "@/components/shell/navItems";
+import { useNavItems } from "@/components/shell/navItems";
 import { Avatar } from "@/components/ui/Avatar";
 import { AMBIENCE_MODES } from "./Ambience";
 import { NIGHT_MODE_EVENT, PALETTE_EVENT } from "@/lib/progress";
@@ -24,7 +24,8 @@ export function CommandPalette() {
   const [sel, setSel] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const { me, openComposer } = useShell();
+  const { openComposer } = useShell();
+  const navLinks = useNavItems();
   const { theme, setTheme, setAmbience } = useApp();
   const query = q.trim();
   const { data: people } = useRpc<ProfileLite[]>(open && query.length >= 1 ? "search_profiles" : null, { p_q: query.replace(/^@/, "") });
@@ -59,7 +60,7 @@ export function CommandPalette() {
     const go = (href: string) => () => router.push(href);
     const base: Cmd[] = [
       { id: "new", label: "Drop a post", hint: "Create", run: () => openComposer({ tab: "text" }) },
-      ...navItems(me).map(({ href, label, icon: Icon }) => ({ id: href, label, hint: "Go to", icon: <Icon size={16} />, run: go(href) })),
+      ...navLinks.map(({ href, label, icon: Icon }) => ({ id: href, label, hint: "Go to", icon: <Icon size={16} />, run: go(href) })),
       { id: "theme", label: theme === "light" ? "Switch to dark theme" : "Switch to light theme", hint: "Theme", run: () => setTheme(theme === "light" ? "dark" : "light") },
       ...AMBIENCE_MODES.map((m) => ({ id: `amb-${m.id}`, label: `Ambience: ${m.label} ${m.jp}`, hint: "Effects", run: () => setAmbience(m.id) })),
       { id: "night", label: "夜 mode", hint: "Secret", run: () => window.dispatchEvent(new Event(NIGHT_MODE_EVENT)) },
@@ -75,7 +76,7 @@ export function CommandPalette() {
     }));
     const tag: Cmd[] = lower.startsWith("#") && lower.length > 1 ? [{ id: "tag", label: `Browse ${lower}`, hint: "Tag", run: go(`/explore?tag=${encodeURIComponent(lower.slice(1))}`) }] : [];
     return [...tag, ...found, ...matched].slice(0, 12);
-  }, [me, openComposer, people, query, router, setAmbience, setTheme, theme]);
+  }, [navLinks, openComposer, people, query, router, setAmbience, setTheme, theme]);
 
   const run = (c: Cmd | undefined) => {
     if (!c) return;

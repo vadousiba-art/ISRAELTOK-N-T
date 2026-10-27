@@ -12,7 +12,10 @@ import { Logo } from "@/components/ui/Logo";
 import { post } from "@/lib/client/api";
 import { AppDownload } from "@/components/auth/AppDownload";
 import { useShell } from "./AppShell";
-import { navItems } from "./navItems";
+import { useNavItems } from "./navItems";
+import { useI18n } from "@/components/providers/I18nProvider";
+import { useOpenGates } from "@/lib/client/gates";
+import { WHATS_NEW_EVENT } from "@/lib/releases";
 import { LevelChip } from "@/components/yoru/Progression";
 import { PALETTE_EVENT } from "@/lib/progress";
 
@@ -20,6 +23,10 @@ export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }
   const { me } = useShell();
   const pathname = usePathname();
   const router = useRouter();
+  const items = useNavItems();
+  const { t, locale } = useI18n();
+  const { available } = useOpenGates();
+  const rtl = locale === "ar";
 
   useEffect(() => {
     onClose();
@@ -53,11 +60,11 @@ export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }
             onClick={onClose}
           />
           <motion.aside
-            initial={{ x: "-100%" }}
+            initial={{ x: rtl ? "100%" : "-100%" }}
             animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
+            exit={{ x: rtl ? "100%" : "-100%" }}
             transition={{ duration: 0.22, ease: "easeOut" }}
-            className="absolute inset-y-0 left-0 flex w-[84%] max-w-[330px] flex-col overflow-y-auto border-r border-line bg-bg-2 p-5"
+            className="absolute inset-y-0 start-0 flex w-[84%] max-w-[330px] flex-col overflow-y-auto border-e border-line bg-bg-2 p-5"
             aria-label="Menu"
           >
             <div className="mb-5 flex items-center justify-between">
@@ -74,7 +81,7 @@ export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }
                 </div>
                 <div className="truncate text-sm text-muted">@{me.username}</div>
               </div>
-              {me.level ? <LevelChip level={me.level} className="ml-auto" /> : null}
+              {me.level ? <LevelChip level={me.level} className="ms-auto" /> : null}
             </Link>
             <button
               onClick={() => {
@@ -86,7 +93,7 @@ export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }
               <Search size={18} /> Quick jump…
             </button>
             <nav className="flex flex-col gap-0.5">
-              {navItems(me).map(({ href, label, icon: Icon, badge }) => (
+              {items.map(({ href, label, icon: Icon, badge }) => (
                 <Link
                   key={href}
                   href={href}
@@ -98,18 +105,37 @@ export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }
                   <Icon size={22} />
                   {label}
                   {badge ? (
-                    <span className="ml-auto rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-white">{badge}</span>
+                    <span className="ms-auto rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-white">{badge}</span>
                   ) : null}
                 </Link>
               ))}
             </nav>
             <div className="my-5 h-px bg-line" />
+            {available && (
+              <div className="mb-4 flex flex-wrap gap-2 text-sm">
+                <Link href="/pro" className="rounded-full border border-line px-3 py-1.5 text-ink-2 hover:border-brand hover:text-ink">
+                  {t("nav.pro")}
+                </Link>
+                <Link href="/trust" className="rounded-full border border-line px-3 py-1.5 text-ink-2 hover:border-brand hover:text-ink">
+                  {t("nav.trust")}
+                </Link>
+                <button
+                  onClick={() => {
+                    onClose();
+                    setTimeout(() => window.dispatchEvent(new Event(WHATS_NEW_EVENT)), 220);
+                  }}
+                  className="rounded-full border border-line px-3 py-1.5 text-ink-2 hover:border-brand hover:text-ink"
+                >
+                  {t("nav.whatsNew")}
+                </button>
+              </div>
+            )}
             <AppDownload className="mb-3" />
             <button
               onClick={logout}
               className="mt-auto flex items-center gap-3 rounded-xl px-3 py-3 font-medium text-brand hover:bg-card-2"
             >
-              <LogOut size={20} /> Log out
+              <LogOut size={20} /> {t("settings.logout")}
             </button>
           </motion.aside>
         </div>

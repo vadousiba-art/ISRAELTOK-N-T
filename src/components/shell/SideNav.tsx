@@ -8,19 +8,20 @@ import clsx from "clsx";
 import { Avatar } from "@/components/ui/Avatar";
 import { post } from "@/lib/client/api";
 import { useShell } from "./AppShell";
-import { navItems } from "./navItems";
+import { useNavItems } from "./navItems";
 
 // Desktop-only left rail.
 export function SideNav() {
   const { me, openComposer } = useShell();
   const pathname = usePathname();
   const router = useRouter();
+  const items = useNavItems();
   const active = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   return (
     <aside className="sticky top-0 hidden h-dvh w-[240px] shrink-0 flex-col py-6 lg:flex" aria-label="Sidebar">
       <nav className="flex flex-col gap-1">
-        {navItems(me).map(({ href, label, icon: Icon, badge }) => (
+        {items.map(({ href, label, icon: Icon, badge }) => (
           <Link
             key={href}
             href={href}
@@ -31,7 +32,7 @@ export function SideNav() {
           >
             <Icon size={24} />
             {label}
-            {badge ? <span className="ml-auto rounded-full bg-brand px-2 text-xs font-bold text-white">{badge}</span> : null}
+            {badge ? <span className="ms-auto rounded-full bg-brand px-2 text-xs font-bold text-white">{badge}</span> : null}
           </Link>
         ))}
       </nav>

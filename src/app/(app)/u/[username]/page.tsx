@@ -23,6 +23,11 @@ import { XpBar } from "@/components/yoru/Progression";
 import { CURRENTLY, hueColor, levelProgress } from "@/lib/progress";
 import { BADGES } from "@/lib/jokes";
 import type { Profile, ProfileExtras } from "@/lib/types";
+import { useOpenGates } from "@/lib/client/gates";
+import { useT } from "@/components/providers/I18nProvider";
+import { AvatarFrameWrap, ProfileBanner } from "@/components/yoru/ProfileLook";
+import { CollectionCard } from "@/components/collections/CollectionCard";
+import { INTEREST_EMOJI, type ProfileIdentity } from "@/lib/opengates";
 
 export default function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = use(params);
@@ -32,7 +37,10 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
   const { mutate } = useSWRConfig();
   const { data: p, error, mutate: mutateProfile } = useRpc<Profile>("get_profile", { p_username: username });
   const { data: x } = useRpc<ProfileExtras>("get_profile_extras", { p_username: username });
-  const [tab, setTab] = useState<"user" | "media">("user");
+  const { available } = useOpenGates();
+  const { data: id } = useRpc<ProfileIdentity>(available ? "get_profile_identity" : null, { p_username: username });
+  const t = useT();
+  const [tab, setTab] = useState<"user" | "media" | "collections">("user");
   const [editing, setEditing] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [roast, setRoast] = useState<string | null>(null);
@@ -92,17 +100,14 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
   return (
     <div className="space-y-4">
       <div className="card overflow-hidden">
-        <div
-          className="relative h-28 overflow-hidden"
-          style={{ background: `radial-gradient(ellipse at top right, color-mix(in srgb, ${accent} 40%, transparent), transparent 65%), linear-gradient(160deg, #1a1a1a, #080808)` }}
-        >
-          <span className="pointer-events-none absolute -left-2 -top-6 select-none text-[120px] font-bold leading-none text-white/[0.04]" aria-hidden>
+        <ProfileBanner style={id?.banner_style} accent={accent} className="h-28">
+          <span className="pointer-events-none absolute -start-2 -top-6 select-none text-[120px] font-bold leading-none text-white/[0.04]" aria-hidden>
             夜
           </span>
-          <span className="sticker absolute right-3 top-3 rounded-full border border-white/20 px-2.5 py-0.5 text-white/80">
+          <span className="sticker absolute end-3 top-3 rounded-full border border-white/20 bg-black/30 px-2.5 py-0.5 text-white/80">
             {p.role === "owner" ? "FOUNDER" : p.role === "admin" ? "ADMIN" : p.is_bot ? "AI" : "MEMBER"}
           </span>
-        </div>
+        </ProfileBanner>
         <div className="px-4 pb-4">
           <div className="-mt-12 flex items-end justify-between">
             <motion.div
@@ -112,11 +117,13 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
               className="relative"
             >
               {x && !p.is_bot ? (
-                <div className="level-ring p-[3px]" style={{ "--p": levelProgress(x.xp).pct, "--brand": accent } as React.CSSProperties}>
-                  <div className="rounded-full bg-card p-[3px]">
-                    <Avatar src={p.avatar_url} name={p.display_name} size={92} online={p.online} />
+                <AvatarFrameWrap frame={id?.avatar_frame} accent={accent}>
+                  <div className="level-ring p-[3px]" style={{ "--p": levelProgress(x.xp).pct, "--brand": accent } as React.CSSProperties}>
+                    <div className="rounded-full bg-card p-[3px]">
+                      <Avatar src={p.avatar_url} name={p.display_name} size={92} online={p.online} />
+                    </div>
                   </div>
-                </div>
+                </AvatarFrameWrap>
               ) : (
                 <Avatar src={p.avatar_url} name={p.display_name} size={96} online={p.online} />
               )}
@@ -178,6 +185,12 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
                 </span>
               )}
               {x?.muted && <span className="rounded-full bg-card-2 px-2 py-0.5 text-xs">muted</span>}
+              {id?.creator_category && (
+                <Link href="/creators" className="rounded-full border border-line bg-card-2 px-2 py-0.5 text-xs font-semibold text-ink hover:border-brand">
+                  {t("cr.label")} · {t(`creator.${id.creator_category}` as const)}
+                </Link>
+              )}
+              {id?.pro && <span className="rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-black tracking-wider text-white">PRO</span>}
             </div>
             {x?.currently_kind && x.currently_title && (
               <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-line bg-card-2 px-3 py-1 text-sm">
@@ -190,8 +203,8 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
             {p.bio && <p className="mt-2 whitespace-pre-wrap text-[15px]">{p.bio}</p>}
             <div className="mt-2 flex items-center gap-1 text-xs text-muted">
               <CalendarDays size={14} /> Joined {new Date(p.created_at).toLocaleDateString(undefined, { month: "long", year: "numeric" })}
-              {p.roast_opt_in && <span className="ml-2 rounded-full bg-roast/15 px-2 py-0.5 font-bold text-roast">🔥 roastable</span>}
-              {p.banned && <span className="ml-2 rounded-full bg-hot px-2 py-0.5 font-bold text-white">BANNED</span>}
+              {p.roast_opt_in && <span className="ms-2 rounded-full bg-roast/15 px-2 py-0.5 font-bold text-roast">🔥 roastable</span>}
+              {p.banned && <span className="ms-2 rounded-full bg-hot px-2 py-0.5 font-bold text-white">BANNED</span>}
             </div>
           </div>
           {x && !p.is_bot && <XpBar xp={x.xp} className="mt-4" />}
@@ -209,6 +222,25 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
               </motion.div>
             ))}
           </div>
+          {id && p.badges.some((b) => id.showcase_badges.includes(b)) && (
+            <div className="mt-4 grid grid-cols-3 gap-2" aria-label="Achievement showcase">
+              {id.showcase_badges.filter((b) => p.badges.includes(b)).map((b) => (
+                <div key={b} className="rounded-2xl border border-line bg-card-2 p-2.5 text-center" title={BADGES[b]?.blurb}>
+                  <div className="text-2xl" aria-hidden>{BADGES[b]?.emoji}</div>
+                  <div className="mt-1 text-[11px] font-bold leading-tight">{BADGES[b]?.label ?? b}</div>
+                </div>
+              ))}
+            </div>
+          )}
+          {id && id.interests.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-1.5" aria-label={t("settings.interests")}>
+              {id.interests.map((i) => (
+                <Link key={i} href={`/explore?interest=${i}`} className="rounded-full border border-line px-2.5 py-1 text-xs font-medium text-ink-2 hover:border-brand hover:text-ink">
+                  {INTEREST_EMOJI[i]} {t(`interest.${i}` as const)}
+                </Link>
+              ))}
+            </div>
+          )}
           {p.badges.length > 0 && (
             <div className="mt-4">
               <div className="mb-1.5 text-xs font-bold uppercase tracking-widest text-muted">Achievements</div>
@@ -260,20 +292,33 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
               [
                 ["user", "Posts"],
                 ["media", "Media"],
+                ...(id && (id.collections.length > 0 || p.is_me) ? ([["collections", t("col.title")]] as const) : []),
               ] as const
-            ).map(([id, label]) => (
+            ).map(([key, label]) => (
               <button
-                key={id}
+                key={key}
                 role="tab"
-                aria-selected={tab === id}
-                onClick={() => setTab(id)}
-                className={clsx("flex-1 rounded-full py-2 text-sm font-bold", tab === id ? "bg-brand text-white" : "text-muted")}
+                aria-selected={tab === key}
+                onClick={() => setTab(key)}
+                className={clsx("flex-1 rounded-full py-2 text-sm font-bold", tab === key ? "bg-brand text-white" : "text-muted")}
               >
                 {label}
               </button>
             ))}
           </div>
-          <Feed key={tab} mode={tab} arg={p.username} emptyText={p.is_me ? "It's quiet here. Drop a post." : "Nothing here yet."} />
+          {tab === "collections" ? (
+            id?.collections.length ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {id.collections.map((c) => (
+                  <CollectionCard key={c.id} c={c} />
+                ))}
+              </div>
+            ) : (
+              <Empty emoji="📁" text={t("col.empty")} />
+            )
+          ) : (
+            <Feed key={tab} mode={tab} arg={p.username} emptyText={p.is_me ? "It's quiet here. Drop a post." : "Nothing here yet."} />
+          )}
         </>
       )}
       {p.is_me && <EditProfileDialog me={me} open={editing} onClose={() => setEditing(false)} />}

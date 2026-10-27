@@ -124,7 +124,7 @@ export function Toggle({
         <motion.span
           layout
           transition={{ type: "spring", stiffness: 600, damping: 30 }}
-          className={clsx("absolute top-1 h-5 w-5 rounded-full bg-white shadow", checked ? "right-1" : "left-1")}
+          className={clsx("absolute top-1 h-5 w-5 rounded-full bg-white shadow", checked ? "end-1" : "start-1")}
         />
       </button>
     </label>

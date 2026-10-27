@@ -378,3 +378,9 @@ body {
 :root[data-motion="reduce"] .float-meme {
   display: none;
 }
+
+/* Manga speed lines for cinematic panels (What's new). Purely decorative. */
+.speedlines {
+  background: repeating-conic-gradient(from 0deg at 85% 15%, #fff 0deg 0.6deg, transparent 0.6deg 7deg);
+  mask-image: radial-gradient(circle at 85% 15%, transparent 18%, #000 70%);
+}
