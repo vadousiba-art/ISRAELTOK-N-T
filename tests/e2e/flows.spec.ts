@@ -467,3 +467,108 @@ test("the Trust Center is public", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page).toHaveURL(/\/trust/);
 });
+
+// ---------------------------------------------------------------------------
+// YORU Pro Universe (migration 0009)
+// ---------------------------------------------------------------------------
+
+test("the Pro landing page is honest about price and checkout", async ({ page }) => {
+  await loginAs(page, /Zach/);
+  await page.goto("/pro");
+  await expect(page.getByRole("heading", { name: /YOUR PROFILE\.\s*YOUR UNIVERSE\./ })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Explore YORU Pro" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Preview the cosmetics" }).first()).toBeVisible();
+  await expect(page.getByText("CAD $5.99 per month")).toBeVisible();
+  await expect(page.getByText(/Intended price, not confirmed yet/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Not available yet" })).toBeDisabled();
+});
+
+test("trying on never unlocks; free items equip and show on posts; crafted requests are refused", async ({ page }) => {
+  await loginAs(page, /Zach/);
+  await page.goto("/pro/shop");
+  await expect(page.getByText("400 items", { exact: true })).toBeVisible();
+
+  // A Pro item: try-on only, no Equip, and the server refuses a hand-made request.
+  await page.getByLabel("Search the catalog").fill("Crimson Eclipse");
+  await page.getByRole("button", { name: /Crimson Eclipse/ }).first().click();
+  const sheet = page.getByRole("dialog", { name: "Crimson Eclipse" });
+  await expect(sheet.getByRole("button", { name: "Equip" })).toHaveCount(0);
+  await sheet.getByRole("button", { name: "Try on" }).click();
+  await expect(page.getByText("Trying on: only you can see this, nothing is saved.")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "End try-on" }).click();
+  const forged = await page.request.post("/api/rpc/pro_equip", { data: { p_slot: "ring", p_item: "ring.crimson_eclipse" } });
+  expect(forged.status()).toBe(403);
+
+  // A free item equips and shows on the member's posts.
+  await page.getByLabel("Search the catalog").fill("Void Halo");
+  await page.getByRole("button", { name: /Void Halo/ }).first().click();
+  await page.getByRole("dialog", { name: "Void Halo" }).getByRole("button", { name: "Equip" }).click();
+  await expect(page.getByText("Void Halo equipped.")).toBeVisible();
+  const me = await (await page.request.post("/api/rpc/get_my_pro", { data: {} })).json();
+  expect(me.data.equips.ring).toEqual({ item: "ring.void_halo", active: true });
+  await page.goto("/u/ZachAttack");
+  await expect(page.locator("svg.pointer-events-none.absolute").first()).toBeVisible();
+});
+
+test("a Pro member wears a signature look and other members see it", async ({ page, browser }) => {
+  await loginAs(page, /Lucas/); // granted complimentary Pro by an earlier test
+  await page.goto("/pro/shop?view=sets");
+  await page.locator("div", { hasText: /^CRIMSON REQUIEM/ }).first();
+  const card = page.locator("div.overflow-hidden.rounded-2xl", { hasText: "CRIMSON REQUIEM" }).first();
+  await card.getByRole("button", { name: "Wear what I own" }).click();
+  await expect(page.getByText("Look equipped.")).toBeVisible();
+
+  const ctx = await browser.newContext();
+  const other = await ctx.newPage();
+  await loginAs(other, /Zach/);
+  await other.goto("/u/LucasSZN");
+  await expect(other.locator('[data-banner="crimson_rain"]')).toBeVisible();
+  await expect(other.getByText("Crimson Phantom")).toBeVisible();
+  await ctx.close();
+});
+
+test("drafts are private, post on demand, and schedules can be cancelled", async ({ page }) => {
+  await loginAs(page, /Zach/);
+  await page.goto("/pro/studio");
+  await page.getByRole("button", { name: "New", exact: true }).click();
+  const text = `draft from e2e ${Date.now()}`;
+  await page.getByLabel("Draft text").fill(text);
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByText("Draft saved.")).toBeVisible();
+
+  // The demo server runs the scheduler, so scheduling is available.
+  await expect(page.getByText(/Scheduling is running/)).toBeVisible();
+  await page.getByRole("button", { name: "Schedule", exact: true }).click();
+  await expect(page.getByText(/Scheduled for/).first()).toBeVisible();
+  await page.getByRole("button", { name: "Cancel schedule" }).click();
+  await expect(page.getByText("Schedule cancelled. It's a draft again.")).toBeVisible();
+
+  page.once("dialog", (d) => d.accept());
+  await page.getByRole("button", { name: "Post now" }).click();
+  await expect(page.getByText("Posted.")).toBeVisible();
+  await page.goto("/");
+  await expect(page.locator("article", { hasText: text })).toBeVisible();
+});
+
+test("analytics show real zeros for a brand-new member, never sample numbers", async ({ page }) => {
+  await quiet(page.context());
+  await signUp(page, "Fresh");
+  await page.goto("/pro/analytics");
+  await expect(page.getByRole("heading", { name: "Analytics" })).toBeVisible();
+  await expect(page.getByText("No reactions or comments from others yet.")).toBeVisible();
+  await expect(page.getByText("Total posts: 0")).toBeVisible();
+});
+
+test("the Lab, hub, hubs and feed presets load", async ({ page }) => {
+  await loginAs(page, /Zach/);
+  await page.goto("/pro/lab");
+  await expect(page.getByRole("heading", { name: /Preview Lab/ })).toBeVisible();
+  await page.goto("/pro/hub");
+  await expect(page.getByRole("heading", { name: "Membership hub" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Billing Information" })).toBeVisible();
+  await page.goto("/pro/hubs/hub.anime_central");
+  await expect(page.getByRole("heading", { name: /Anime Central/ })).toBeVisible();
+  await page.goto("/pro/feeds?preset=feed.image_focus");
+  await expect(page.getByText("Previewing the first 5 posts. Using this preset is part of YORU Pro.")).toBeVisible();
+});
