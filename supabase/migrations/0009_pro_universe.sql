@@ -867,10 +867,10 @@ begin
   for k, val in select * from jsonb_each(p) loop
     case k
       when 'labs' then
-        -- only lab tools that exist; turning one on is a preference, not an unlock
+        -- only lab tools that exist and that you own; switching one on unlocks nothing
         cur := cur || jsonb_build_object(k, coalesce((select jsonb_agg(x) from (
           select distinct x from jsonb_array_elements_text(val) x
-          where exists (select 1 from public.pro_catalog c where c.id = x and c.cat = 'lab')) y), '[]'::jsonb));
+          where exists (select 1 from public.pro_catalog c where c.id = x and c.cat = 'lab') and public.pro_owns(v, x)) y), '[]'::jsonb));
       when 'sound_volume' then
         cur := cur || jsonb_build_object(k, least(greatest(coalesce((val #>> '{}')::int, 60), 0), 100));
       when 'sounds_on', 'show_timeline', 'effects_on', 'ring_motion' then

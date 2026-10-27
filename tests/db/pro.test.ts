@@ -135,7 +135,9 @@ describe("ownership and equipping", () => {
     expect((await as<MyPro>(u.cy, "get_my_pro")).equips.ring.item).toBe("ring.silver_moon");
   });
 
-  it("experimental items need the Lab switch", async () => {
+  it("experimental items need the Lab switch, and the switch needs Pro", async () => {
+    const s = await as<{ labs: string[] }>(u.cy, "pro_save_settings", { p: { labs: ["lab.experimental_effects", "lab.live_ring_preview"] } });
+    expect(s.labs).toEqual(["lab.live_ring_preview"]);
     await expect(as(u.ben, "pro_equip", { p_slot: "effect", p_item: "effect.void_distortion" })).rejects.toThrow(/Experimental/);
     await as(u.ben, "pro_save_settings", { p: { labs: ["lab.experimental_effects"] } });
     await as(u.ben, "pro_equip", { p_slot: "effect", p_item: "effect.void_distortion" });
