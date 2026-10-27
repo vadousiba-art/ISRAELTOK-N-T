@@ -11,7 +11,9 @@ import { useRpc } from "@/lib/client/hooks";
 import { CATALOG, ITEM_BY_ID, hubViews } from "@/lib/pro/catalog";
 import { SETS } from "@/lib/pro/sets";
 import { CATEGORIES, SLOTS, type Item, type Slot } from "@/lib/pro/types";
-import { equip, ownsItem, recentlyViewed, resetLook, useMyPro, useProUniverse } from "@/lib/client/pro";
+import { equip, equipped, ownsItem, recentlyViewed, resetLook, saveProSettings, useMyPro, useProUniverse } from "@/lib/client/pro";
+import { playSound } from "@/lib/client/pro-fx";
+import type { SoundP } from "@/lib/pro/catalog";
 import { ItemCard } from "@/components/pro/ItemCard";
 import { ItemDetail } from "@/components/pro/ItemDetail";
 import { ItemPreview } from "@/components/pro/ItemPreview";
@@ -90,6 +92,30 @@ function Hub() {
           </a>
         ))}
       </nav>
+
+      <section className="card space-y-2 p-4" aria-labelledby="prefs">
+        <h2 id="prefs" className="font-black">Preferences</h2>
+        {([
+          ["sounds_on", "Notification sounds", "Off unless you turn it on. Plays your chosen sound when a notification arrives.", me.settings.sounds_on === true],
+          ["effects_on", "Interface effects", "Your equipped effect. Always off with reduced motion or data saver.", me.settings.effects_on !== false],
+          ["show_timeline", "Show my milestone timeline on my profile", "Other members see the milestones you've earned.", me.settings.show_timeline !== false],
+        ] as const).map(([k, l, hint, on]) => (
+          <label key={k} className="flex items-center justify-between gap-3 rounded-xl bg-card-2 px-3 py-2 text-sm">
+            <span><span className="font-semibold">{l}</span><span className="block text-xs text-muted">{hint}</span></span>
+            <input type="checkbox" className="h-5 w-5 shrink-0" checked={on} onChange={(e) => saveProSettings({ [k]: e.target.checked }).catch(toastError)} />
+          </label>
+        ))}
+        <div className="flex items-center gap-3 rounded-xl bg-card-2 px-3 py-2 text-sm">
+          <span className="shrink-0 font-semibold">Volume</span>
+          <input type="range" min={0} max={100} defaultValue={me.settings.sound_volume ?? 60} aria-label="Notification volume" className="min-w-0 flex-1"
+            onPointerUp={(e) => saveProSettings({ sound_volume: Number((e.target as HTMLInputElement).value) }).catch(toastError)}
+            onKeyUp={(e) => saveProSettings({ sound_volume: Number((e.target as HTMLInputElement).value) }).catch(toastError)} />
+          <button type="button" className="shrink-0 text-xs font-bold text-brand" disabled={!equipped<SoundP>(me, "sound")}
+            onClick={() => { const s = equipped<SoundP>(me, "sound"); if (s) playSound(s.p, me.settings.sound_volume ?? 60); }}>
+            {equipped(me, "sound") ? "Test" : "No sound chosen"}
+          </button>
+        </div>
+      </section>
 
       <View id="hubview.membership_overview">
         <div className="grid grid-cols-3 gap-2 text-center">

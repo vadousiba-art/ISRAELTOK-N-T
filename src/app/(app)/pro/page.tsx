@@ -272,10 +272,28 @@ function Landing() {
         <p className="border-t border-line px-5 py-4 text-xs leading-relaxed text-muted">{t("pro.terms")}</p>
       </section>
 
+      <section className="card p-5">
+        <h2 className="text-lg font-black">Tools</h2>
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {[
+            ["/pro/studio", "Draft Studio & Planner", "Templates, private drafts, scheduling"],
+            ["/pro/analytics", "Analytics & Insights", "Your real numbers, your way"],
+            ["/pro/feeds", "Feed controls", "Saved filters for your feed"],
+            ["/pro/hubs", "Interest Hubs", "Discovery pages for your interests"],
+            ["/pro/lab", "Preview Lab", "Previews and opt-in experiments"],
+            ["/pro/hub", "Membership hub", "What you own, wear and want"],
+          ].map(([href, name, blurb]) => (
+            <Link key={href} href={href} className="rounded-xl border border-line p-3 hover:border-brand">
+              <div className="text-sm font-bold">{name}</div>
+              <div className="text-xs text-muted">{blurb}</div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       <div className="flex flex-wrap justify-center gap-2 pb-4">
         <Link href="/pro/shop" className="rounded-full bg-brand px-5 py-2.5 text-sm font-bold text-white">Explore YORU Pro</Link>
-        <Link href="/pro/hub" className="rounded-full border border-line px-5 py-2.5 text-sm font-bold">Your membership hub</Link>
-        <Link href="/pro/lab" className="rounded-full border border-line px-5 py-2.5 text-sm font-bold">Preview Lab</Link>
+        <a href="#try" className="rounded-full border border-line px-5 py-2.5 text-sm font-bold">Preview the cosmetics</a>
       </div>
     </div>
   );

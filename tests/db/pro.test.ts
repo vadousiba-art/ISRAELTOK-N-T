@@ -334,6 +334,7 @@ describe("Collections+ styles", () => {
     const styled = await as<{ template: string; sort: string }>(u.cy, "pro_style_collection", { p_id: c.id, p_template: "collection.anime_watchlist", p_sort: "popular" });
     expect(styled).toMatchObject({ template: "collection.anime_watchlist", sort: "popular" });
     await expect(as(u.ann, "get_collection_page", { p_id: c.id })).rejects.toThrow(/NOT_FOUND/);
+    expect((await as<{ template: string | null }>(u.cy, "pro_style_collection", { p_id: c.id, p_template: "" })).template).toBeNull();
     await expect(as(u.ann, "pro_style_collection", { p_id: c.id, p_sort: "added_asc" })).rejects.toThrow(/NOT_FOUND/);
   });
 });

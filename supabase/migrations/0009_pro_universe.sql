@@ -1338,7 +1338,7 @@ declare
   c public.collections;
 begin
   perform public.enforce_rate_limit('collections', 60, 3600);
-  if p_template is not null then
+  if nullif(p_template, '') is not null then
     if not exists (select 1 from public.pro_catalog where id = p_template and cat = 'collection') then raise exception 'INVALID|Unknown template.'; end if;
     if not public.pro_owns(v, p_template) then raise exception 'FORBIDDEN|That template is part of YORU Pro.' using errcode = '42501'; end if;
   end if;
