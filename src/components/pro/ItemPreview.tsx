@@ -49,7 +49,8 @@ function ThemeSwatch({ t }: { t: ThemeP }) {
   );
 }
 
-function ChatSwatch({ c, big }: { c: ChatP; big?: boolean }) {
+// The chat theme's background (colour plus a light pattern), also used in chat.
+export function chatBackground(c: ChatP) {
   const pattern: Record<string, string> = {
     static: "radial-gradient(rgba(255,255,255,.07) 1px, transparent 1.5px) 0 0/5px 5px",
     grid: `linear-gradient(${c.accent}22 1px, transparent 1px) 0 0/16px 16px, linear-gradient(90deg, ${c.accent}22 1px, transparent 1px) 0 0/16px 16px`,
@@ -67,8 +68,12 @@ function ChatSwatch({ c, big }: { c: ChatP; big?: boolean }) {
     torii: `linear-gradient(${c.accent}22, ${c.accent}22) 70% 20%/40px 3px no-repeat, radial-gradient(circle at 75% 25%, #ffffff22 0 18px, transparent 19px)`,
     none: "none",
   };
+  return pattern[c.pattern] === "none" ? c.bg : `${pattern[c.pattern]}, ${c.bg}`;
+}
+
+function ChatSwatch({ c, big }: { c: ChatP; big?: boolean }) {
   return (
-    <div className={clsx("flex h-full w-full flex-col justify-center gap-1.5 p-3", big && "gap-2 p-5")} style={{ background: `${pattern[c.pattern]}, ${c.bg}`.replace("none, ", "") }}>
+    <div className={clsx("flex h-full w-full flex-col justify-center gap-1.5 p-3", big && "gap-2 p-5")} style={{ background: chatBackground(c) }}>
       <div className="max-w-[75%] self-start rounded-2xl rounded-bl-md px-3 py-1.5 text-xs" style={{ background: c.them, color: c.themInk }}>
         still up?
       </div>

@@ -468,3 +468,8 @@ body {
 .pro-transition { animation: pro-fade-out 0.5s ease-out forwards; }
 .pro-shard { animation: pro-shard 0.5s ease-out forwards; transform-box: view-box; }
 .pro-eclipse { animation: pro-eclipse 0.5s ease-in-out forwards; opacity: 0.85; }
+
+/* Chat Personalization (bubble colours come from the chosen theme) */
+[data-chat-theme] .chat-me { background: var(--chat-me) !important; color: var(--chat-me-ink) !important; }
+[data-chat-theme] .chat-them { background: var(--chat-them) !important; color: var(--chat-them-ink) !important; }
+[data-chat-theme] .text-muted { color: color-mix(in srgb, var(--chat-them-ink) 70%, transparent); }

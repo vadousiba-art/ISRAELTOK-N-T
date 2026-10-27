@@ -14,6 +14,9 @@ import { useApp } from "@/components/providers/AppProvider";
 import { useLive } from "@/components/providers/LiveProvider";
 import { useShell } from "@/components/shell/AppShell";
 import { Avatar } from "@/components/ui/Avatar";
+import { item, type ChatP } from "@/lib/pro/catalog";
+import { useMyPro, useTryOn } from "@/lib/client/pro";
+import { chatBackground } from "@/components/pro/ItemPreview";
 import { ChaosLoader, Empty, NameLink, timeAgo } from "@/components/ui/bits";
 import { RichText } from "@/components/ui/RichText";
 import { Menu } from "@/components/ui/Menu";
@@ -92,8 +95,8 @@ function Bubble({
             className={clsx(
               "rounded-3xl px-3.5 py-2 text-[15px] leading-snug",
               m.deleted && "italic text-muted",
-              !m.deleted && mine && "rounded-br-lg bg-brand text-white",
-              !m.deleted && !mine && !m.is_ai && "rounded-bl-lg bg-card-2 text-ink",
+              !m.deleted && mine && "chat-me rounded-br-lg bg-brand text-white",
+              !m.deleted && !mine && !m.is_ai && "chat-them rounded-bl-lg bg-card-2 text-ink",
               !m.deleted && m.is_ai && "rounded-bl-lg border border-roast/50 bg-gradient-to-br from-roast/20 to-volt/20 text-ink",
               m.deleted && "border border-dashed border-line",
             )}
@@ -269,6 +272,19 @@ function MembersDialog({ channel, open, onClose, onChanged }: { channel: Channel
 export default function ChatRoomPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { me } = useShell();
+  // Chat Personalization: only changes how this conversation looks to you.
+  const { data: pro } = useMyPro();
+  const tryingChat = useTryOn().chat;
+  const chatItem = item<ChatP>(tryingChat !== undefined ? tryingChat : pro?.equips.chat?.active ? pro.equips.chat.item : null);
+  const chatThemeProps = chatItem?.cat === "chat"
+    ? {
+        "data-chat-theme": chatItem.id,
+        style: {
+          background: chatBackground(chatItem.p),
+          "--chat-me": chatItem.p.me, "--chat-me-ink": chatItem.p.meInk, "--chat-them": chatItem.p.them, "--chat-them-ink": chatItem.p.themInk,
+        } as React.CSSProperties,
+      }
+    : null;
   const { toastError, toast, supabase } = useApp();
   const router = useRouter();
   const { mutate: mutateAll } = useSWRConfig();
@@ -454,7 +470,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ id: string 
       )}
       {!messages && <ChaosLoader />}
       {messages && messages.length === 0 && <Empty emoji="🪦" text={EMPTY_LINES.messages} />}
-      <div>
+      <div {...chatThemeProps} className={chatThemeProps ? "-mx-3 rounded-3xl px-3 py-2 sm:mx-0" : undefined}>
         {messages?.map((m, i) => {
           const prev = messages[i - 1];
           const showHeader =
