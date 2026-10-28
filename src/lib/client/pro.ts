@@ -43,6 +43,7 @@ export type ProSettings = {
 };
 export type MyPro = {
   version: number;
+  role?: "owner" | "admin" | "member"; // added in migration 0010
   membership: Membership;
   milestones: Record<string, string>;
   progress: Record<string, number>;
@@ -62,7 +63,7 @@ export const refreshPro = () => mutate(byFn("get_my_pro", "get_profile_identity"
 
 // What the member owns, as the UI should show it. The server decides for real.
 export function ownsItem(i: Item, me: MyPro | undefined) {
-  return owns(i, me ? { pro: me.membership.pro, milestones: Object.keys(me.milestones), tester: me.membership.status === "comp" } : null);
+  return owns(i, me ? { pro: me.membership.pro, milestones: Object.keys(me.milestones), tester: me.membership.status === "comp", role: me.role } : null);
 }
 
 // The item actually in effect for a slot (equipped and still owned).

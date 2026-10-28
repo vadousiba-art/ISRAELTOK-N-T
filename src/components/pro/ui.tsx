@@ -54,6 +54,8 @@ export function RarityChip({ r }: { r: Rarity }) {
 export function unlockText(i: Item, me?: MyPro) {
   if (i.unlock === "free") return "Free for everyone";
   if (i.unlock === "pro") return me?.membership.pro ? "Included with your Pro" : "Part of YORU Pro";
+  if (i.unlock === "staff:owner") return "Reserved for YORU's founder";
+  if (i.unlock === "staff:admin") return "Reserved for YORU admins";
   const key = milestoneOf(i.unlock)!;
   if (me?.membership.status === "comp" && i.cat !== "milestone" && !me.milestones[key]) return "Unlocked for testers (normally earned)";
   const m = item<MilestoneP>(`milestone.${key}`);
@@ -65,6 +67,7 @@ export function StateChip({ i, me }: { i: Item; me?: MyPro }) {
   const slot = slotFor(i.cat);
   const on = slot && me?.equips[slot]?.item === i.id && me.equips[slot]?.active;
   if (on) return <span className="inline-flex items-center gap-1 rounded-full bg-brand px-2 py-0.5 text-[10px] font-bold text-white"><Check size={11} /> Equipped</span>;
+  if (i.unlock.startsWith("staff:")) return <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-bold text-amber-300">{i.unlock === "staff:owner" ? "♛ Founder" : "⛨ Staff"}</span>;
   if (owned) return <span className="inline-flex items-center gap-1 rounded-full bg-online/15 px-2 py-0.5 text-[10px] font-bold text-online">{i.unlock === "free" ? "Free" : i.unlock === "pro" ? "Owned" : "Earned"}</span>;
   if (i.unlock === "pro") return <span className="inline-flex items-center gap-1 rounded-full bg-card-2 px-2 py-0.5 text-[10px] font-bold text-ink-2"><Lock size={10} /> Pro</span>;
   return <span className="inline-flex items-center gap-1 rounded-full bg-card-2 px-2 py-0.5 text-[10px] font-bold text-ink-2"><Star size={10} /> Earn it</span>;

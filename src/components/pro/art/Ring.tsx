@@ -388,6 +388,105 @@ function Art({ p, uid }: { p: RingP; uid: string }) {
         </>
       );
     }
+    // FOUNDER ONLY. Gold rays turning behind the avatar, a ring of runes that
+    // spells YORU 夜 FOUNDER 創設者, a double gold rim with a travelling glint,
+    // a crimson moon and a star orbiting in opposite directions, a crowned
+    // crest that bobs, and embers drifting up.
+    case "founder": {
+      const path = `${uid}p`;
+      return (
+        <>
+          <defs>
+            <radialGradient id={g}>
+              <stop offset="60%" stopColor={a} stopOpacity="0" />
+              <stop offset="80%" stopColor={a} stopOpacity="0.55" />
+              <stop offset="100%" stopColor={a} stopOpacity="0" />
+            </radialGradient>
+            <path id={path} d="M50,50 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0" />
+          </defs>
+          <g {...m("a-rot", 40, 0, true)}>
+            {range(16).map((i) => {
+              const [x1, y1] = pt(i * 22.5, 41);
+              const [x2, y2] = pt(i * 22.5 - 3, 58);
+              const [x3, y3] = pt(i * 22.5 + 3, 58);
+              return <polygon key={i} points={`${x1},${y1} ${x2},${y2} ${x3},${y3}`} fill={a} opacity={i % 2 ? 0.1 : 0.18} />;
+            })}
+          </g>
+          <g {...m("a-breathe", 3.6)}><circle cx="50" cy="50" r="50" fill={`url(#${g})`} /></g>
+          <g {...m("a-rot-rev", 30, 0, true)}>
+            <text fontSize="5.2" fontWeight="800" letterSpacing="1.2" fill={a} opacity="0.9">
+              <textPath href={`#${path}`}>YORU · 夜 · FOUNDER · 創設者 · YORU · 夜 · FOUNDER · 創設者 ·</textPath>
+            </text>
+          </g>
+          <circle cx="50" cy="50" r="41" fill="none" stroke={a} strokeWidth="2.4" />
+          <circle cx="50" cy="50" r="43.4" fill="none" stroke={b} strokeWidth="0.8" />
+          <circle {...m("a-dash", 3.5)} cx="50" cy="50" r="41" fill="none" stroke="#fff6d6" strokeWidth="2.4" strokeDasharray="7 130" strokeLinecap="round" />
+          <g {...m("a-rot", 7, 0, true)}>
+            <circle cx={pt(150, 41)[0]} cy={pt(150, 41)[1]} r="4.2" fill={b} stroke={a} strokeWidth="0.8" style={{ filter: `drop-shadow(0 0 2px ${b})` }} />
+          </g>
+          <g {...m("a-rot-rev", 10, 0, true)}>
+            <path d={`M${pt(30, 41)[0]},${pt(30, 41)[1] - 3} l0.9,2.1 2.2,0.2 -1.7,1.5 0.5,2.2 -1.9,-1.2 -1.9,1.2 0.5,-2.2 -1.7,-1.5 2.2,-0.2z`} fill="#fff6d6" />
+          </g>
+          {range(7).map((i) => <circle key={`e${i}`} {...m("a-rise", 2.4, i * 0.34)} cx={pt(60 + i * 10, 46)[0]} cy={pt(60 + i * 10, 46)[1]} r="0.9" fill={i % 3 ? a : b} />)}
+          <g {...m("a-bob", 3.2)}>
+            <path d="M36,10 L38,-2 L44,4 L50,-6 L56,4 L62,-2 L64,10 Z" fill={a} stroke="#7a5a12" strokeWidth="0.7" style={{ filter: `drop-shadow(0 0 3px ${a})` }} />
+            <rect x="36" y="9" width="28" height="3.2" rx="1" fill="#b8902f" />
+            {[[38, -2], [50, -6], [62, -2]].map(([x, y], i) => <circle key={i} {...m("a-twinkle", 2, i * 0.5)} cx={x} cy={y} r="1.5" fill={i === 1 ? b : "#fff6d6"} />)}
+          </g>
+          <g transform="translate(50 92)">
+            <path d="M-8,-5 H8 L9,0 C9,5 4,8 0,9.5 C-4,8 -9,5 -9,0 Z" fill="#1a0408" stroke={a} strokeWidth="1" />
+            <text {...m("a-pop", 4)} y="2.6" fontSize="7" textAnchor="middle" fill={a} fontWeight="900">創</text>
+          </g>
+        </>
+      );
+    }
+    // ADMINS. A radar sweep turning round the avatar, rotating shield plates,
+    // scan ticks, an outward watch-pulse and a shield marked 守.
+    case "sentinel": {
+      const sweep = `${uid}s`;
+      return (
+        <>
+          <defs>
+            <linearGradient id={sweep} x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stopColor={a} stopOpacity="0" />
+              <stop offset="1" stopColor={a} stopOpacity="0.55" />
+            </linearGradient>
+            {band}
+          </defs>
+          <g mask={`url(#${mk})`}>
+            <g {...m("a-rot", 3.2, 0, true)}>
+              <path d={`M50,50 L${pt(-40, 52)[0]},${pt(-40, 52)[1]} A52,52 0 0,1 ${pt(0, 52)[0]},${pt(0, 52)[1]} Z`} fill={`url(#${sweep})`} />
+              <line x1="50" y1="50" x2={pt(0, 52)[0]} y2={pt(0, 52)[1]} stroke={a} strokeWidth="1" />
+            </g>
+          </g>
+          <circle cx="50" cy="50" r="41" fill="none" stroke={a} strokeOpacity="0.4" strokeWidth="0.8" />
+          <circle cx="50" cy="50" r="47.5" fill="none" stroke={a} strokeOpacity="0.35" strokeWidth="0.6" strokeDasharray="1 3" />
+          <g {...m("a-rot", 18, 0, true)}>
+            {range(6).map((i) => {
+              const d0 = i * 60 + 6;
+              const [x1, y1] = pt(d0, 43);
+              const [x2, y2] = pt(d0 + 48, 43);
+              const [x3, y3] = pt(d0 + 48, 46.5);
+              const [x4, y4] = pt(d0, 46.5);
+              return <path key={i} d={`M${x1},${y1} A43,43 0 0,1 ${x2},${y2} L${x3},${y3} A46.5,46.5 0 0,0 ${x4},${y4} Z`} fill={b} stroke={a} strokeWidth="0.7" />;
+            })}
+          </g>
+          <g {...m("a-rot-rev", 24, 0, true)}>
+            {range(24).map((i) => {
+              const [x1, y1] = pt(i * 15, 48.5);
+              const [x2, y2] = pt(i * 15, i % 6 === 0 ? 51.5 : 50);
+              return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={a} strokeWidth={i % 6 === 0 ? 1.1 : 0.6} />;
+            })}
+          </g>
+          <circle {...m("a-ripple", 2.6)} cx="50" cy="50" r="44" fill="none" stroke={a} strokeWidth="1" />
+          {[[78, 24], [20, 30], [84, 70]].map(([x, y], i) => <circle key={i} {...m("a-twinkle", 1.6, i * 0.5)} cx={x} cy={y} r="1.2" fill="#e9f8ff" />)}
+          <g transform="translate(50 92)">
+            <path d="M0,-7 L8,-4 V1 C8,5 4,8 0,9.5 C-4,8 -8,5 -8,1 V-4 Z" fill={b} stroke={a} strokeWidth="1.1" style={{ filter: `drop-shadow(0 0 2px ${a})` }} />
+            <text {...m("a-pop", 3.6)} y="2.8" fontSize="7" textAnchor="middle" fill={a} fontWeight="900">守</text>
+          </g>
+        </>
+      );
+    }
     default:
       return <circle cx="50" cy="50" r="43" fill="none" stroke={a} strokeWidth="2" />;
   }

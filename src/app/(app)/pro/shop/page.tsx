@@ -8,8 +8,8 @@ import { Eye, Search, Shirt } from "lucide-react";
 import { Gate } from "@/components/yoru/Gate";
 import { ChaosLoader, Empty } from "@/components/ui/bits";
 import { useApp } from "@/components/providers/AppProvider";
-import { CATALOG, ITEM_BY_ID } from "@/lib/pro/catalog";
-import { SETS, SET_BY_ID, type CosmeticSet } from "@/lib/pro/sets";
+import { CATALOG, ITEM_BY_ID, STAFF } from "@/lib/pro/catalog";
+import { SETS, SET_BY_ID, STAFF_SETS, type CosmeticSet } from "@/lib/pro/sets";
 import { CATEGORIES, RARITIES, type Category, type Item, type Rarity } from "@/lib/pro/types";
 import { equipMany, ownsItem, recentlyViewed, tryOn, useMyPro, useProUniverse, type MyPro } from "@/lib/client/pro";
 import { ItemPreview } from "@/components/pro/ItemPreview";
@@ -17,7 +17,7 @@ import { ItemDetail } from "@/components/pro/ItemDetail";
 import { ItemCard } from "@/components/pro/ItemCard";
 import { CAT_LABEL } from "@/components/pro/ui";
 
-type Filter = "all" | "free" | "pro" | "earned" | "owned" | "wishlist" | "experimental";
+type Filter = "all" | "free" | "pro" | "earned" | "owned" | "wishlist" | "experimental" | "staff";
 const FILTERS: [Filter, string][] = [["all", "All"], ["owned", "Yours"], ["free", "Free"], ["pro", "Pro"], ["earned", "Earned"], ["wishlist", "Wishlist"], ["experimental", "Experimental"]];
 const PAGE = 36;
 
@@ -33,7 +33,7 @@ export default function ShopPage() {
 
 function SetCard({ s, me }: { s: CosmeticSet; me?: MyPro }) {
   const { toast, toastError } = useApp();
-  const items = CATALOG.filter((i) => i.set === s.id);
+  const items = [...CATALOG, ...STAFF].filter((i) => i.set === s.id);
   const owned = items.filter((i) => ownsItem(i, me)).length;
   const look = s.look ? (Object.fromEntries(Object.entries(s.look)) as Record<string, string>) : null;
   return (
@@ -102,9 +102,13 @@ function Shop() {
     router.replace(`/pro/shop${sp.size ? `?${sp}` : ""}`, { scroll: false });
   };
 
+  // Staff items only exist in the shop for the founder and admins.
+  const isStaff = me?.role === "owner" || me?.role === "admin";
+  const staffItems = useMemo(() => (isStaff ? STAFF.filter((i) => ownsItem(i, me)) : []), [isStaff, me]);
+  const staffSets = isStaff ? STAFF_SETS.filter((s) => me?.role === "owner" || s.staff === "admin") : [];
   const items = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    return CATALOG.filter((i) => {
+    return (filter === "staff" ? staffItems : filter === "owned" ? [...staffItems, ...CATALOG] : CATALOG).filter((i) => {
       if (cat && i.cat !== cat) return false;
       if (set && i.set !== set) return false;
       if (rarity && i.rarity !== rarity) return false;
@@ -116,10 +120,11 @@ function Shop() {
         case "owned": return ownsItem(i, me);
         case "wishlist": return Boolean(me?.wishlist.includes(i.id));
         case "experimental": return i.status === "experimental";
+        case "staff": return true;
         default: return true;
       }
     });
-  }, [q, cat, set, rarity, filter, me]);
+  }, [q, cat, set, rarity, filter, me, staffItems]);
 
   const recentItems = recent ? recent.split(",").slice(0, 8).map((id) => ITEM_BY_ID[id]).filter(Boolean) : [];
 
@@ -150,7 +155,7 @@ function Shop() {
 
       {view === "sets" ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {SETS.map((s) => <SetCard key={s.id} s={s} me={me} />)}
+          {[...staffSets, ...SETS].map((s) => <SetCard key={s.id} s={s} me={me} />)}
         </div>
       ) : (
         <>
@@ -165,6 +170,7 @@ function Shop() {
             {CATEGORIES.map((c) => <Chip key={c} on={cat === c} onClick={() => go({ cat: c })}>{CAT_LABEL[c].name}</Chip>)}
           </div>
           <div className="flex flex-wrap gap-1.5" aria-label="Filters">
+            {isStaff && <Chip on={filter === "staff"} onClick={() => { setFilter("staff"); setLimit(PAGE); }} small>{me?.role === "owner" ? "♛ Founder & staff" : "⛨ Staff"}</Chip>}
             {FILTERS.map(([f, l]) => <Chip key={f} on={filter === f} onClick={() => { setFilter(f); setLimit(PAGE); }} small>{l}</Chip>)}
             <span className="mx-1 w-px self-stretch bg-line" />
             {RARITIES.map((r) => <Chip key={r} on={rarity === r} onClick={() => setRarity(rarity === r ? null : r)} small>{r[0].toUpperCase() + r.slice(1)}</Chip>)}

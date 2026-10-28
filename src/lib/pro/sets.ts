@@ -8,7 +8,8 @@ export type CosmeticSet = {
   jp: string;
   tagline: string;
   palette: [string, string, string]; // base, accent, highlight
-  cover: "impact" | "glitch" | "moon" | "signage" | "static" | "petals" | "gilded" | "pixel" | "brush" | "stars" | "plain" | "desk" | "chart" | "map" | "shelf" | "wave" | "trophy" | "flask" | "door";
+  cover: "impact" | "glitch" | "moon" | "signage" | "static" | "petals" | "gilded" | "pixel" | "brush" | "stars" | "plain" | "desk" | "chart" | "map" | "shelf" | "wave" | "trophy" | "flask" | "door" | "throne" | "watch";
+  staff?: "owner" | "admin"; // reserved sets, hidden from members
   look?: { ring: string; banner: string; nameplate: string; badge: string; theme: string }; // signature bundle (item ids)
 };
 
@@ -43,4 +44,13 @@ export const SETS: CosmeticSet[] = [
   { id: "prototype_lab", name: "Prototype Lab", jp: "試作室", tagline: "Opt-in previews and experiments. Clearly labelled, easy to turn off.", palette: ["#040a08", "#00e0a4", "#ccfff0"], cover: "flask" },
   { id: "membership", name: "Membership Hub", jp: "会員ハブ", tagline: "Your membership, your collection, your settings.", palette: ["#0a0a0a", "#e5102f", "#ffffff"], cover: "door" },
 ];
-export const SET_BY_ID = Object.fromEntries(SETS.map((s) => [s.id, s])) as Record<string, CosmeticSet>;
+
+// Reserved for YORU staff. They mark who runs YORU, so the server only lets
+// the founder (owner) or admins wear them, and they never appear in the shop.
+export const STAFF_SETS: CosmeticSet[] = [
+  { id: "founders_throne", name: "Founder's Throne", jp: "創設者の玉座", tagline: "Worn only by YORU's founder.", palette: ["#050403", "#e0b54f", "#e5102f"], cover: "throne", staff: "owner",
+    look: { ring: "ring.founders_eclipse", banner: "banner.throne_of_night", nameplate: "nameplate.founder", badge: "badge.founders_seal", theme: "theme.founders_night" } },
+  { id: "night_watch", name: "Night Watch", jp: "夜警", tagline: "Worn only by YORU admins.", palette: ["#03080d", "#2ee6ff", "#e9f8ff"], cover: "watch", staff: "admin",
+    look: { ring: "ring.sentinel", banner: "banner.the_night_watch", nameplate: "nameplate.yoru_staff", badge: "badge.staff_shield", theme: "theme.watchtower" } },
+];
+export const SET_BY_ID = Object.fromEntries([...SETS, ...STAFF_SETS].map((s) => [s.id, s])) as Record<string, CosmeticSet>;

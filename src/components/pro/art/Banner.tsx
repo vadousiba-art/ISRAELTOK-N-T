@@ -438,6 +438,85 @@ function Scene({ scene, uid }: { scene: string; uid: string }) {
           </g>
         </>
       );
+    // FOUNDER ONLY. A crimson-gold moon behind a throne, two searchlights
+    // crossing the sky, crimson curtains swaying, gold embers rising and a
+    // glowing 創 (to found).
+    case "throne": {
+      const r = rand(77);
+      return (
+        <>
+          <defs>
+            <radialGradient id={g("m")} cx="50%" cy="50%" r="50%">
+              <stop offset="0" stopColor="#ffe6a8" />
+              <stop offset="0.55" stopColor="#e0b54f" />
+              <stop offset="1" stopColor="#8a1a1a" />
+            </radialGradient>
+            <linearGradient id={g("beam")} x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0" stopColor="#fff1c9" stopOpacity="0.5" />
+              <stop offset="1" stopColor="#fff1c9" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <rect width="600" height="200" fill="#050403" />
+          <Stars n={50} seed={71} h={140} color="#fff1c9" />
+          <g {...m("a-sway", 7, 0, "120px 200px")} style={{ transformBox: "view-box", transformOrigin: "120px 200px", "--d": "7s" } as React.CSSProperties}>
+            <polygon points="110,200 135,200 60,-20 30,-20" fill={`url(#${g("beam")})`} />
+          </g>
+          <g {...m("a-sway", 8, 1.5)} style={{ transformBox: "view-box", transformOrigin: "480px 200px", "--d": "8s", animationDelay: "-3s" } as React.CSSProperties}>
+            <polygon points="465,200 490,200 570,-20 540,-20" fill={`url(#${g("beam")})`} />
+          </g>
+          <circle {...m("a-breathe", 5)} cx="300" cy="86" r="86" fill="#e0b54f" opacity="0.12" />
+          <circle cx="300" cy="86" r="64" fill={`url(#${g("m")})`} />
+          <text {...m("a-fade", 4)} x="300" y="108" fontSize="62" fontWeight="900" textAnchor="middle" fill="#3a0710" opacity="0.55">創</text>
+          <g fill="#0a0705">
+            <path d="M240,200 L240,120 Q240,96 262,92 L262,74 Q300,40 338,74 L338,92 Q360,96 360,120 L360,200 Z" />
+            <rect x="228" y="150" width="144" height="10" rx="3" />
+            <path d="M272,74 L280,58 L290,70 L300,52 L310,70 L320,58 L328,74 Z" fill="#b8902f" />
+          </g>
+          <circle {...m("a-twinkle", 2.4)} cx="300" cy="52" r="2.5" fill="#e5102f" />
+          <path {...m("a-sway", 6)} d="M0,0 L70,0 Q60,90 82,200 L0,200 Z" fill="#5a0612" opacity="0.92" />
+          <path {...m("a-sway", 6.5, 1)} d="M600,0 L530,0 Q540,90 518,200 L600,200 Z" fill="#5a0612" opacity="0.92" />
+          <rect y="0" width="600" height="8" fill="#b8902f" opacity="0.85" />
+          {range(18).map((i) => <circle key={i} {...m("a-rise", 3 + r() * 3, r() * 4)} cx={120 + r() * 360} cy={150 + r() * 50} r={0.8 + r() * 1.4} fill={i % 4 ? "#e0b54f" : "#e5102f"} />)}
+        </>
+      );
+    }
+    // ADMINS. A watchtower over the city: its radar sweeps, a beacon blinks,
+    // patrol lights cross the grid and data streams run up the tower.
+    case "watch": {
+      const r = rand(91);
+      return (
+        <>
+          <defs>
+            <radialGradient id={g("rad")} cx="50%" cy="100%" r="100%">
+              <stop offset="0" stopColor="#2ee6ff" stopOpacity="0.35" />
+              <stop offset="1" stopColor="#2ee6ff" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <rect width="600" height="200" fill="#03080d" />
+          <Stars n={30} seed={92} h={100} color="#e9f8ff" />
+          <g stroke="#2ee6ff" strokeOpacity="0.16" strokeWidth="0.8">
+            {range(10).map((i) => <line key={i} x1="0" y1={110 + i * 10} x2="600" y2={110 + i * 10} />)}
+            {range(16).map((i) => <line key={`v${i}`} x1={300} y1="110" x2={-300 + i * 80} y2="210" />)}
+          </g>
+          <g {...m("a-rot", 6)} style={{ transformBox: "view-box", transformOrigin: "300px 62px", "--d": "6s" } as React.CSSProperties}>
+            <path d="M300,62 L560,-20 A280,280 0 0,1 600,60 Z" fill={`url(#${g("rad")})`} />
+          </g>
+          {[0, 1].map((i) => <circle key={i} {...m("a-ripple", 3, i * 1.5)} cx="300" cy="62" r="60" fill="none" stroke="#2ee6ff" strokeWidth="1" />)}
+          <Skyline y={175} fill="#07121b" seed={93} lit="#2ee6ff" blink />
+          <g fill="#0c1b26" stroke="#2ee6ff" strokeOpacity="0.5">
+            <polygon points="290,200 296,80 304,80 310,200" />
+            <rect x="284" y="66" width="32" height="14" rx="2" />
+          </g>
+          {range(4).map((i) => <rect key={i} {...m("a-fall", 1.6, i * 0.4)} x={298} y={90 + i * 22} width="4" height="8" fill="#2ee6ff" opacity="0.8" style={{ animationDirection: "reverse" }} />)}
+          <circle {...m("a-flick", 2)} cx="300" cy="62" r="4" fill="#ff3b4e" style={{ filter: "drop-shadow(0 0 4px #ff3b4e)" }} />
+          {range(3).map((i) => (
+            <g key={`d${i}`} {...m("a-slide", 9 + i * 3, i * 2.5)}>
+              <circle cx={-40} cy={120 + i * 20 + r() * 6} r="1.8" fill="#9ff3ff" style={{ filter: "drop-shadow(0 0 3px #2ee6ff)" }} />
+            </g>
+          ))}
+        </>
+      );
+    }
     default:
       return <rect width="600" height="200" fill="#111" />;
   }

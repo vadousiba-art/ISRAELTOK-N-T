@@ -1,12 +1,16 @@
 // Writes the Pro catalog rows into migration 0009 (between the markers).
 import fs from "node:fs";
 import path from "node:path";
-import { BEGIN, END, catalogSql } from "../src/lib/pro/catalog-sql";
+import { BEGIN, END, STAFF_BEGIN, STAFF_END, catalogSql, staffSql } from "../src/lib/pro/catalog-sql";
 
-const file = path.resolve(import.meta.dirname, "../supabase/migrations/0009_pro_universe.sql");
-const sql = fs.readFileSync(file, "utf8");
-const a = sql.indexOf(BEGIN);
-const b = sql.indexOf(END);
-if (a < 0 || b < a) throw new Error("catalog markers not found");
-fs.writeFileSync(file, sql.slice(0, a + BEGIN.length) + "\n" + catalogSql() + "\n" + sql.slice(b));
+function write(name: string, begin: string, end: string, body: string) {
+  const file = path.resolve(import.meta.dirname, "../supabase/migrations", name);
+  const sql = fs.readFileSync(file, "utf8");
+  const a = sql.indexOf(begin);
+  const b = sql.indexOf(end);
+  if (a < 0 || b < a) throw new Error(`catalog markers not found in ${name}`);
+  fs.writeFileSync(file, sql.slice(0, a + begin.length) + "\n" + body + "\n" + sql.slice(b));
+}
+write("0009_pro_universe.sql", BEGIN, END, catalogSql());
+write("0010_staff_cosmetics.sql", STAFF_BEGIN, STAFF_END, staffSql());
 console.log("catalog written");

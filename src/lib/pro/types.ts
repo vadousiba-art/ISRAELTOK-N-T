@@ -21,7 +21,9 @@ export const MILESTONES = [
 ] as const;
 export type MilestoneKey = (typeof MILESTONES)[number];
 
-export type Unlock = "free" | "pro" | `milestone:${MilestoneKey}`;
+// "staff:owner" = the founder only, "staff:admin" = admins and the founder.
+// Staff items identify real YORU staff; the server checks the account's role.
+export type Unlock = "free" | "pro" | `milestone:${MilestoneKey}` | "staff:admin" | "staff:owner";
 // "experimental" = works, opt-in, may change. Items that don't work yet are not in the catalog.
 export type Status = "available" | "experimental";
 
@@ -29,7 +31,8 @@ export type SetId =
   | "crimson_requiem" | "void_signal" | "celestial_noir" | "neon_tokyo" | "ghost_frequency"
   | "sakura_after_dark" | "obsidian_dynasty" | "pixel_afterlife" | "inkstorm" | "infinite_night"
   | "midnight_essentials" | "night_studio" | "night_analyst" | "explorer_atlas" | "the_archive"
-  | "signal_tuning" | "night_milestones" | "prototype_lab" | "membership";
+  | "signal_tuning" | "night_milestones" | "prototype_lab" | "membership"
+  | "founders_throne" | "night_watch";
 
 export type Item<P = Record<string, unknown>> = {
   id: string;

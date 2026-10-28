@@ -4,8 +4,8 @@ import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { applyMigrations } from "@/lib/database/migrations";
-import { CATALOG } from "@/lib/pro/catalog";
-import { BEGIN, END, catalogSql } from "@/lib/pro/catalog-sql";
+import { ALL_ITEMS } from "@/lib/pro/catalog";
+import { BEGIN, END, STAFF_BEGIN, STAFF_END, catalogSql, staffSql } from "@/lib/pro/catalog-sql";
 
 // Pro Universe (migration 0009), from the database's point of view:
 // ownership, previews, expiry, earned milestones, privacy of drafts and
@@ -71,15 +71,21 @@ describe("catalog", () => {
     expect(block).toBe(catalogSql().trim());
   });
 
-  it("has the same 400 ids, categories and unlock rules as the app", async () => {
+  it("migration 0010 holds exactly the generated staff items", () => {
+    const sql = fs.readFileSync(path.join(root, "supabase/migrations/0010_staff_cosmetics.sql"), "utf8");
+    const block = sql.slice(sql.indexOf(STAFF_BEGIN) + STAFF_BEGIN.length, sql.indexOf(STAFF_END)).trim();
+    expect(block).toBe(staffSql().trim());
+  });
+
+  it("has the same 400 member items plus 16 staff items, with the app's ids and rules", async () => {
     const rows = (await db.query<{ id: string; cat: string; unlock: string; status: string }>("select id, cat, unlock, status from public.pro_catalog order by id")).rows;
-    expect(rows).toHaveLength(400);
-    const app = [...CATALOG].sort((a, b) => (a.id < b.id ? -1 : 1)).map((i) => ({ id: i.id, cat: i.cat, unlock: i.unlock, status: i.status }));
+    expect(rows).toHaveLength(416);
+    const app = [...ALL_ITEMS].sort((a, b) => (a.id < b.id ? -1 : 1)).map((i) => ({ id: i.id, cat: i.cat, unlock: i.unlock, status: i.status }));
     expect(rows).toEqual(app);
   });
 
   it("is readable by members, not by visitors, and not writable by anyone but the server", async () => {
-    expect((await sqlAs(u.ann, "select count(*)::int as n from public.pro_catalog"))[0].n).toBe(400);
+    expect((await sqlAs(u.ann, "select count(*)::int as n from public.pro_catalog"))[0].n).toBe(416);
     await expect(sqlAs(u.ann, "update public.pro_catalog set unlock = 'free'")).rejects.toThrow(/permission denied/);
     await expect(as(null, "get_my_pro")).rejects.toThrow(/permission denied/);
   });
@@ -154,6 +160,30 @@ describe("ownership and equipping", () => {
     expect((await as<MyPro>(u.cy, "get_my_pro")).equips.ring).toBeUndefined();
     await as(u.ben, "pro_reset_look");
     expect((await as<MyPro>(u.ben, "get_my_pro")).equips).toEqual({});
+  });
+});
+
+describe("staff cosmetics", () => {
+  it("only the founder wears founder items; admins wear admin items; Pro testers get neither", async () => {
+    await as(u.owner, "pro_equip", { p_slot: "ring", p_item: "ring.founders_eclipse" });
+    await as(u.owner, "pro_equip", { p_slot: "banner", p_item: "banner.the_night_watch" }); // the founder may wear admin items too
+    expect((await as<{ role: string }>(u.owner, "get_my_pro")).role).toBe("owner");
+    // ben has complimentary Pro (a tester), which never includes staff items
+    await expect(as(u.ben, "pro_equip", { p_slot: "ring", p_item: "ring.sentinel" })).rejects.toThrow(/reserved for YORU staff/);
+    await expect(as(u.ben, "pro_equip", { p_slot: "ring", p_item: "ring.founders_eclipse" })).rejects.toThrow(/reserved for YORU staff/);
+    await db.query("update public.profiles set role = 'admin' where id = $1", [u.ann]);
+    await as(u.ann, "pro_equip", { p_slot: "ring", p_item: "ring.sentinel" });
+    await expect(as(u.ann, "pro_equip", { p_slot: "nameplate", p_item: "nameplate.founder" })).rejects.toThrow(/reserved for YORU staff/);
+  });
+
+  it("a removed role takes the item off by itself, keeping the stored choice", async () => {
+    let idn = await as<{ look: { ring?: string } }>(u.cy, "get_profile_identity", { p_username: "pro_ann" });
+    expect(idn.look.ring).toBe("ring.sentinel");
+    await db.query("update public.profiles set role = 'member' where id = $1", [u.ann]);
+    idn = await as(u.cy, "get_profile_identity", { p_username: "pro_ann" });
+    expect(idn.look.ring).toBeUndefined();
+    expect((await as<{ equips: Record<string, { item: string; active: boolean }> }>(u.ann, "get_my_pro")).equips.ring).toEqual({ item: "ring.sentinel", active: false });
+    await as(u.ann, "pro_equip", { p_slot: "ring", p_item: "ring.void_halo" });
   });
 });
 

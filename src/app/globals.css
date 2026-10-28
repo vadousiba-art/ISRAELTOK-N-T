@@ -579,3 +579,16 @@ body {
 @keyframes chat-drift { 0% { transform: translate(-6%, -4%) scale(1); } 100% { transform: translate(8%, 6%) scale(1.15); } }
 [data-chat-theme] { position: relative; isolation: isolate; overflow: hidden; }
 [data-chat-theme]::before { content: ""; position: absolute; inset: -20%; z-index: -1; pointer-events: none; background: radial-gradient(40% 30% at 25% 20%, color-mix(in srgb, var(--chat-me) 22%, transparent), transparent 70%), radial-gradient(35% 25% at 80% 85%, color-mix(in srgb, var(--chat-them) 40%, transparent), transparent 70%); animation: chat-drift 16s ease-in-out infinite alternate; }
+
+/* Staff nameplates */
+@keyframes np-founder { 0%, 100% { text-shadow: 0 0 6px rgb(224 181 79 / 0.5), 0 0 1px #7a5a12; } 50% { text-shadow: 0 0 14px rgb(224 181 79 / 0.9), 0 0 24px rgb(229 16 47 / 0.45); } }
+@keyframes np-scanline { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
+.pro-np-founder { background: linear-gradient(180deg, #1a140c, #050403); box-shadow: inset 0 0 0 1px rgb(224 181 79 / 0.6), 0 0 12px -4px rgb(224 181 79 / 0.7); overflow: hidden; }
+.pro-np-founder .pro-np-text { background-image: linear-gradient(100deg, #b8902f 0%, var(--np-a) 35%, #fff 50%, var(--np-a) 65%, #b8902f 100%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; animation: np-sweep 3.2s linear infinite; filter: drop-shadow(0 0 4px rgb(224 181 79 / 0.6)); }
+.pro-np-founder .pro-np-emblem { color: var(--np-a); animation: np-emblem 2.2s ease-in-out infinite, np-founder 3s ease-in-out infinite; }
+.pro-np-founder::after { content: ""; position: absolute; inset: 0; background: radial-gradient(60% 120% at 10% 50%, rgb(229 16 47 / 0.25), transparent 60%); animation: pr-fade 3s ease-in-out infinite; pointer-events: none; }
+.pro-np-staff { background: linear-gradient(180deg, #0a151e, #03080d); box-shadow: inset 0 0 0 1px rgb(46 230 255 / 0.55), 0 0 10px -4px rgb(46 230 255 / 0.8); overflow: hidden; color: var(--np-a); }
+.pro-np-staff .pro-np-text { color: var(--np-b); text-shadow: 0 0 6px rgb(46 230 255 / 0.6); }
+.pro-np-staff .pro-np-emblem { color: var(--np-a); animation: np-emblem 2.6s ease-in-out infinite; }
+.pro-np-staff::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 35%; background: linear-gradient(90deg, transparent, rgb(46 230 255 / 0.35), transparent); animation: np-scanline 2.8s linear infinite; pointer-events: none; }
+:root:not([data-theme="dark"]) .pro-np-founder, :root:not([data-theme="dark"]) .pro-np-staff { background-color: #050403; }

@@ -8,7 +8,7 @@ import { Button, Empty } from "@/components/ui/bits";
 import { useApp } from "@/components/providers/AppProvider";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { useRpc } from "@/lib/client/hooks";
-import { CATALOG, ITEM_BY_ID, hubViews } from "@/lib/pro/catalog";
+import { CATALOG, ITEM_BY_ID, STAFF, hubViews } from "@/lib/pro/catalog";
 import { SETS } from "@/lib/pro/sets";
 import { CATEGORIES, SLOTS, type Item, type Slot } from "@/lib/pro/types";
 import { equip, equipped, ownsItem, recentlyViewed, resetLook, saveProSettings, useMyPro, useProUniverse } from "@/lib/client/pro";
@@ -72,7 +72,7 @@ function Hub() {
   if (isLoading || !me) return <Empty emoji="🌙" text="Loading your hub…" />;
 
   const m = me.membership;
-  const owned = CATALOG.filter((i) => ownsItem(i, me) && (showFree || i.unlock !== "free"));
+  const owned = [...STAFF, ...CATALOG].filter((i) => ownsItem(i, me) && (showFree || i.unlock !== "free"));
   const equippedSlots = (Object.keys(SLOTS) as Slot[]).filter((s) => me.equips[s]);
   const equippedSets = new Set(equippedSlots.map((s) => ITEM_BY_ID[me.equips[s]!.item]?.set));
   const recommended = CATALOG.filter((i) => equippedSets.has(i.set) && !Object.values(me.equips).some((e) => e?.item === i.id)).slice(0, 8);

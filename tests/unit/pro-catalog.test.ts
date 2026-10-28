@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { BY_CATEGORY, CATALOG, ITEM_BY_ID, chats, owns, themes, milestones, plannerTemplates } from "@/lib/pro/catalog";
+import { BY_CATEGORY, CATALOG, ITEM_BY_ID, STAFF, chats, owns, staffChats, staffThemes, themes, milestones, plannerTemplates } from "@/lib/pro/catalog";
 import { CATEGORIES, MILESTONES, RARITIES } from "@/lib/pro/types";
-import { SETS, SET_BY_ID } from "@/lib/pro/sets";
+import { SETS, SET_BY_ID, STAFF_SETS } from "@/lib/pro/sets";
 
 // WCAG relative luminance contrast.
 function lum(hex: string) {
@@ -63,7 +63,7 @@ describe("Pro catalog", () => {
   });
 
   it("every theme is readable (body ≥ 7:1, secondary ≥ 4.5:1 on cards)", () => {
-    for (const t of themes) {
+    for (const t of [...themes, ...staffThemes]) {
       expect(contrast(t.p.ink, t.p.bg), t.id).toBeGreaterThanOrEqual(7);
       expect(contrast(t.p.ink, t.p.card), t.id).toBeGreaterThanOrEqual(7);
       expect(contrast(t.p.muted, t.p.card), t.id).toBeGreaterThanOrEqual(4.5);
@@ -71,10 +71,24 @@ describe("Pro catalog", () => {
   });
 
   it("every chat theme keeps message text readable (≥ 4.5:1)", () => {
-    for (const c of chats) {
+    for (const c of [...chats, ...staffChats]) {
       expect(contrast(c.p.meInk, c.p.me), c.id).toBeGreaterThanOrEqual(4.5);
       expect(contrast(c.p.themInk, c.p.them), c.id).toBeGreaterThanOrEqual(4.5);
     }
+  });
+
+  it("staff items are separate, reserved, unique and complete", () => {
+    expect(STAFF).toHaveLength(16);
+    expect(new Set([...CATALOG, ...STAFF].map((i) => i.id)).size).toBe(416);
+    for (const i of STAFF) expect(["staff:owner", "staff:admin"]).toContain(i.unlock);
+    for (const s of STAFF_SETS) for (const [slot, id] of Object.entries(s.look!)) expect(ITEM_BY_ID[id]?.cat, `${s.id} ${id}`).toBe(slot);
+    const founder = ITEM_BY_ID["ring.founders_eclipse"];
+    const admin = ITEM_BY_ID["ring.sentinel"];
+    expect(owns(founder, { pro: true, milestones: [], tester: true, role: "member" })).toBe(false);
+    expect(owns(founder, { pro: false, milestones: [], role: "admin" })).toBe(false);
+    expect(owns(founder, { pro: false, milestones: [], role: "owner" })).toBe(true);
+    expect(owns(admin, { pro: false, milestones: [], role: "admin" })).toBe(true);
+    expect(owns(admin, { pro: false, milestones: [], role: "owner" })).toBe(true);
   });
 
   it("planner templates only use draft templates that exist", () => {
