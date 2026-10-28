@@ -41,6 +41,43 @@ function Skyline({ y, fill, seed, lit, blink }: { y: number; fill: string; seed:
   return <>{out}</>;
 }
 
+// Polyline helpers for scenes with current flowing along wires: the path and
+// its length (the flow animation needs the length to loop without a seam).
+type Pt = readonly [number, number];
+const poly = (pts: Pt[]) => pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+const polyLen = (pts: Pt[]) => pts.slice(1).reduce((n, [x, y], i) => n + Math.hypot(x - pts[i][0], y - pts[i][1]), 0);
+// A wire hanging between two points (a parabola is close enough to a catenary).
+function sag(x1: number, y1: number, x2: number, y2: number, drop: number, n = 18): Pt[] {
+  return range(n + 1).map((i) => {
+    const t = i / n;
+    return [x1 + (x2 - x1) * t, y1 + (y2 - y1) * t + drop * 4 * t * (1 - t)] as const;
+  });
+}
+function Pylon({ x, top, base, w, arms }: { x: number; top: number; base: number; w: number; arms: number[] }) {
+  const h = base - top;
+  const at = (y: number) => (w / 2) * ((y - top) / h) + 2; // half-width at height y
+  const rungs = range(7).map((i) => top + 8 + (i * (h - 8)) / 6);
+  return (
+    <g stroke="#3d2b73" strokeWidth="1.1" fill="none">
+      <path d={`M${x - 2},${top} L${x - w / 2 - 2},${base} M${x + 2},${top} L${x + w / 2 + 2},${base}`} stroke="#4a3590" strokeWidth="1.6" />
+      {rungs.map((y, i) => <line key={i} x1={x - at(y)} y1={y} x2={x + at(y)} y2={y} />)}
+      {rungs.slice(0, -1).map((y, i) => (
+        <path key={`x${i}`} d={`M${x - at(y)},${y} L${x + at(rungs[i + 1])},${rungs[i + 1]} M${x + at(y)},${y} L${x - at(rungs[i + 1])},${rungs[i + 1]}`} strokeOpacity="0.7" />
+      ))}
+      {arms.map((y, i) => {
+        const reach = w * (0.75 - i * 0.12);
+        return (
+          <g key={`a${i}`}>
+            <path d={`M${x - reach},${y} L${x + reach},${y} M${x - reach},${y} L${x - at(y + 6)},${y + 6} M${x + reach},${y} L${x + at(y + 6)},${y + 6}`} stroke="#4a3590" strokeWidth="1.3" />
+            <circle cx={x - reach} cy={y + 2} r="1.4" fill="#8b5cff" stroke="none" />
+            <circle cx={x + reach} cy={y + 2} r="1.4" fill="#8b5cff" stroke="none" />
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
 function Stars({ n, seed, color = "#fff", h = 200, twinkle = true }: { n: number; seed: number; color?: string; h?: number; twinkle?: boolean }) {
   const r = rand(seed);
   return (
@@ -514,6 +551,149 @@ function Scene({ scene, uid }: { scene: string; uid: string }) {
               <circle cx={-40} cy={120 + i * 20 + r() * 6} r="1.8" fill="#9ff3ff" style={{ filter: "drop-shadow(0 0 3px #2ee6ff)" }} />
             </g>
           ))}
+        </>
+      );
+    }
+    // CO-FOUNDER ONLY. A storm over the grid: lightning strikes the pylon and
+    // lights the sky (one smooth swell, never a strobe), current runs down the
+    // power lines and across a circuit-board ground, pixel invaders drift by,
+    // and a terminal types out the build. Jesse is an electrician and a
+    // developer; 共 (together) is the co-founder's mark.
+    case "voltage": {
+      const r = rand(2007);
+      const VOLT = "#ffd60a";
+      const VIOLET = "#8b5cff";
+      const HOT = "#fffbe0";
+      const flow = (pts: Pt[], d: number, delay: number, dash = 10, width = 1.4) => {
+        const len = polyLen(pts);
+        return (
+          <path className="pr a-flow" d={poly(pts)} fill="none" stroke={VOLT} strokeWidth={width} strokeLinecap="round" strokeDasharray={`${dash} ${(len - dash).toFixed(1)}`}
+            style={{ "--len": len.toFixed(1), "--d": `${d}s`, animationDelay: `${-delay}s`, filter: `drop-shadow(0 0 2px ${VOLT})` } as React.CSSProperties} />
+        );
+      };
+      // Big pylon at x=455 (arms at 86 and 102), small one at x=150 (arms at 118 and 128),
+      // on the left where the avatar overlaps the banner; the terminal sits in the middle.
+      const wires: Pt[][] = [
+        [...sag(-20, 104, 150 - 33, 120, 14), ...sag(150 - 33, 120, 455 - 50, 88, 30).slice(1), ...sag(455 - 50, 88, 640, 98, 18).slice(1)],
+        [...sag(-20, 116, 150 + 33, 120, 16), ...sag(150 + 33, 120, 455 + 50, 88, 28).slice(1), ...sag(455 + 50, 88, 640, 110, 14).slice(1)],
+        [...sag(-20, 126, 150 - 26, 130, 12), ...sag(150 - 26, 130, 455 - 40, 104, 26).slice(1), ...sag(455 - 40, 104, 640, 122, 16).slice(1)],
+      ];
+      const traces: Pt[][] = range(7).map((k) => {
+        const x0 = -30 + k * 96 + r() * 20;
+        const y0 = 176 + (k % 3) * 8;
+        const up = k % 2 ? -6 : 6;
+        return [[x0, y0], [x0 + 34, y0], [x0 + 40, y0 + up], [x0 + 92, y0 + up], [x0 + 98, y0]] as Pt[];
+      });
+      const bolt = (pts: Pt[]) => poly(pts);
+      const main: Pt[] = [[478, -6], [468, 14], [474, 22], [460, 38], [466, 46], [452, 62], [455, 72]];
+      const branch: Pt[] = [[466, 46], [486, 56], [482, 64], [496, 74]];
+      const far: Pt[] = [[96, -6], [104, 12], [98, 20], [110, 36], [104, 44], [114, 58]];
+      const code: [string, string][] = [
+        ["$", "whoami"],
+        [" ", "jesse · co-founder · 共同創設者"],
+        [">", "power.on(\"⚡\")        ✓"],
+        [">", "wire(panel, 240V)      ✓"],
+        [">", "npm run build"],
+        [" ", "compiling the night… done"],
+        [">", "deploy --prod          ✓"],
+        ["//", "built together. 共"],
+        [">", "while (night) build()"],
+      ];
+      const LH = 10;
+      const block = code.length * LH;
+      const invader = ["..X...X..", "...X.X...", "..XXXXX..", ".XX.X.XX.", "XXXXXXXXX", "X.XXXXX.X", "X.X...X.X"];
+      const sprite = (c: number) =>
+        invader.flatMap((row, y) => [...row].map((ch, x) => (ch === "X" ? <rect key={`${x}-${y}`} x={x * c} y={y * c} width={c + 0.1} height={c + 0.1} /> : null)));
+      return (
+        <>
+          <defs>
+            <linearGradient id={g("sky")} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#030109" />
+              <stop offset="0.7" stopColor="#140a2c" />
+              <stop offset="1" stopColor="#1d0f3d" />
+            </linearGradient>
+            <radialGradient id={g("glow")} cx="78%" cy="20%" r="60%">
+              <stop offset="0" stopColor="#c9b6ff" stopOpacity="0.45" />
+              <stop offset="0.5" stopColor={VIOLET} stopOpacity="0.16" />
+              <stop offset="1" stopColor={VIOLET} stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id={g("glow2")} cx="18%" cy="15%" r="40%">
+              <stop offset="0" stopColor="#c9b6ff" stopOpacity="0.3" />
+              <stop offset="1" stopColor={VIOLET} stopOpacity="0" />
+            </radialGradient>
+            <clipPath id={g("term")}><rect x="236" y="66" width="176" height="70" /></clipPath>
+          </defs>
+          <rect width="600" height="200" fill={`url(#${g("sky")})`} />
+          <Stars n={40} seed={2008} h={110} color="#e9e2ff" />
+          <rect className="pr a-zap" width="600" height="200" fill={`url(#${g("glow")})`} style={{ "--d": "5s" } as React.CSSProperties} />
+          <rect className="pr a-zap" width="600" height="200" fill={`url(#${g("glow2")})`} style={{ "--d": "7s", animationDelay: "2.5s" } as React.CSSProperties} />
+          <g {...m("a-drift", 22)} fill="#1a1036">
+            {[[60, 18, 70], [170, 8, 90], [300, 20, 80], [420, 6, 100], [560, 16, 80]].map(([x, y, w], i) => (
+              <g key={i}>
+                <ellipse cx={x} cy={y} rx={w} ry="16" />
+                <ellipse cx={x + w * 0.4} cy={y + 8} rx={w * 0.7} ry="14" fill="#140c2b" />
+              </g>
+            ))}
+          </g>
+          <g {...m("a-drift", 30)} fill="#22154a" opacity="0.7">
+            {[[120, 30, 60], [380, 28, 70], [520, 34, 50]].map(([x, y, w], i) => <ellipse key={i} cx={x} cy={y} rx={w} ry="10" />)}
+          </g>
+          <g className="pr a-zap" style={{ "--d": "7s", animationDelay: "2.5s" } as React.CSSProperties}>
+            <path d={bolt(far)} fill="none" stroke={VIOLET} strokeWidth="3" opacity="0.5" style={{ filter: "blur(1.5px)" }} />
+            <path d={bolt(far)} fill="none" stroke="#e9e2ff" strokeWidth="0.9" />
+          </g>
+          <Skyline y={168} fill="#0b0716" seed={2009} lit="#8b5cff" blink />
+          <text {...m("a-fade", 6)} x="552" y="150" fontSize="54" fontWeight="900" textAnchor="middle" fill={VIOLET} opacity="0.3">共</text>
+          <Pylon x={150} top={112} base={176} w={34} arms={[118, 128]} />
+          {wires.map((w, i) => <path key={`w${i}`} d={poly(w)} fill="none" stroke="#3a2a66" strokeWidth="1" />)}
+          {wires.map((w, i) => <g key={`f${i}`}>{flow(w, 3.4 + i * 0.6, i * 1.1, 14)}{flow(w, 3.4 + i * 0.6, i * 1.1 + 1.7, 6, 1)}</g>)}
+          <Pylon x={455} top={72} base={176} w={50} arms={[86, 102]} />
+          <g className="pr a-zap" style={{ "--d": "5s" } as React.CSSProperties}>
+            <path d={bolt(main)} fill="none" stroke={VIOLET} strokeWidth="5" opacity="0.6" style={{ filter: "blur(2px)" }} />
+            <path d={bolt(branch)} fill="none" stroke={VIOLET} strokeWidth="3" opacity="0.5" style={{ filter: "blur(1.5px)" }} />
+            <path d={bolt(main)} fill="none" stroke={VOLT} strokeWidth="1.8" strokeLinejoin="round" />
+            <path d={bolt(branch)} fill="none" stroke={VOLT} strokeWidth="1" strokeLinejoin="round" />
+            <path d={bolt(main)} fill="none" stroke={HOT} strokeWidth="0.7" strokeLinejoin="round" />
+            <circle cx="455" cy="72" r="9" fill={VOLT} opacity="0.35" style={{ filter: "blur(3px)" }} />
+          </g>
+          <circle {...m("a-breathe", 2.4)} cx="455" cy="72" r="2.4" fill={HOT} style={{ filter: `drop-shadow(0 0 4px ${VOLT})` }} />
+          {range(6).map((i) => <circle key={`sp${i}`} {...m("a-fall", 1.4 + r() * 1.2, r() * 2)} cx={447 + r() * 16} cy={78 + r() * 10} r={0.6 + r() * 0.8} fill={i % 2 ? VOLT : HOT} />)}
+          <rect y="168" width="600" height="32" fill="#0a0618" />
+          <line x1="0" y1="168" x2="600" y2="168" stroke={VIOLET} strokeOpacity="0.5" />
+          {traces.map((t, i) => (
+            <g key={`t${i}`}>
+              <path d={poly(t)} fill="none" stroke="#2d2350" strokeWidth="1.2" />
+              <circle cx={t[0][0]} cy={t[0][1]} r="1.6" fill="#0a0618" stroke={VIOLET} strokeWidth="0.8" />
+              <circle cx={t[t.length - 1][0]} cy={t[t.length - 1][1]} r="1.6" fill="#0a0618" stroke={VIOLET} strokeWidth="0.8" />
+              {flow(t, 1.8 + (i % 3) * 0.5, r() * 2, 8, 1.2)}
+            </g>
+          ))}
+          {[0, 1].map((i) => (
+            <g key={`inv${i}`} {...m("a-slide", 26 + i * 9, i * 11)}>
+              <g transform={`translate(${-20 - i * 30} ${46 + i * 16})`} fill={VIOLET} opacity={0.7 - i * 0.2}>{sprite(1.8 - i * 0.4)}</g>
+            </g>
+          ))}
+          <g>
+            <rect x="230" y="50" width="188" height="92" rx="7" fill="#0b0618" fillOpacity="0.88" stroke={VIOLET} strokeOpacity="0.7" style={{ filter: `drop-shadow(0 0 6px ${VIOLET})` }} />
+            <rect x="230" y="50" width="188" height="13" rx="7" fill="#1a0f3a" />
+            <rect x="230" y="57" width="188" height="6" fill="#1a0f3a" />
+            {[VIOLET, VOLT, HOT].map((c, i) => <circle key={c} cx={239 + i * 8} cy="56.5" r="2.2" fill={c} opacity="0.9" />)}
+            <text x="324" y="59" fontSize="6.5" textAnchor="middle" fill="#a69bc9" fontFamily="ui-monospace, Menlo, monospace">jesse@yoru: ~/night</text>
+            <g clipPath={`url(#${g("term")})`}>
+              <g className="pr a-scroll-up" style={{ "--len": block, "--d": "14s" } as React.CSSProperties}>
+                {[0, 1].map((rep) =>
+                  code.map(([p, t], i) => (
+                    <text key={`${rep}-${i}`} x="240" y={76 + rep * block + i * LH} fontSize="7.2" fontFamily="ui-monospace, Menlo, monospace" fill={p === "//" ? VIOLET : "#dcd3f7"}>
+                      <tspan fill={p === "//" ? VIOLET : VOLT}>{p} </tspan>{t}
+                    </text>
+                  )),
+                )}
+              </g>
+            </g>
+            <rect {...m("a-fade", 1.2)} x="400" y="129" width="5" height="7" fill={VOLT} />
+          </g>
+          <text x="590" y="194" fontSize="7" textAnchor="end" fill="#a69bc9" fontFamily="ui-monospace, Menlo, monospace" letterSpacing="1">JESKOV.007 · ONLINE</text>
+          <circle {...m("a-fade", 2)} cx="503" cy="191.6" r="2" fill={VOLT} style={{ filter: `drop-shadow(0 0 3px ${VOLT})` }} />
         </>
       );
     }

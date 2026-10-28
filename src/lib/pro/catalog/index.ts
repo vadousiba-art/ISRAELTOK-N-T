@@ -36,7 +36,7 @@ export const BY_CATEGORY: Record<Category, Item[]> = {
 };
 
 // The 400-item member catalog. Staff items (STAFF) are separate: they are
-// not for sale or earning, and only appear for the founder and admins.
+// not for sale or earning, and only appear for the staff they belong to.
 export const CATALOG: Item[] = Object.values(BY_CATEGORY).flat();
 export const ALL_ITEMS: Item[] = [...CATALOG, ...STAFF];
 export const ITEM_BY_ID: Record<string, Item> = Object.fromEntries(ALL_ITEMS.map((i) => [i.id, i]));
@@ -48,9 +48,11 @@ export function milestoneOf(u: Unlock): MilestoneKey | null {
 }
 
 export type Role = "owner" | "admin" | "member";
-export function staffAllows(u: Unlock, role: Role | null | undefined) {
+export function staffAllows(u: Unlock, role: Role | null | undefined, id?: string | null) {
   if (u === "staff:owner") return role === "owner";
   if (u === "staff:admin") return role === "owner" || role === "admin";
+  // A personal set: only that account, and only while it is staff.
+  if (u.startsWith("staff:member:")) return !!id && u === `staff:member:${id}` && (role === "owner" || role === "admin");
   return false;
 }
 
@@ -58,11 +60,11 @@ export function staffAllows(u: Unlock, role: Role | null | undefined) {
 // and is the one that counts; this only decides what the UI shows as locked.
 // Testers (complimentary Pro from an admin) also get milestone-unlocked
 // cosmetics; milestones themselves stay earned-only.
-export function owns(i: Item, me: { pro: boolean; milestones: readonly string[]; tester?: boolean; role?: Role | null } | null | undefined): boolean {
+export function owns(i: Item, me: { pro: boolean; milestones: readonly string[]; tester?: boolean; role?: Role | null; id?: string | null } | null | undefined): boolean {
   if (i.unlock === "free") return true;
   if (!me) return false;
   if (i.unlock === "pro") return me.pro;
-  if (isStaffItem(i)) return staffAllows(i.unlock, me.role);
+  if (isStaffItem(i)) return staffAllows(i.unlock, me.role, me.id);
   if (me.tester && i.cat !== "milestone") return true;
   return me.milestones.includes(milestoneOf(i.unlock)!);
 }

@@ -487,6 +487,108 @@ function Art({ p, uid }: { p: RingP; uid: string }) {
         </>
       );
     }
+    // CO-FOUNDER ONLY (Jesse: an electrician and a developer). A circuit
+    // board wired round the avatar with current racing down every trace,
+    // lightning arcing off the rim in turns, JESKOV · 007 · CO-FOUNDER turning
+    // in a ring, two charged sparks orbiting in opposite directions, a pixel
+    // invader on top and a chip stamped 共 below.
+    case "cofounder": {
+      const path = `${uid}p`;
+      const hot = "#fffbe0";
+      const r = rand(7);
+      const traces = range(14)
+        .map((i) => i * (360 / 14) + 6)
+        .filter((d) => Math.abs(d - 270) > 20 && Math.abs(d - 90) > 20); // leave the top (invader) and bottom (chip) clear
+      const trace = (d: number) => {
+        const [x1, y1] = pt(d, 48.5);
+        const [x2, y2] = pt(d, 52.5);
+        const [x3, y3] = pt(d + 6, 52.5);
+        const [x4, y4] = pt(d + 6, 56.5);
+        return { d: `M${x1},${y1} L${x2},${y2} L${x3},${y3} L${x4},${y4}`, end: [x4, y4] as const, start: [x1, y1] as const };
+      };
+      // A jagged bolt from the rim outward.
+      const bolt = (d: number) => {
+        const steps: [number, number][] = [[0, 43.5], [4, 47], [-3, 50.5], [3, 54], [-2, 57.5], [2, 61]];
+        return steps.map(([o, rr], i) => `${i ? "L" : "M"}${pt(d + o, rr)[0].toFixed(2)},${pt(d + o, rr)[1].toFixed(2)}`).join(" ");
+      };
+      const arc = [200, 207, 213, 220, 226, 233, 240].map((d, i) => pt(d, i % 2 ? 49 : 45)).map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(2)},${y.toFixed(2)}`).join(" ");
+      const invaderA = ["..X...X..", "...X.X...", "..XXXXX..", ".XX.X.XX.", "XXXXXXXXX", "X.XXXXX.X", "X.X...X.X"];
+      const invaderB = ["..X...X..", "X..X.X..X", "X.XXXXX.X", "XXX.X.XXX", "XXXXXXXXX", ".XXXXXXX.", ".X.....X."];
+      const cell = 1.1;
+      const pixels = (rows: string[]) =>
+        rows.flatMap((row, y) => [...row].map((c, x) => (c === "X" ? <rect key={`${x}-${y}`} x={45.05 + x * cell} y={-7.6 + y * cell} width={cell + 0.05} height={cell + 0.05} /> : null)));
+      return (
+        <>
+          <defs>
+            <radialGradient id={g}>
+              <stop offset="62%" stopColor={b} stopOpacity="0" />
+              <stop offset="82%" stopColor={b} stopOpacity="0.55" />
+              <stop offset="100%" stopColor={b} stopOpacity="0" />
+            </radialGradient>
+            <path id={path} d="M50,50 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0" />
+          </defs>
+          <g {...m("a-breathe", 3.2)}><circle cx="50" cy="50" r="52" fill={`url(#${g})`} /></g>
+          {traces.map((d, i) => {
+            const t = trace(d);
+            return (
+              <g key={d}>
+                <path d={t.d} fill="none" stroke={b} strokeOpacity="0.6" strokeWidth="0.8" strokeLinejoin="round" />
+                <path className="pr a-flow" d={t.d} fill="none" stroke={a} strokeWidth="1" strokeLinecap="round" strokeDasharray="3 10.5"
+                  style={{ "--len": 13.5, "--d": `${1.1 + (i % 4) * 0.25}s`, animationDelay: `${-r() * 2}s`, filter: `drop-shadow(0 0 1px ${a})` } as React.CSSProperties} />
+                <circle cx={t.start[0]} cy={t.start[1]} r="0.7" fill={b} />
+                <circle {...m("a-twinkle", 2 + (i % 3) * 0.6, i * 0.3)} cx={t.end[0]} cy={t.end[1]} r="1" fill={a} />
+              </g>
+            );
+          })}
+          <g {...m("a-rot-rev", 34, 0, true)}>
+            <text fontSize="4.3" fontWeight="800" letterSpacing="0.9" fill={a} opacity="0.92" fontFamily="ui-monospace, Menlo, monospace">
+              <textPath href={`#${path}`}>JESKOV · 007 · CO-FOUNDER · 共同創設者 · ⚡ · JESKOV · 007 · CO-FOUNDER · 共同創設者 · ⚡ ·</textPath>
+            </text>
+          </g>
+          <circle cx="50" cy="50" r="43.2" fill="none" stroke={b} strokeWidth="0.7" />
+          <circle cx="50" cy="50" r="41" fill="none" stroke={b} strokeWidth="2.4" />
+          <circle cx="50" cy="50" r="39.9" fill="none" stroke={a} strokeOpacity="0.55" strokeWidth="0.5" />
+          <circle {...m("a-dash", 2.2)} cx="50" cy="50" r="41" fill="none" stroke={a} strokeWidth="2.4" strokeDasharray="6 120" strokeLinecap="round" style={{ filter: `drop-shadow(0 0 2px ${a})` }} />
+          <circle {...m("a-dash", 3.1, 1)} cx="50" cy="50" r="41" fill="none" stroke={hot} strokeWidth="1.2" strokeDasharray="3 125" strokeLinecap="round" />
+          {[-28, 38, 148, 322].map((d, i) => (
+            <g key={d} className="pr a-zap" style={{ "--d": `${3.6 + i * 0.7}s`, animationDelay: `${i * 0.9}s` } as React.CSSProperties}>
+              <path d={bolt(d)} fill="none" stroke={b} strokeWidth="2.6" strokeLinejoin="round" opacity="0.55" style={{ filter: "blur(0.8px)" }} />
+              <path d={bolt(d)} fill="none" stroke={a} strokeWidth="1" strokeLinejoin="round" />
+              <path d={bolt(d)} fill="none" stroke={hot} strokeWidth="0.4" strokeLinejoin="round" />
+            </g>
+          ))}
+          <g className="pr a-zap" style={{ "--d": "5.2s", animationDelay: "2.2s" } as React.CSSProperties}>
+            <path d={arc} fill="none" stroke={b} strokeWidth="2.2" opacity="0.5" style={{ filter: "blur(0.8px)" }} />
+            <path d={arc} fill="none" stroke={a} strokeWidth="0.9" />
+          </g>
+          <g {...m("a-rot", 4.6, 0, true)}>
+            <circle cx={pt(0, 41)[0]} cy={pt(0, 41)[1]} r="2.2" fill={hot} style={{ filter: `drop-shadow(0 0 2.5px ${a})` }} />
+          </g>
+          <g {...m("a-rot-rev", 6.8, 0, true)}>
+            <circle cx={pt(180, 41)[0]} cy={pt(180, 41)[1]} r="1.8" fill={b} stroke={hot} strokeWidth="0.5" style={{ filter: `drop-shadow(0 0 2px ${b})` }} />
+          </g>
+          {range(6).map((i) => <circle key={`s${i}`} {...m("a-rise", 2.2 + (i % 3) * 0.5, i * 0.4)} cx={pt(70 + i * 8, 47)[0]} cy={pt(70 + i * 8, 47)[1]} r="0.8" fill={i % 2 ? a : hot} />)}
+          <g {...m("a-bob", 2.8)}>
+            <g fill={b} style={{ filter: `drop-shadow(0 0 2px ${b})` }}>
+              <g className="pr a-frame-a">{pixels(invaderA)}</g>
+              <g className="pr a-frame-b">{pixels(invaderB)}</g>
+            </g>
+            <rect x={45.05 + 3 * cell} y={-7.6 + 3 * cell} width={cell} height={cell} fill={a} />
+            <rect x={45.05 + 5 * cell} y={-7.6 + 3 * cell} width={cell} height={cell} fill={a} />
+          </g>
+          <g transform="translate(50 92)">
+            <g stroke={a} strokeWidth="0.9" strokeLinecap="round">
+              {[-4.5, -1.5, 1.5, 4.5].map((x) => <line key={`t${x}`} x1={x} y1="-7.5" x2={x} y2="-5.5" />)}
+              {[-4.5, -1.5, 1.5, 4.5].map((x) => <line key={`b${x}`} x1={x} y1="5.5" x2={x} y2="7.5" />)}
+              {[-3, 0, 3].map((y) => <line key={`l${y}`} x1="-9.5" y1={y} x2="-7.5" y2={y} />)}
+              {[-3, 0, 3].map((y) => <line key={`r${y}`} x1="7.5" y1={y} x2="9.5" y2={y} />)}
+            </g>
+            <rect x="-7.5" y="-5.5" width="15" height="11" rx="1.6" fill="#1a0f3a" stroke={a} strokeWidth="1" style={{ filter: `drop-shadow(0 0 2px ${a})` }} />
+            <text {...m("a-pop", 3.4)} y="2.5" fontSize="7" textAnchor="middle" fill={a} fontWeight="900">共</text>
+          </g>
+        </>
+      );
+    }
     default:
       return <circle cx="50" cy="50" r="43" fill="none" stroke={a} strokeWidth="2" />;
   }

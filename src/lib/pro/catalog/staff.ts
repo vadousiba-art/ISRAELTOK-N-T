@@ -5,10 +5,19 @@ import type { Unlock } from "../types";
 
 // Staff cosmetics: the most elaborate pieces in YORU, reserved for the people
 // who run it. "staff:owner" = the founder, "staff:admin" = admins (and the
-// founder). The database checks the account's role before they can be worn,
-// and they disappear on their own if the role is removed.
+// founder), "staff:member:<id>" = one person's own set. The database checks
+// the account (and its role) before they can be worn, and they disappear on
+// their own if the role is removed.
 const O: Unlock = "staff:owner";
 const A: Unlock = "staff:admin";
+
+// Jesse (@Jeskov007), YORU's co-founder: an electrician and a developer, so
+// his set is built from live current and code.
+export const JESSE = "69c19776-57af-4fed-bcae-445d00893627";
+const J: Unlock = `staff:member:${JESSE}`;
+const VOLT = "#ffd60a";
+const VIOLET = "#8b5cff";
+const HOT = "#fffbe0";
 
 export const staffRings = mk<RingP>("ring", [
   ["Founder's Eclipse", "Gold light rays, a turning ring of runes that spell YORU, a crimson moon in orbit and a crowned crest.", "L", "founders_throne", O, { style: "founder", a: "#e0b54f", b: "#e5102f", anim: "spin" }],
@@ -43,4 +52,35 @@ export const staffChats = mk<ChatP>("chat", [
   ["Watchtower Channel", "Navy with a faint scan grid.", "L", "night_watch", A, { bg: "#03080d", pattern: "grid", me: "#0b6f82", meInk: "#ffffff", them: "#0f1e2a", themInk: "#eaf9ff", accent: "#2ee6ff" }],
 ]);
 
-export const STAFF = [...staffRings, ...staffBanners, ...staffNameplates, ...staffBadges, ...staffThemes, ...staffEffects, ...staffReactions, ...staffChats];
+// Role-based staff items (migration 0010).
+export const STAFF_ROLE = [...staffRings, ...staffBanners, ...staffNameplates, ...staffBadges, ...staffThemes, ...staffEffects, ...staffReactions, ...staffChats];
+
+// Personal staff sets (migration 0012 onward).
+export const STAFF_MEMBER = [
+  ...mk<RingP>("ring", [
+    ["Live Wire", "A circuit board wired round the avatar with current racing down every trace, lightning arcing off the rim, JESKOV · 007 · CO-FOUNDER turning in a ring, two charged sparks in orbit, a pixel invader on top and a chip stamped 共 below.", "L", "cofounders_circuit", J, { style: "cofounder", a: VOLT, b: VIOLET, anim: "spin" }],
+  ]),
+  ...mk<BannerP>("banner", [
+    ["High Voltage", "A storm over the grid: lightning strikes the pylon and lights the sky, current runs down the power lines and across the circuit-board ground, and a terminal types out the build.", "L", "cofounders_circuit", J, { scene: "voltage", anim: true }],
+  ]),
+  ...mk<NameplateP>("nameplate", [
+    ["Co-Founder", "Charged CO-FOUNDER lettering: current sweeping through it, a crackling bolt and a spark running along the edge.", "L", "cofounders_circuit", J, { title: "Co-Founder · 共同創設者", font: "display", fx: "cofounder", a: VOLT, b: VIOLET, emblem: "⚡", border: "line" }],
+  ]),
+  ...mk<BadgeP>("badge", [
+    ["Co-Founder's Chip", "A microchip stamped 共 (together), the co-founder's mark.", "L", "cofounders_circuit", J, { shape: "chip", glyph: "共", a: VOLT, b: "#1a0f3a" }],
+  ]),
+  ...mk<ThemeP>("theme", [
+    ["Circuit Night", "Circuit-board violet black with a charged accent.", "L", "cofounders_circuit", J, { mode: "dark", bg: "#06040c", bg2: "#0a0714", card: "#110c1f", card2: "#191230", line: "#2d2350", ink: "#f5f1ff", ink2: "#dcd3f7", muted: "#a69bc9", hue: 266 }],
+  ]),
+  ...mk<EffectP>("effect", [
+    ["Static Charge", "Little arcs of static crackling and drifting at the edges of the screen.", "L", "cofounders_circuit", J, { kind: "particles", shape: "arc", colors: [VOLT, VIOLET, HOT], count: 16, speed: 0.6, dir: "drift" }],
+  ]),
+  ...mk<ReactionP>("reaction", [
+    ["Overload", "Yellow and violet bolts bursting from the button.", "L", "cofounders_circuit", J, { burst: "shock", colors: [VOLT, VIOLET, HOT], count: 12 }],
+  ]),
+  ...mk<ChatP>("chat", [
+    ["Server Room", "Violet black with a circuit grid; your messages charged violet.", "L", "cofounders_circuit", J, { bg: "#06040c", pattern: "grid", me: "#5b3fd1", meInk: "#ffffff", them: "#191230", themInk: "#f5f1ff", accent: VOLT }],
+  ]),
+];
+
+export const STAFF = [...STAFF_ROLE, ...STAFF_MEMBER];

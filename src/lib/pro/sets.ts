@@ -1,4 +1,5 @@
 import type { SetId } from "./types";
+import { JESSE } from "./catalog/staff";
 
 // Named collections. Each has its own identity, palette and cover; items in a
 // set are designed to be worn together (the "signature look" bundles).
@@ -8,8 +9,9 @@ export type CosmeticSet = {
   jp: string;
   tagline: string;
   palette: [string, string, string]; // base, accent, highlight
-  cover: "impact" | "glitch" | "moon" | "signage" | "static" | "petals" | "gilded" | "pixel" | "brush" | "stars" | "plain" | "desk" | "chart" | "map" | "shelf" | "wave" | "trophy" | "flask" | "door" | "throne" | "watch";
-  staff?: "owner" | "admin"; // reserved sets, hidden from members
+  cover: "impact" | "glitch" | "moon" | "signage" | "static" | "petals" | "gilded" | "pixel" | "brush" | "stars" | "plain" | "desk" | "chart" | "map" | "shelf" | "wave" | "trophy" | "flask" | "door" | "throne" | "watch" | "circuit";
+  staff?: "owner" | "admin" | "member"; // reserved sets, hidden from members
+  member?: string; // for staff: "member", the one profile id that can wear it
   look?: { ring: string; banner: string; nameplate: string; badge: string; theme: string }; // signature bundle (item ids)
 };
 
@@ -46,11 +48,14 @@ export const SETS: CosmeticSet[] = [
 ];
 
 // Reserved for YORU staff. They mark who runs YORU, so the server only lets
-// the founder (owner) or admins wear them, and they never appear in the shop.
+// the founder (owner), admins, or the one named member wear them, and they
+// never appear in the shop for anyone else.
 export const STAFF_SETS: CosmeticSet[] = [
   { id: "founders_throne", name: "Founder's Throne", jp: "創設者の玉座", tagline: "Worn only by YORU's founder.", palette: ["#050403", "#e0b54f", "#e5102f"], cover: "throne", staff: "owner",
     look: { ring: "ring.founders_eclipse", banner: "banner.throne_of_night", nameplate: "nameplate.founder", badge: "badge.founders_seal", theme: "theme.founders_night" } },
   { id: "night_watch", name: "Night Watch", jp: "夜警", tagline: "Worn only by YORU admins.", palette: ["#03080d", "#2ee6ff", "#e9f8ff"], cover: "watch", staff: "admin",
     look: { ring: "ring.sentinel", banner: "banner.the_night_watch", nameplate: "nameplate.yoru_staff", badge: "badge.staff_shield", theme: "theme.watchtower" } },
+  { id: "cofounders_circuit", name: "Co-Founder's Circuit", jp: "共同創設者の回路", tagline: "Worn only by Jesse, YORU's co-founder.", palette: ["#06040c", "#ffd60a", "#8b5cff"], cover: "circuit", staff: "member", member: JESSE,
+    look: { ring: "ring.live_wire", banner: "banner.high_voltage", nameplate: "nameplate.co_founder", badge: "badge.co_founders_chip", theme: "theme.circuit_night" } },
 ];
 export const SET_BY_ID = Object.fromEntries([...SETS, ...STAFF_SETS].map((s) => [s.id, s])) as Record<string, CosmeticSet>;

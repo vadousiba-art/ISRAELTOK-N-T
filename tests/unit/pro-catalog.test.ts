@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BY_CATEGORY, CATALOG, ITEM_BY_ID, STAFF, chats, owns, staffChats, staffThemes, themes, milestones, plannerTemplates } from "@/lib/pro/catalog";
+import { BY_CATEGORY, CATALOG, ITEM_BY_ID, STAFF, STAFF_MEMBER, STAFF_ROLE, JESSE, chats, owns, staffChats, staffThemes, themes, milestones, plannerTemplates } from "@/lib/pro/catalog";
 import { CATEGORIES, MILESTONES, RARITIES } from "@/lib/pro/types";
 import { SETS, SET_BY_ID, STAFF_SETS } from "@/lib/pro/sets";
 
@@ -78,9 +78,11 @@ describe("Pro catalog", () => {
   });
 
   it("staff items are separate, reserved, unique and complete", () => {
-    expect(STAFF).toHaveLength(16);
-    expect(new Set([...CATALOG, ...STAFF].map((i) => i.id)).size).toBe(416);
-    for (const i of STAFF) expect(["staff:owner", "staff:admin"]).toContain(i.unlock);
+    expect(STAFF_ROLE).toHaveLength(16);
+    expect(STAFF_MEMBER).toHaveLength(8);
+    expect(new Set([...CATALOG, ...STAFF].map((i) => i.id)).size).toBe(424);
+    for (const i of STAFF_ROLE) expect(["staff:owner", "staff:admin"]).toContain(i.unlock);
+    for (const i of STAFF_MEMBER) expect(i.unlock).toBe(`staff:member:${JESSE}`);
     for (const s of STAFF_SETS) for (const [slot, id] of Object.entries(s.look!)) expect(ITEM_BY_ID[id]?.cat, `${s.id} ${id}`).toBe(slot);
     const founder = ITEM_BY_ID["ring.founders_eclipse"];
     const admin = ITEM_BY_ID["ring.sentinel"];
@@ -89,6 +91,13 @@ describe("Pro catalog", () => {
     expect(owns(founder, { pro: false, milestones: [], role: "owner" })).toBe(true);
     expect(owns(admin, { pro: false, milestones: [], role: "admin" })).toBe(true);
     expect(owns(admin, { pro: false, milestones: [], role: "owner" })).toBe(true);
+    // The co-founder's set: Jesse's account only, and only while he is staff.
+    const live = ITEM_BY_ID["ring.live_wire"];
+    expect(owns(live, { pro: false, milestones: [], role: "admin", id: JESSE })).toBe(true);
+    expect(owns(live, { pro: false, milestones: [], role: "member", id: JESSE })).toBe(false);
+    expect(owns(live, { pro: false, milestones: [], role: "owner", id: "00000000-0000-4000-8000-000000000001" })).toBe(false);
+    expect(owns(live, { pro: true, milestones: [], tester: true, role: "admin" })).toBe(false);
+    expect(owns(founder, { pro: false, milestones: [], role: "admin", id: JESSE })).toBe(false);
   });
 
   it("planner templates only use draft templates that exist", () => {

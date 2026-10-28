@@ -102,10 +102,12 @@ function Shop() {
     router.replace(`/pro/shop${sp.size ? `?${sp}` : ""}`, { scroll: false });
   };
 
-  // Staff items only exist in the shop for the founder and admins.
+  // Staff items only exist in the shop for the staff they belong to.
   const isStaff = me?.role === "owner" || me?.role === "admin";
   const staffItems = useMemo(() => (isStaff ? STAFF.filter((i) => ownsItem(i, me)) : []), [isStaff, me]);
-  const staffSets = isStaff ? STAFF_SETS.filter((s) => me?.role === "owner" || s.staff === "admin") : [];
+  const staffSets = isStaff
+    ? STAFF_SETS.filter((s) => (s.staff === "member" ? s.member === me?.id : me?.role === "owner" || s.staff === "admin"))
+    : [];
   const items = useMemo(() => {
     const needle = q.trim().toLowerCase();
     return (filter === "staff" ? staffItems : filter === "owned" ? [...staffItems, ...CATALOG] : CATALOG).filter((i) => {
@@ -170,7 +172,7 @@ function Shop() {
             {CATEGORIES.map((c) => <Chip key={c} on={cat === c} onClick={() => go({ cat: c })}>{CAT_LABEL[c].name}</Chip>)}
           </div>
           <div className="flex flex-wrap gap-1.5" aria-label="Filters">
-            {isStaff && <Chip on={filter === "staff"} onClick={() => { setFilter("staff"); setLimit(PAGE); }} small>{me?.role === "owner" ? "♛ Founder & staff" : "⛨ Staff"}</Chip>}
+            {isStaff && <Chip on={filter === "staff"} onClick={() => { setFilter("staff"); setLimit(PAGE); }} small>{me?.role === "owner" ? "♛ Founder & staff" : staffSets.some((s) => s.staff === "member") ? "⚡ Co-founder & staff" : "⛨ Staff"}</Chip>}
             {FILTERS.map(([f, l]) => <Chip key={f} on={filter === f} onClick={() => { setFilter(f); setLimit(PAGE); }} small>{l}</Chip>)}
             <span className="mx-1 w-px self-stretch bg-line" />
             {RARITIES.map((r) => <Chip key={r} on={rarity === r} onClick={() => setRarity(rarity === r ? null : r)} small>{r[0].toUpperCase() + r.slice(1)}</Chip>)}

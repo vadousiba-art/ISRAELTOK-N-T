@@ -261,3 +261,16 @@ Sixteen cosmetics that identify real YORU staff. They are separate from the 400-
 - `get_my_pro()` returns `role`, which the shop uses to show a "Founder & staff" filter to staff only.
 - Migration 0010 is additive: it widens the `pro_catalog.unlock` check, inserts 16 rows, and replaces `pro_owns`, `pro_check_equip` and `get_my_pro` with the same signatures.
 - The Terms (section 9) forbid impersonating staff; the Trust Center explains that staff cosmetics are role-checked.
+
+### Personal staff sets (migration 0012)
+
+A set can also belong to one named member of staff. The unlock is `staff:member:<profile id>`: only that account can wear it, and only while its role is `owner` or `admin` (banned accounts never). Nobody else can, not other admins and not the founder, because a personal set says who someone is. These items live in `STAFF_MEMBER` (`STAFF_ROLE` is the role-based sixteen; `STAFF` is both) and are generated into migration 0012 by `npm run pro:catalog`.
+
+| Set | Who | Items |
+|---|---|---|
+| Co-Founder's Circuit (共同創設者の回路) | Jesse (@Jeskov007), co-founder | Live Wire ring, High Voltage banner, Co-Founder nameplate, Co-Founder's Chip badge, Circuit Night theme, Static Charge effect, Overload reaction, Server Room chat |
+
+- Jesse is an electrician and a developer, so the set is built from live current and code: a circuit board wired round the avatar with current flowing down the traces, lightning arcing off the rim, a pixel invader and a 共 chip (ring); a storm striking a pylon, current on the power lines and circuit-board ground, and a terminal typing out the build (banner).
+- Lightning swells and fades once per loop rather than strobing, keeping to the motion rule for cosmetics (no more than one change a second). Everything stops for reduced motion.
+- `get_my_pro()` also returns the caller's `id`, which the shop uses to show a personal set to its owner only.
+- Migration 0012 is additive: it widens the unlock check, inserts 8 rows, replaces `pro_staff_allows` and `get_my_pro` with the same signatures, and wears the set on Jesse's profile in the slots he hasn't chosen (a no-op where his account doesn't exist).

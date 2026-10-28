@@ -481,6 +481,21 @@ body {
 .a-scroll-down { animation: pr-scroll-down var(--d, 1.2s) linear infinite; }
 .a-fade { animation: pr-fade var(--d, 3s) ease-in-out infinite; }
 .a-orbit-y { animation: pr-orbit-y var(--d, 4s) ease-in-out infinite; }
+/* Electric motion (Co-Founder's Circuit): a lightning strike that is dark most
+   of the loop and then swells and fades in one smooth pulse (no strobing, so
+   it stays within the one-change-a-second rule above), current flowing along
+   a path of length --len without a seam, a terminal scrolling up by --len,
+   and a two-frame sprite (frame A / B, at least a second per frame). */
+@keyframes pr-zap { 0%, 55% { opacity: 0; } 68% { opacity: 1; } 76% { opacity: 0.85; } 92%, 100% { opacity: 0; } }
+@keyframes pr-flow { to { stroke-dashoffset: calc(var(--len, 100) * -1px); } }
+@keyframes pr-scroll-up { to { transform: translateY(calc(var(--len, 100) * -1px)); } }
+@keyframes pr-frame-a { 0%, 49.9% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes pr-frame-b { 0%, 49.9% { opacity: 0; } 50%, 100% { opacity: 1; } }
+.a-zap { animation: pr-zap var(--d, 4s) linear infinite; }
+.a-flow { animation: pr-flow var(--d, 2s) linear infinite; }
+.a-scroll-up { animation: pr-scroll-up var(--d, 12s) linear infinite; }
+.a-frame-a { animation: pr-frame-a var(--d, 2s) steps(1) infinite; }
+.a-frame-b { animation: pr-frame-b var(--d, 2s) steps(1) infinite; }
 
 /* Nameplates */
 .pro-np { display: inline-flex; align-items: center; gap: 0.35em; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; line-height: 1.2; padding: 0.18em 0.55em; border-radius: 0.4em; color: var(--np-a); white-space: nowrap; max-width: 100%; }
@@ -592,6 +607,19 @@ body {
 .pro-np-founder .pro-np-text { background-image: linear-gradient(100deg, #b8902f 0%, var(--np-a) 35%, #fff 50%, var(--np-a) 65%, #b8902f 100%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; animation: np-sweep 3.2s linear infinite; filter: drop-shadow(0 0 4px rgb(224 181 79 / 0.6)); }
 .pro-np-founder .pro-np-emblem { color: var(--np-a); animation: np-emblem 2.2s ease-in-out infinite, np-founder 3s ease-in-out infinite; }
 .pro-np-founder::after { content: ""; position: absolute; inset: 0; background: radial-gradient(60% 120% at 10% 50%, rgb(229 16 47 / 0.25), transparent 60%); animation: pr-fade 3s ease-in-out infinite; pointer-events: none; }
+/* Co-founder: current sweeps through charged lettering, the bolt surges, a
+   spark runs along the bottom edge and the plate charges up once per loop
+   (smooth swells, never a strobe). */
+@keyframes np-volt { 0%, 100% { filter: drop-shadow(0 0 3px rgb(255 214 10 / 0.5)); } 50% { filter: drop-shadow(0 0 8px rgb(255 214 10 / 0.95)) drop-shadow(0 0 2px rgb(139 92 255 / 0.9)); } }
+@keyframes np-bolt { 0%, 100% { transform: rotate(0) scale(1); } 40% { transform: rotate(-10deg) scale(1.2); } 60% { transform: rotate(6deg) scale(1.1); } }
+@keyframes np-spark { 0% { left: -6%; opacity: 0; } 8% { opacity: 1; } 92% { opacity: 1; } 100% { left: 100%; opacity: 0; } }
+@keyframes np-flash { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+.pro-np-cofounder { background: linear-gradient(180deg, #1a0f3a, #07040f); box-shadow: inset 0 0 0 1px rgb(139 92 255 / 0.75), 0 0 12px -4px rgb(255 214 10 / 0.8); overflow: hidden; border-bottom-color: transparent; }
+.pro-np-cofounder .pro-np-text { background-image: linear-gradient(100deg, var(--np-b) 0%, var(--np-a) 30%, #fffbe0 50%, var(--np-a) 70%, var(--np-b) 100%); background-size: 240% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; animation: np-sweep 2.4s linear infinite, np-volt 3.4s linear infinite; }
+.pro-np-cofounder .pro-np-emblem { color: var(--np-a); animation: np-bolt 3.4s linear infinite; text-shadow: 0 0 6px var(--np-a); }
+.pro-np-cofounder::before { content: ""; position: absolute; inset: 0; background: radial-gradient(80% 140% at 12% 50%, rgb(255 214 10 / 0.3), transparent 60%), radial-gradient(60% 120% at 90% 50%, rgb(139 92 255 / 0.35), transparent 65%); animation: np-flash 3.4s linear infinite; pointer-events: none; }
+.pro-np-cofounder::after { content: ""; position: absolute; bottom: 0; width: 18%; height: 1.5px; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--np-a), #fffbe0); box-shadow: 0 0 6px var(--np-a); animation: np-spark 1.8s linear infinite; pointer-events: none; }
+:root:not([data-theme="dark"]) .pro-np-cofounder { background-color: #07040f; }
 .pro-np-staff { background: linear-gradient(180deg, #0a151e, #03080d); box-shadow: inset 0 0 0 1px rgb(46 230 255 / 0.55), 0 0 10px -4px rgb(46 230 255 / 0.8); overflow: hidden; color: var(--np-a); }
 .pro-np-staff .pro-np-text { color: var(--np-b); text-shadow: 0 0 6px rgb(46 230 255 / 0.6); }
 .pro-np-staff .pro-np-emblem { color: var(--np-a); animation: np-emblem 2.6s ease-in-out infinite; }

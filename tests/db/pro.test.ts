@@ -4,8 +4,8 @@ import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { applyMigrations } from "@/lib/database/migrations";
-import { ALL_ITEMS } from "@/lib/pro/catalog";
-import { BEGIN, END, STAFF_BEGIN, STAFF_END, catalogSql, staffSql } from "@/lib/pro/catalog-sql";
+import { ALL_ITEMS, JESSE } from "@/lib/pro/catalog";
+import { BEGIN, END, MEMBER_BEGIN, MEMBER_END, STAFF_BEGIN, STAFF_END, catalogSql, memberStaffSql, staffSql } from "@/lib/pro/catalog-sql";
 
 // Pro Universe (migration 0009), from the database's point of view:
 // ownership, previews, expiry, earned milestones, privacy of drafts and
@@ -77,15 +77,21 @@ describe("catalog", () => {
     expect(block).toBe(staffSql().trim());
   });
 
-  it("has the same 400 member items plus 16 staff items, with the app's ids and rules", async () => {
+  it("migration 0012 holds exactly the generated personal staff items", () => {
+    const sql = fs.readFileSync(path.join(root, "supabase/migrations/0012_cofounder_cosmetics.sql"), "utf8");
+    const block = sql.slice(sql.indexOf(MEMBER_BEGIN) + MEMBER_BEGIN.length, sql.indexOf(MEMBER_END)).trim();
+    expect(block).toBe(memberStaffSql().trim());
+  });
+
+  it("has the same 400 member items plus 24 staff items, with the app's ids and rules", async () => {
     const rows = (await db.query<{ id: string; cat: string; unlock: string; status: string }>("select id, cat, unlock, status from public.pro_catalog order by id")).rows;
-    expect(rows).toHaveLength(416);
+    expect(rows).toHaveLength(424);
     const app = [...ALL_ITEMS].sort((a, b) => (a.id < b.id ? -1 : 1)).map((i) => ({ id: i.id, cat: i.cat, unlock: i.unlock, status: i.status }));
     expect(rows).toEqual(app);
   });
 
   it("is readable by members, not by visitors, and not writable by anyone but the server", async () => {
-    expect((await sqlAs(u.ann, "select count(*)::int as n from public.pro_catalog"))[0].n).toBe(416);
+    expect((await sqlAs(u.ann, "select count(*)::int as n from public.pro_catalog"))[0].n).toBe(424);
     await expect(sqlAs(u.ann, "update public.pro_catalog set unlock = 'free'")).rejects.toThrow(/permission denied/);
     await expect(as(null, "get_my_pro")).rejects.toThrow(/permission denied/);
   });
@@ -174,6 +180,47 @@ describe("staff cosmetics", () => {
     await db.query("update public.profiles set role = 'admin' where id = $1", [u.ann]);
     await as(u.ann, "pro_equip", { p_slot: "ring", p_item: "ring.sentinel" });
     await expect(as(u.ann, "pro_equip", { p_slot: "nameplate", p_item: "nameplate.founder" })).rejects.toThrow(/reserved for YORU staff/);
+  });
+
+  it("the co-founder's set is Jesse's alone: not other admins, not the founder, and only while he is staff", async () => {
+    await db.query("insert into auth.users (id, email, raw_user_meta_data) values ($1, $2, $3)", [
+      JESSE, "jesse@pro.test", JSON.stringify({ username: "pro_jesse", display_name: "Jesse" }),
+    ]);
+    const other = await signup("pro_admin2");
+    await db.query("update public.profiles set role = 'admin' where id = $1", [other]);
+    // Not staff yet: locked, like any member.
+    await expect(as(JESSE, "pro_equip", { p_slot: "ring", p_item: "ring.live_wire" })).rejects.toThrow(/reserved for YORU staff/);
+    await db.query("update public.profiles set role = 'admin' where id = $1", [JESSE]);
+    await as(JESSE, "pro_equip", { p_slot: "ring", p_item: "ring.live_wire" });
+    const mine = await as<{ id: string; role: string; equips: Record<string, { item: string; active: boolean }> }>(JESSE, "get_my_pro");
+    expect(mine.id).toBe(JESSE);
+    expect(mine.equips.ring).toEqual({ item: "ring.live_wire", active: true });
+    await expect(as(other, "pro_equip", { p_slot: "ring", p_item: "ring.live_wire" })).rejects.toThrow(/reserved for YORU staff/);
+    await expect(as(u.owner, "pro_equip", { p_slot: "banner", p_item: "banner.high_voltage" })).rejects.toThrow(/reserved for YORU staff/);
+    // He doesn't get the founder's items either.
+    await expect(as(JESSE, "pro_equip", { p_slot: "nameplate", p_item: "nameplate.founder" })).rejects.toThrow(/reserved for YORU staff/);
+    const idn = await as<{ look: { ring?: string } }>(u.cy, "get_profile_identity", { p_username: "pro_jesse" });
+    expect(idn.look.ring).toBe("ring.live_wire");
+  });
+
+  it("migration 0012 puts the set on Jesse's profile without replacing anything he chose", async () => {
+    const freeBanner = ALL_ITEMS.find((i) => i.cat === "banner" && i.unlock === "free")!.id;
+    await as(JESSE, "pro_equip", { p_slot: "banner", p_item: freeBanner });
+    const sql = fs.readFileSync(path.join(root, "supabase/migrations/0012_cofounder_cosmetics.sql"), "utf8");
+    await db.exec(sql.slice(sql.indexOf("insert into public.pro_equips")));
+    const eq = (await as<{ equips: Record<string, { item: string; active: boolean }> }>(JESSE, "get_my_pro")).equips;
+    expect(eq.banner.item).toBe(freeBanner); // his own choice stays
+    expect(Object.fromEntries(Object.entries(eq).map(([k, v]) => [k, v.item]))).toMatchObject({
+      ring: "ring.live_wire", nameplate: "nameplate.co_founder", badge: "badge.co_founders_chip", theme: "theme.circuit_night",
+      effect: "effect.static_charge", reaction: "reaction.overload", chat: "chat.server_room",
+    });
+    expect(Object.values(eq).every((v) => v.active)).toBe(true);
+    // Losing the staff role takes it all off by itself (the free banner stays).
+    await db.query("update public.profiles set role = 'member' where id = $1", [JESSE]);
+    const after = (await as<{ equips: Record<string, { item: string; active: boolean }> }>(JESSE, "get_my_pro")).equips;
+    expect(after.ring.active).toBe(false);
+    expect(after.banner.active).toBe(true);
+    await db.query("update public.profiles set role = 'admin' where id = $1", [JESSE]);
   });
 
   it("a removed role takes the item off by itself, keeping the stored choice", async () => {

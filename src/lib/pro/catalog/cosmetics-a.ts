@@ -56,7 +56,7 @@ export const banners = mk<BannerP>("banner", [
 export type NameplateP = {
   title: string;
   font: "display" | "serif" | "mono" | "condensed" | "jp";
-  fx: "metal" | "blood" | "glitch" | "plain" | "silver" | "scan" | "eclipse" | "rgb" | "neon" | "ink" | "underline" | "echo" | "wave" | "shatter" | "obsidian" | "halo" | "legend" | "smallcaps" | "velvet" | "stars" | "founder" | "staff";
+  fx: "metal" | "blood" | "glitch" | "plain" | "silver" | "scan" | "eclipse" | "rgb" | "neon" | "ink" | "underline" | "echo" | "wave" | "shatter" | "obsidian" | "halo" | "legend" | "smallcaps" | "velvet" | "stars" | "founder" | "staff" | "cofounder";
   a: string;
   b: string;
   emblem: string;

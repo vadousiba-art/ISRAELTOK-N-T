@@ -4,7 +4,7 @@ import { F, M, P, mk } from "./mk";
 // badges are labelled as cosmetics; the ones unlocked by a milestone say
 // "Earned" and can't be bought. Achievements (awards from activity) stay separate.
 export type BadgeP = {
-  shape: "seal" | "shield" | "star" | "crest" | "coin" | "gem" | "lotus" | "heart" | "hex" | "orbit" | "shard" | "moon" | "flower" | "token" | "prism";
+  shape: "seal" | "shield" | "star" | "crest" | "coin" | "gem" | "lotus" | "heart" | "hex" | "orbit" | "shard" | "moon" | "flower" | "token" | "prism" | "chip";
   glyph: string;
   a: string;
   b: string;

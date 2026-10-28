@@ -35,6 +35,8 @@ const SHAPES: Record<BadgeP["shape"], string> = {
   flower: "M20,4 A6,6 0 0,1 26,12 A6,6 0 0,1 34,18 A6,6 0 0,1 28,26 A6,6 0 0,1 22,34 A6,6 0 0,1 14,30 A6,6 0 0,1 6,24 A6,6 0 0,1 10,14 A6,6 0 0,1 20,4 Z",
   token: "M20,2 A18,18 0 1,1 19.99,2 Z",
   prism: "M20,3 L37,35 H3 Z",
+  // A microchip: a square body with three pins on each side.
+  chip: "M10,8 H30 Q32,8 32,10 V30 Q32,32 30,32 H10 Q8,32 8,30 V10 Q8,8 10,8 Z M12.8,3 h2.4 v5 h-2.4 Z M12.8,32 h2.4 v5 h-2.4 Z M18.8,3 h2.4 v5 h-2.4 Z M18.8,32 h2.4 v5 h-2.4 Z M24.8,3 h2.4 v5 h-2.4 Z M24.8,32 h2.4 v5 h-2.4 Z M3,12.8 h5 v2.4 h-5 Z M32,12.8 h5 v2.4 h-5 Z M3,18.8 h5 v2.4 h-5 Z M32,18.8 h5 v2.4 h-5 Z M3,24.8 h5 v2.4 h-5 Z M32,24.8 h5 v2.4 h-5 Z",
 };
 
 // Badges glow, catch a moving highlight and give their glyph a small beat.
