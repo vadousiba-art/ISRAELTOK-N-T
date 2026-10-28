@@ -5,7 +5,7 @@ import { Landing } from "@/components/landing/Landing";
 export const metadata: Metadata = {
   title: { absolute: "YORU — The internet after dark" },
   description:
-    "YORU (夜) is a free social network for anime, manga, music, Vocaloid, gaming and art fans. Posts, stories, group chats, nightly streaks and an AI comedian. Use it on the web or download the Android app.",
+    "YORU (夜) is a free social network for anime, manga, music, Vocaloid, gaming and art fans. Posts, stories, group chats, nightly streaks, animated profile cosmetics, scheduled posts and an AI comedian. Use it on the web or download the Android app.",
   robots: { index: true, follow: true },
   openGraph: {
     title: "YORU — The internet after dark",

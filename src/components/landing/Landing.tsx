@@ -12,6 +12,7 @@ import { NightSky } from "./NightSky";
 import { Showcase, Promo } from "./Showcase";
 import { Demos } from "./Demos";
 import { FeatureGrid, Install, Faq } from "./Sections";
+import { ProUniverse } from "./ProUniverse";
 import { setSoundEnabled, sfx, soundEnabled, unlockAudio } from "./sfx";
 import { APK_META, APK_URL, GlowButton } from "./GlowButton";
 import { WelcomePlayer } from "@/components/welcome/WelcomePlayer";
@@ -74,6 +75,7 @@ export function Landing({ qrSvg, deleted }: { qrSvg: string; deleted: boolean })
           <div className="ml-6 hidden items-center gap-1 text-sm text-ink-2 md:flex">
             {[
               ["#features", "Features"],
+              ["#pro", "Pro"],
               ["#try", "Try it"],
               ["#install", "Get the app"],
               ["#faq", "FAQ"],
@@ -159,7 +161,7 @@ export function Landing({ qrSvg, deleted }: { qrSvg: string; deleted: boolean })
             transition={{ delay: 1.4, duration: 0.6 }}
             className="mt-5 max-w-xl text-base text-ink-2 sm:text-lg"
           >
-            A free social network for anime, manga, music, Vocaloid, gaming and art fans. Post, chat, level up every night. No ads. No tracking.
+            A free social network for anime, manga, music, Vocaloid, gaming and art fans. Post, chat, level up every night, and make your profile move. No ads. No tracking.
           </motion.p>
 
           <motion.div
@@ -212,6 +214,7 @@ export function Landing({ qrSvg, deleted }: { qrSvg: string; deleted: boolean })
       <Marquee />
       <Promo />
       <FeatureGrid />
+      <ProUniverse />
       <Showcase />
       <Demos />
       <Install qrSvg={qrSvg} inApp={inApp} />
