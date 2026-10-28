@@ -8,7 +8,7 @@ import { useShell } from "@/components/shell/AppShell";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { WhatsNew } from "@/components/yoru/WhatsNew";
 import { rpc } from "@/lib/client/api";
-import { RELEASE_SEEN_KEY, WHATS_NEW_EVENT } from "@/lib/releases";
+import { CURRENT_RELEASE, RELEASE_SEEN_KEY, WHATS_NEW_EVENT } from "@/lib/releases";
 import { WELCOME, chooseWelcome, welcomeSeenKey, type WelcomeCut, type WelcomeState } from "@/lib/welcome/config";
 import { WelcomePlayer } from "./WelcomePlayer";
 
@@ -76,7 +76,7 @@ export function WelcomeExperience() {
   const markSeen = useCallback(() => {
     if (!WELCOME) return;
     storage("local")?.setItem(welcomeSeenKey(me.id), WELCOME.version);
-    storage("local")?.setItem(RELEASE_SEEN_KEY, "2.0");
+    storage("local")?.setItem(RELEASE_SEEN_KEY, CURRENT_RELEASE.version);
     rpc("mark_welcome_seen", { p_version: WELCOME.version }).catch(() => {});
   }, [me.id]);
 

@@ -40,6 +40,11 @@ export default function TermsPage() {
           for legal reasons.
         </p>
         <p>Only post content you have the right to share. You are responsible for your content and the consequences of posting it.</p>
+        <p>
+          Drafts stay private to you until you post them. If you schedule a post, YORU publishes it at the time you chose, as you, under the same rules
+          as any other post. You are responsible for scheduled posts just as if you had posted them yourself, and you can edit or cancel them before
+          they go out.
+        </p>
 
         <h2>4. Community rules</h2>
         <p>YORU is for fun, fandom and roasting your friends, not for hurting people. Don&apos;t post or send anything that:</p>
@@ -49,6 +54,7 @@ export default function TermsPage() {
           <li>is sexual content involving anyone under 18 (we report this to authorities), or is sexually explicit or non-consensual intimate imagery;</li>
           <li>promotes self-harm, suicide, terrorism or violent extremism, or depicts graphic violence for shock;</li>
           <li>shares someone&apos;s private information (doxxing) or impersonates another person in a misleading way;</li>
+          <li>pretends to be YORU staff, an admin or the founder, for example by copying staff names, nameplates or badges;</li>
           <li>sells or promotes illegal goods or services, scams, spam, malware or phishing;</li>
           <li>infringes copyright, trademark or other rights, or breaks any law.</li>
         </ul>
@@ -76,37 +82,70 @@ export default function TermsPage() {
 
         <h2>8. The service</h2>
         <p>
-          YORU is free to use. We may change, add or remove features, and we may suspend or stop the service. We&apos;ll try to give notice of major
-          changes in the app. The Android app loads the live service, so it updates without reinstalling.
+          YORU is free to use. Posting, chatting, privacy and safety tools, and a free set of profile cosmetics are available to every member at no
+          charge. We may change, add or remove features, and we may suspend or stop the service. We&apos;ll try to give notice of major changes in
+          the app. The Android app loads the live service, so it updates without reinstalling.
         </p>
 
-        <h2>9. Ending your use</h2>
+        <h2>9. YORU Pro and profile cosmetics</h2>
+        <ul>
+          <li>
+            <b>Pro isn&apos;t for sale yet.</b> YORU Pro is an optional membership that is still being prepared. Purchases are not open, so nobody
+            can be charged for it today. Any price we mention is a plan, not an offer.
+          </li>
+          <li>
+            <b>Testing access.</b> Admins may give some members Pro for free so they can test it. Testing access costs nothing, can end at any time,
+            and doesn&apos;t create any right to keep Pro or to a future price.
+          </li>
+          <li>
+            <b>If we open paid Pro later,</b> we&apos;ll show the price, billing period, renewal and cancellation terms, and the payment provider
+            before you pay, and we&apos;ll update these Terms first. Your rights under consumer protection law will apply.
+          </li>
+          <li>
+            <b>Cosmetics are a license, not property.</b> Rings, banners, nameplates, badges, themes and other cosmetics are a personal,
+            non-transferable right to use them on YORU. They have no cash value and can&apos;t be sold, traded or exchanged. Rarity labels are
+            cosmetic and never mean limited supply. Some cosmetics are earned through milestones based on your own activity.
+          </li>
+          <li>
+            <b>When Pro ends,</b> Pro cosmetics go back to the default look. Your posts, drafts, collections and other content are never deleted
+            because Pro ended, and your saved choices come back if Pro returns.
+          </li>
+          <li>
+            <b>Pro never changes reach.</b> Pro doesn&apos;t make your posts more visible, and it doesn&apos;t affect moderation or safety decisions.
+          </li>
+          <li>
+            <b>Staff cosmetics.</b> A small set of cosmetics (for example the Founder and YORU Staff nameplates) identifies real YORU staff. They
+            can&apos;t be bought, earned or given to members, and they stop showing when someone is no longer staff.
+          </li>
+        </ul>
+
+        <h2>10. Ending your use</h2>
         <p>
           You can stop using YORU and delete your account at any time. We may suspend or end your access if you break these Terms, if required by law,
-          or to protect other members. Sections 3 (for content already shared), 6, 10 and 11 continue to apply after your account ends.
+          or to protect other members. Sections 3 (for content already shared), 6, 11 and 12 continue to apply after your account ends.
         </p>
 
-        <h2>10. Disclaimers</h2>
+        <h2>11. Disclaimers</h2>
         <p>
           YORU is provided &quot;as is&quot; and &quot;as available&quot;. To the extent allowed by law, we make no warranties of any kind, including
           that YORU will be uninterrupted, secure or error-free. Content on YORU comes from members and AI tools, not from us, and we are not
           responsible for it.
         </p>
 
-        <h2>11. Limitation of liability</h2>
+        <h2>12. Limitation of liability</h2>
         <p>
           To the extent allowed by law, we are not liable for any indirect, incidental, special, consequential or punitive damages, or any loss of
           data, profits or goodwill, arising from your use of YORU. Nothing in these Terms limits rights you have under consumer protection laws that
           can&apos;t be waived.
         </p>
 
-        <h2>12. Changes to these Terms</h2>
+        <h2>13. Changes to these Terms</h2>
         <p>
           We may update these Terms. We&apos;ll change the date above and announce significant changes in the app. If you keep using YORU after changes
           take effect, you accept the new Terms.
         </p>
 
-        <h2>13. Contact</h2>
+        <h2>14. Contact</h2>
         <p>
           Questions about these Terms? Use the contact form at <Link href="/support">yoru-social.vercel.app/support</Link>.
         </p>

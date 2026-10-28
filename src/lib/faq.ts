@@ -4,7 +4,30 @@ export const FAQ: { q: string; a: string }[] = [
     q: "What is YORU?",
     a: "YORU (夜, \"night\") is a social network for anime, manga, music, Vocaloid, gaming and art fans. Post, share stories, chat in groups and DMs, level up with nightly streaks, and roast your friends with the AI Menace.",
   },
-  { q: "Is it free?", a: "Yes. YORU is free, with no ads and no in-app purchases." },
+  {
+    q: "Is it free?",
+    a: "Yes. YORU is free, with no ads. Posting, chatting, privacy tools and a set of profile cosmetics are free for everyone. YORU Pro, an optional membership, is coming soon but can't be bought yet, so nobody is charged.",
+  },
+  {
+    q: "What is YORU Pro?",
+    a: "An optional membership with extra animated cosmetics (rings, banners, nameplates, badges, themes and effects) and more room in creator tools: up to 200 drafts and 50 scheduled posts (instead of 20 and 3), plus extra planner templates and analytics dashboards. Purchases aren't open yet. The intended price is CA$5.99 a month and isn't confirmed. Some members are testing Pro for free. Pro never changes who sees your posts.",
+  },
+  {
+    q: "Can I try cosmetics before using them?",
+    a: "Yes. Open YORU Pro and tap Try on. The preview stays on your device and isn't shown to anyone. Free and earned cosmetics can be equipped right away; others unlock with Pro or by reaching a milestone.",
+  },
+  {
+    q: "What are the Founder and Staff cosmetics?",
+    a: "A few cosmetics, like the Founder and YORU Staff nameplates, show that an account belongs to YORU's team. They can't be bought or earned and only appear on accounts that hold that role, so you can trust them. Pretending to be staff is against the rules.",
+  },
+  {
+    q: "How do scheduled posts work?",
+    a: "Save a draft, pick a date and time, and YORU posts it for you, as you, under the same rules as any post. Drafts are private until posted, and you can edit or cancel a scheduled post before it goes out.",
+  },
+  {
+    q: "Can people see who visited my profile?",
+    a: "No. YORU only counts visits as daily totals. Nobody, including you and admins, can see who visited a profile.",
+  },
   {
     q: "How do I join?",
     a: "Tap Join on the website or in the app, pick a username, and you're in. You must be 16 or older. If a member sent you an invite link, you can use that too.",

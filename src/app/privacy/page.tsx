@@ -41,6 +41,14 @@ export default function PrivacyPage() {
             group and direct messages, and your AI Menace chat history.
           </li>
           <li>
+            <b>Drafts and scheduled posts:</b> drafts you save in Draft Studio and posts you schedule, including the time you picked. They are
+            private to you until they are posted.
+          </li>
+          <li>
+            <b>Profile cosmetics and Pro settings:</b> the cosmetics you equip, your wishlist, and choices such as feed filters, muted words,
+            interest hub tags, dashboard layout and sound settings.
+          </li>
+          <li>
             <b>Safety and support:</b> reports you file, people you block, and messages you send through our contact form (including the email you
             give us there).
           </li>
@@ -52,13 +60,26 @@ export default function PrivacyPage() {
             points.
           </li>
           <li>
+            <b>Milestones:</b> Profile Evolution milestones are worked out from your own activity on YORU (for example posting streaks) and saved
+            with the date you earned them.
+          </li>
+          <li>
+            <b>Profile visit counts:</b> when a signed-in member opens your profile, we add one to a daily total for your profile. To count each
+            visitor only once a day, we keep a hashed key made from the visitor, your profile and the date. That key is deleted after about two
+            days and is never shown to anyone, including you and admins. You only see totals, never who visited.
+          </li>
+          <li>
+            <b>Your analytics</b> (reach, reactions, comments, visit totals) are calculated only from your own posts and profile, and only you can see
+            them. We don&apos;t make up or estimate numbers.
+          </li>
+          <li>
             <b>Technical data:</b> your IP address is used briefly in memory to limit login, sign-up and contact attempts. Our hosting provider
             records standard server logs (such as IP address, device and browser type, and pages requested) to operate and secure the service.
           </li>
           <li>
             <b>Cookies and local storage:</b> we use only the cookies needed to keep you signed in. Your device also stores display preferences
-            (theme, motion, sound, background effect, app color and dismissed announcements) locally. We do not use advertising or analytics
-            cookies.
+            (theme, motion, sound, background effect, app color and dismissed announcements) and your &quot;recently viewed&quot; cosmetics
+            locally. Trying on a cosmetic happens only on your device. We do not use advertising or analytics cookies.
           </li>
         </ul>
 
@@ -66,7 +87,10 @@ export default function PrivacyPage() {
         <ul>
           <li>To create and secure your account and keep you signed in.</li>
           <li>To show your profile and content to other YORU members, deliver messages and send notifications.</li>
-          <li>To run features you use: feeds, trending tags, leaderboards (only if you opt in), levels, streaks and the AI Menace.</li>
+          <li>
+            To run features you use: feeds, trending tags, leaderboards (only if you opt in), levels, streaks, milestones, profile cosmetics,
+            scheduled posts, your private analytics and the AI Menace.
+          </li>
           <li>To keep YORU safe: enforce our Terms, review reports, prevent spam and abuse, and apply limits such as mutes and bans.</li>
           <li>To answer your support, privacy and deletion requests.</li>
         </ul>
@@ -84,6 +108,12 @@ export default function PrivacyPage() {
             Community admins can see reported content and use moderation tools. People who operate YORU can access stored data when needed to run,
             secure or repair the service, or to respond to legal obligations.
           </li>
+          <li>
+            Cosmetics you equip (ring, banner, nameplate, badge, layout and featured milestone) and whether you have Pro are shown on your profile to
+            other members. Your milestone timeline is shown too unless you turn it off in the Pro hub. Your wishlist, drafts, scheduled posts,
+            settings and analytics are private to you.
+          </li>
+          <li>Staff cosmetics show that an account belongs to YORU staff. They are tied to the account&apos;s admin or founder role.</li>
           <li>If you block someone, you won&apos;t see each other&apos;s posts, comments or messages.</li>
         </ul>
 
@@ -98,7 +128,14 @@ export default function PrivacyPage() {
           on our own server instead.
         </p>
 
-        <h2>5. Service providers</h2>
+        <h2>5. Payments</h2>
+        <p>
+          YORU Pro can&apos;t be bought yet, and YORU doesn&apos;t collect any payment or card information. Members who test Pro get it for free
+          from an admin. If paid Pro opens later, we&apos;ll name the payment provider and update this policy before any payment is taken. Card
+          details would be handled by that provider, not stored by YORU.
+        </p>
+
+        <h2>6. Service providers</h2>
         <p>We don&apos;t sell or rent personal information. We share it only with providers that run YORU for us, under their own security and privacy terms:</p>
         <table>
           <thead>
@@ -131,13 +168,13 @@ export default function PrivacyPage() {
           operator (in which case this policy continues to apply).
         </p>
 
-        <h2>6. International transfers</h2>
+        <h2>7. International transfers</h2>
         <p>
           Our providers may store and process information in the United States and other countries, which may have different data protection laws
           than yours. We rely on their contractual safeguards for these transfers.
         </p>
 
-        <h2>7. How long we keep information</h2>
+        <h2>8. How long we keep information</h2>
         <ul>
           <li>We keep your account and content for as long as your account exists.</li>
           <li>
@@ -149,9 +186,13 @@ export default function PrivacyPage() {
             expire on their normal schedule.
           </li>
           <li>Stories expire from view after 24 hours. Support messages are kept as long as needed to handle your request.</li>
+          <li>
+            Drafts are kept until you post or delete them. Daily profile visit totals are kept while your account exists; the keys used to count
+            each visitor once are deleted after about two days.
+          </li>
         </ul>
 
-        <h2>8. Your choices and rights</h2>
+        <h2>9. Your choices and rights</h2>
         <ul>
           <li>
             <b>Access and correct:</b> view and edit your profile at any time. Ask us via the contact form for a copy of the personal data we hold
@@ -162,7 +203,8 @@ export default function PrivacyPage() {
             <Link href="/delete-account">yoru-social.vercel.app/delete-account</Link>.
           </li>
           <li>
-            <b>Control:</b> turn off personalized AI, being roasted, leaderboards and each type of notification in Settings; block or report anyone.
+            <b>Control:</b> turn off personalized AI, being roasted, leaderboards and each type of notification in Settings; hide your milestone
+            timeline and reset your look in the Pro hub; delete drafts and cancel scheduled posts at any time; block or report anyone.
           </li>
           <li>
             Depending on where you live (for example the EU, UK or California), you may also have rights to object to or restrict processing, to data
@@ -171,25 +213,25 @@ export default function PrivacyPage() {
           </li>
         </ul>
 
-        <h2>9. Security</h2>
+        <h2>10. Security</h2>
         <p>
           YORU uses encrypted HTTPS connections, hashed passwords, database row-level security so members can only read what they are allowed to,
           private file storage with short-lived links, and rate limits. No system is perfectly secure, so please use a unique password.
         </p>
 
-        <h2>10. Age requirement</h2>
+        <h2>11. Age requirement</h2>
         <p>
           YORU is for people aged 16 and older. We don&apos;t knowingly collect information from anyone under 16. If you believe someone under 16 has
           an account, contact us and we will delete it.
         </p>
 
-        <h2>11. Changes to this policy</h2>
+        <h2>12. Changes to this policy</h2>
         <p>
           We may update this policy as YORU changes. We&apos;ll update the date above and, for significant changes, announce them in the app before
           they take effect.
         </p>
 
-        <h2>12. Contact</h2>
+        <h2>13. Contact</h2>
         <p>
           Questions or requests: use the contact form at <Link href="/support">yoru-social.vercel.app/support</Link>
           {email ? (

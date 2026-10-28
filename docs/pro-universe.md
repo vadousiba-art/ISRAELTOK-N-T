@@ -245,3 +245,19 @@ transaction, after a full backup of every public table and function. Projects
 - pg_cron job `yoru-pro-publish` runs every minute and succeeds.
 
 The app was deployed to yoru-social.vercel.app and israeltoknt.vercel.app.
+
+## Staff cosmetics (migration 0010)
+
+Sixteen cosmetics that identify real YORU staff. They are separate from the 400-item catalog (`src/lib/pro/catalog/staff.ts`, `STAFF`), are never sold, earned or comp-granted, and never appear in the storefront for members.
+
+| Set | Who | Items |
+|---|---|---|
+| Founder's Throne (王座) | role `owner` only | Founder's Eclipse ring, Throne of Night banner, Founder nameplate, Founder's Seal badge, Founder's Night theme, Founder's Aura effect, Founder's Crown reaction, Founder's Hall chat |
+| The Night Watch (夜警) | role `admin` (and the owner) | Sentinel ring, The Night Watch banner, YORU Staff nameplate, Staff Shield badge, Watchtower theme, Watch Scan effect, Sentinel Pulse reaction, Watchtower Channel chat |
+
+- Unlock values `staff:owner` and `staff:admin`. `pro_staff_allows()` reads the live `profiles.role` (and refuses banned accounts), so ownership follows the role: demote someone and their staff look falls back to the default on the next read. The stored choice is kept with `active: false`.
+- Testers (complimentary Pro) do **not** get staff items; the staff rule runs before the tester rule in `pro_owns`.
+- Equipping a staff item without the role fails with `FORBIDDEN|That item is reserved for YORU staff.`
+- `get_my_pro()` returns `role`, which the shop uses to show a "Founder & staff" filter to staff only.
+- Migration 0010 is additive: it widens the `pro_catalog.unlock` check, inserts 16 rows, and replaces `pro_owns`, `pro_check_equip` and `get_my_pro` with the same signatures.
+- The Terms (section 9) forbid impersonating staff; the Trust Center explains that staff cosmetics are role-checked.

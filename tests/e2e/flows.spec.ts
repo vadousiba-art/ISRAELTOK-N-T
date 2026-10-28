@@ -1,5 +1,6 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 import cues from "../../src/lib/welcome/cues.json";
+import { CURRENT_RELEASE } from "../../src/lib/releases";
 
 // The login route allows 10 attempts per IP per minute; give each test login
 // its own address so the suite does not trip that limit.
@@ -319,7 +320,7 @@ test("a new member sees the welcome film once, and can skip and replay it", asyn
   await expect(short).toBeHidden();
   await page.getByRole("button", { name: "Replay" }).click();
   await page.getByRole("dialog", { name: "Explore YORU" }).getByRole("button", { name: /Read what's new instead/ }).click();
-  await expect(page.getByRole("dialog").filter({ hasText: "Version 2.0" })).toBeVisible();
+  await expect(page.getByRole("dialog").filter({ hasText: `Version ${CURRENT_RELEASE.version}` })).toBeVisible();
   await page.keyboard.press("Escape");
 });
 

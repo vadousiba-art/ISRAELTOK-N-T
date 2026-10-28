@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function TrustPage() {
   return (
     <PublicShell>
-      <LegalDoc title="Trust Center" updated="October 27, 2026">
+      <LegalDoc title="Trust Center" updated="October 28, 2026">
         <p>
           This page explains, in plain words, the safety and privacy tools YORU has today and how moderation works. It describes the
           real product; when something is not available yet, we say so. YORU has not had an independent security audit or certification.
@@ -42,6 +42,29 @@ export default function TrustPage() {
             <b>Your data</b>: no ads, no selling of data, no third-party analytics or tracking. You can delete your account and everything you
             posted at any time (Settings → Account, or <Link href="/delete-account">Delete account</Link>). Details are in the{" "}
             <Link href="/privacy">Privacy Policy</Link>.
+          </li>
+        </ul>
+
+        <h2>Profile cosmetics and YORU Pro</h2>
+        <ul>
+          <li>
+            <b>Ownership is checked on the server.</b> When you equip a ring, banner, nameplate or any other cosmetic, the database checks that you
+            own it. If you don&apos;t (for example Pro ended), other members see the default look instead.
+          </li>
+          <li>
+            <b>Try-ons never unlock anything.</b> Previewing a cosmetic happens only on your device and is never saved or shown to others.
+          </li>
+          <li>
+            <b>Staff cosmetics are role-checked.</b> Founder and YORU Staff cosmetics only show on accounts that currently hold that role, so a
+            Founder or Staff nameplate on a profile is a real signal. Copying them to pretend to be staff breaks the <Link href="/terms">Terms</Link>.
+          </li>
+          <li>
+            <b>Profile visits stay private.</b> You see daily totals of profile visits, never who visited. The short-lived key used to count each
+            visitor once a day is deleted after about two days.
+          </li>
+          <li>
+            <b>No pay-to-win.</b> Pro never changes who sees your posts or how moderation treats you. Rarity labels are cosmetic, there are no
+            loot boxes or countdown timers, and Pro can&apos;t be bought yet.
           </li>
         </ul>
 
