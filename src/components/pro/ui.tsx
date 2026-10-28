@@ -55,6 +55,7 @@ export function unlockText(i: Item, me?: MyPro) {
   if (i.unlock === "free") return "Free for everyone";
   if (i.unlock === "pro") return me?.membership.pro ? "Included with your Pro" : "Part of YORU Pro";
   const key = milestoneOf(i.unlock)!;
+  if (me?.membership.status === "comp" && i.cat !== "milestone" && !me.milestones[key]) return "Unlocked for testers (normally earned)";
   const m = item<MilestoneP>(`milestone.${key}`);
   return me?.milestones[key] ? `Earned: ${m?.name}` : `Earn ${m?.name}: ${m?.p.rule}`;
 }

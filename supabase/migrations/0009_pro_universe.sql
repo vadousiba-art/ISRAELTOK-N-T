@@ -603,6 +603,16 @@ grant all on public.pro_catalog, public.pro_equips, public.pro_milestones, publi
 -- Ownership
 -- ---------------------------------------------------------------------------
 
+-- Complimentary (admin-granted) Pro that is active right now.
+create or replace function public.pro_is_tester(p_user uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.entitlements e
+    where e.user_id = p_user and e.plan = 'pro' and e.status = 'active' and e.source = 'comp'
+      and e.starts_at <= now() and (e.ends_at is null or e.ends_at > now())
+  )
+$$;
+
 create or replace function public.pro_owns(p_user uuid, p_item text) returns boolean
 language sql stable security definer set search_path = public as $$
   select coalesce((
@@ -610,6 +620,10 @@ language sql stable security definer set search_path = public as $$
       when c.status = 'retired' then false
       when c.unlock = 'free' then true
       when c.unlock = 'pro' then public.is_pro(p_user)
+      -- Testers (members given complimentary Pro by an admin) can use every
+      -- cosmetic, including ones normally unlocked by a milestone. The
+      -- milestones themselves stay earned-only: they claim an achievement.
+      when c.cat <> 'milestone' and public.pro_is_tester(p_user) then true
       else exists (select 1 from public.pro_milestones m where m.user_id = p_user and m.key = substr(c.unlock, 11))
     end
     from public.pro_catalog c where c.id = p_item
@@ -1485,7 +1499,7 @@ begin
   end loop;
   -- internal: never callable by members
   foreach f in array array[
-    'pro_owns(uuid, text)', 'pro_effective(uuid, text)', 'pro_milestone_progress(uuid)', 'pro_sync_milestones(uuid)', 'pro_membership(uuid)', 'pro_check_equip(uuid, text, text)',
+    'pro_is_tester(uuid)', 'pro_owns(uuid, text)', 'pro_effective(uuid, text)', 'pro_milestone_progress(uuid)', 'pro_sync_milestones(uuid)', 'pro_membership(uuid)', 'pro_check_equip(uuid, text, text)',
     'pro_publish_due(int, text)'
   ] loop
     execute format('revoke execute on function public.%s from public, anon, authenticated', f);

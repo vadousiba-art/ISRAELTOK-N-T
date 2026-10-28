@@ -127,6 +127,12 @@ describe("ownership and equipping", () => {
     expect((await as<MyPro>(u.ben, "get_my_pro")).membership.status).toBe("comp");
   });
 
+  it("testers (complimentary Pro) can use milestone cosmetics, but not unearned milestones", async () => {
+    await as(u.ben, "pro_equip", { p_slot: "ring", p_item: "ring.celestial_orbit" });
+    await expect(as(u.ben, "pro_equip", { p_slot: "milestone", p_item: "milestone.eternal_night" })).rejects.toThrow(/Earn this one/);
+    await as(u.ben, "pro_equip", { p_slot: "ring", p_item: "ring.crimson_eclipse" });
+  });
+
   it("bundles equip only what you own and report the rest", async () => {
     const r = await as<{ skipped: string[] }>(u.cy, "pro_equip_many", {
       p: { ring: "ring.silver_moon", banner: "banner.moonlit_shrine", theme: "theme.silver_eclipse" },

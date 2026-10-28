@@ -95,5 +95,7 @@ describe("Pro catalog", () => {
     expect(owns(pro, { pro: true, milestones: [] })).toBe(true);
     expect(owns(earned, { pro: true, milestones: [] })).toBe(false);
     expect(owns(earned, { pro: false, milestones: ["first_night"] })).toBe(true);
+    expect(owns(earned, { pro: true, milestones: [], tester: true })).toBe(true);
+    expect(owns(ITEM_BY_ID["milestone.first_night"], { pro: true, milestones: [], tester: true })).toBe(false);
   });
 });

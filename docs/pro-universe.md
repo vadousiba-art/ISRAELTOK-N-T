@@ -42,6 +42,15 @@ has search, 20 category filters, ownership/Pro/earned/wishlist/experimental
 filters, rarity filters, collection pages with completion and "Try the look"
 / "Wear what I own", recently viewed, and a detail sheet for every item.
 
+### Testers
+
+Members given complimentary Pro by an admin (Admin → Pro → Grant Pro) are
+testers: they can use **every** cosmetic and tool in the catalog, including
+the items normally unlocked by milestones. The 20 milestones themselves stay
+earned-only, because showing one claims an achievement. When paid Pro opens,
+paying members get the Pro items and earn the milestone ones as usual.
+Experimental items still need the Preview Lab switch.
+
 ## 2. Catalog counts
 
 400 items, stable ids `category.slug` (e.g. `ring.crimson_eclipse`), 115 free

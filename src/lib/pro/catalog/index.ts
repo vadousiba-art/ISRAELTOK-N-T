@@ -43,9 +43,12 @@ export function milestoneOf(u: Unlock): MilestoneKey | null {
 
 // What a member can use. The server makes the same decision (pro_owns in 0009)
 // and is the one that counts; this only decides what the UI shows as locked.
-export function owns(i: Item, me: { pro: boolean; milestones: readonly string[] } | null | undefined): boolean {
+// Testers (complimentary Pro from an admin) also get milestone-unlocked
+// cosmetics; milestones themselves stay earned-only.
+export function owns(i: Item, me: { pro: boolean; milestones: readonly string[]; tester?: boolean } | null | undefined): boolean {
   if (i.unlock === "free") return true;
   if (!me) return false;
   if (i.unlock === "pro") return me.pro;
+  if (me.tester && i.cat !== "milestone") return true;
   return me.milestones.includes(milestoneOf(i.unlock)!);
 }
