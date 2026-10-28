@@ -230,3 +230,18 @@ existing tables (comments by author, reactions by user, bookmarks by post).
    first week.
 5. Real-device checks: Safari/iOS for themes and effects, the Android
    WebView for sounds (needs a tap first) and effects performance.
+
+## Production check (2026-10-28)
+
+Migration 0009 applied to the live database (`xxvyoksevysyyzyonbxg`) in one
+transaction, after a full backup of every public table and function. Projects
+2–6 hold no app tables and needed no change. Verified afterwards:
+
+- `pro_universe_version()` = 1; 400 catalog items.
+- Accounts, profiles, posts, messages, comments, reactions and entitlements
+  unchanged (9 / 10 / 22 / 15 / 8 / 20 / 2).
+- RLS on every new table; visitors can't call `get_my_pro`; members can't
+  run the publisher, call `pro_owns` or write `pro_equips` directly.
+- pg_cron job `yoru-pro-publish` runs every minute and succeeds.
+
+The app was deployed to yoru-social.vercel.app and israeltoknt.vercel.app.
