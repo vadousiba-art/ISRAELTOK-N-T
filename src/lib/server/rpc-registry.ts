@@ -152,7 +152,7 @@ export const RPC_SCHEMAS = {
     p_note: text(80).optional(),
   }),
   admin_revoke_invite: z.object({ p_code: text(40) }),
-  admin_set_role: z.object({ p_user_id: id, p_role: z.enum(["admin", "member"]) }),
+  admin_set_role: z.object({ p_user_id: id, p_role: z.enum(["admin", "moderator", "member"]) }),
   admin_set_banned: z.object({ p_user_id: id, p_banned: z.boolean() }),
   admin_set_verified: z.object({ p_user_id: id, p_verified: z.boolean() }),
   admin_resolve_report: z.object({ p_report_id: id, p_action: z.enum(["dismiss", "delete", "ban"]) }),
@@ -308,6 +308,31 @@ export const RPC_SCHEMAS = {
     p_sort: z.enum(["added_desc", "added_asc", "popular"]).nullable().optional(),
   }),
   get_collection_page: z.object({ p_id: id, p_offset: z.number().int().min(0).max(2000).optional(), p_limit: z.number().int().min(1).max(50).optional() }),
+
+  // Night Watch (migration 0011)
+  night_watch_version: none,
+  get_watch: z.object({
+    p_mode: z.enum(["for_you", "latest"]).optional(),
+    p_offset: z.number().int().min(0).max(2000).optional(),
+    p_limit: z.number().int().min(1).max(20).optional(),
+  }),
+  get_interest_feed: z.object({ p_before: ts, p_limit: z.number().int().min(1).max(50).optional() }),
+  get_my_standing: none,
+  submit_appeal: z.object({ p_event_id: id, p_body: text(1000) }),
+  nw_dashboard: none,
+  nw_queue: z.object({
+    p_view: z.enum(["open", "held", "reports", "auto", "reviewed", "all"]).optional(),
+    p_limit: z.number().int().min(1).max(200).optional(),
+  }),
+  nw_review: z.object({ p_event_id: id, p_decision: z.enum(["remove", "restore", "dismiss"]), p_strike: z.boolean().optional(), p_note: z.string().max(500).optional() }),
+  nw_appeals: z.object({ p_status: z.enum(["open", "granted", "denied", "all"]).optional() }),
+  nw_decide_appeal: z.object({ p_appeal_id: id, p_grant: z.boolean(), p_note: z.string().max(500).optional() }),
+  nw_revoke_strike: z.object({ p_strike_id: id }),
+  nw_mute: z.object({ p_user_id: id, p_minutes: z.number().int().min(0).max(43200) }),
+  nw_member_file: z.object({ p_user_id: id }),
+  nw_get_config: none,
+  nw_set_config: z.object({ p: z.record(z.string(), z.unknown()) }),
+  nw_test: z.object({ p_text: z.string().min(1).max(2000) }),
 } as const;
 
 export type RpcName = keyof typeof RPC_SCHEMAS;
@@ -329,4 +354,6 @@ export const READ_RPCS: ReadonlySet<RpcName> = new Set<RpcName>([
   "get_collection", "get_my_themes", "get_my_creator_application", "admin_creator_queue", "admin_pro_members",
   "admin_report_flags", "get_welcome_state",
   "pro_universe_version", "pro_get_drafts", "get_creator_analytics", "get_feed_preset", "get_hub", "get_collection_page",
+  "night_watch_version", "get_watch", "get_interest_feed", "get_my_standing", "nw_dashboard", "nw_queue", "nw_appeals",
+  "nw_member_file", "nw_get_config", "nw_test",
 ]);

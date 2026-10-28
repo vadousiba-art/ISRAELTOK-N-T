@@ -25,6 +25,14 @@ export const FAQ: { q: string; a: string }[] = [
     a: "Save a draft, pick a date and time, and YORU posts it for you, as you, under the same rules as any post. Drafts are private until posted, and you can edit or cancel a scheduled post before it goes out.",
   },
   {
+    q: "How does moderation work?",
+    a: "Night Watch, YORU's automated moderation, checks new posts, comments and stories against the community rules. It can refuse a post, hold it for a moderator, or put a screen over graphic content. Breaking a rule can earn a strike (warning, then 24-hour, 7-day and 30-day mutes); strikes expire after 90 days. Bans are always decided by a person. DMs are only checked if someone reports them.",
+  },
+  {
+    q: "What is Account Standing?",
+    a: "A page (menu → Account standing) that shows your strikes, every moderation decision about your content and why, and lets you appeal any decision once within 30 days. Notices also arrive from the official YORU account in your inbox.",
+  },
+  {
     q: "Can people see who visited my profile?",
     a: "No. YORU only counts visits as daily totals. Nobody, including you and admins, can see who visited a profile.",
   },

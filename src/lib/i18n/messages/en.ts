@@ -18,6 +18,15 @@ const en = {
   "nav.pro": "YORU Pro",
   "nav.trust": "Trust Center",
   "nav.whatsNew": "What's new",
+  "nav.watch": "Watch",
+  "nav.inbox": "Inbox",
+  "nav.standing": "Account standing",
+  "nav.watchtower": "Watchtower",
+  "nav.more": "More",
+  "nav.create": "Create",
+  "feed.forYou": "For You",
+  "feed.latest": "Latest",
+  "feed.interests": "Interests",
 
   // common
   "common.save": "Save",

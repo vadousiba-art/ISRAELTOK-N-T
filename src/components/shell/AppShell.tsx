@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
+import clsx from "clsx";
 import { useMe } from "@/lib/client/hooks";
 import { ApiError } from "@/lib/client/api";
 import { LiveProvider } from "@/components/providers/LiveProvider";
@@ -55,6 +56,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
   }, [error, router, pathname]);
 
+  // Watchtower and the inbox use the extra width instead of the right rail.
+  const wide = pathname.startsWith("/admin");
   const openComposer = useCallback((opts?: ComposerOpts) => setComposer(opts ?? {}), []);
   const openStoryComposer = useCallback(() => setStoryOpen(true), []);
   const openDrawer = useCallback(() => setDrawer(true), []);
@@ -89,9 +92,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </a>
           </div>
         )}
-        <div className="relative z-[1] mx-auto flex w-full max-w-[1280px] justify-center gap-6 lg:px-4">
+        <div className="relative z-[1] mx-auto flex w-full max-w-[1320px] justify-center gap-6 lg:px-4 xl:gap-10">
           <SideNav />
-          <div className="w-full min-w-0 max-w-[640px]">
+          <div className={clsx("w-full min-w-0", wide ? "max-w-[1040px]" : "max-w-[620px]")}>
             <Header />
             <div className="px-3 sm:px-4">
               <AnnouncementBanner />
@@ -103,13 +106,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.18 }}
-                className="px-3 pb-32 sm:px-4 lg:pb-12"
+                className="px-3 pb-28 sm:px-4 lg:pb-12 lg:pt-5"
               >
                 {children}
               </motion.main>
             </AnimatePresence>
           </div>
-          <RightRail />
+          {!wide && <RightRail />}
         </div>
         <BottomNav />
         <Drawer open={drawer} onClose={() => setDrawer(false)} />

@@ -16,7 +16,7 @@ async function loginAs(page: Page, name: RegExp, { welcome = false } = {}) {
   await page.goto("/login");
   await page.getByRole("button", { name }).first().click();
   await page.waitForURL("**/");
-  await expect(page.getByText("What's on your mind?")).toBeVisible();
+  await expect(page.getByRole("tablist", { name: "Feed" })).toBeVisible();
 }
 
 test.describe.configure({ mode: "serial" });
@@ -33,14 +33,14 @@ test("home feed matches the seeded mockup", async ({ page }) => {
   await expect(first).toContainText("Alberta version of a war criminal");
   await expect(first).toContainText("47");
   await expect(page.locator("article").nth(1)).toContainText("ROAST OF THE DAY");
-  await expect(page.getByRole("button", { name: "Add story" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Notifications, 3 unread/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Add to your story" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Activity, 3 unread/ })).toBeVisible();
 });
 
 test("create a post, like it, comment on it", async ({ page }) => {
   await loginAs(page, /Ari/);
   const text = `e2e post ${Date.now()} #testing`;
-  await page.getByRole("button", { name: "Create post" }).click();
+  await page.getByRole("button", { name: "Create", exact: true }).click();
   await page.getByLabel("Post text").fill(text);
   await page.getByRole("button", { name: "Post", exact: true }).click();
   const card = page.locator("article", { hasText: text });
@@ -83,7 +83,7 @@ test("image uploads are validated, stored and served to members", async ({ page 
 
 test("polls can be created and voted on", async ({ page }) => {
   await loginAs(page, /Ari/);
-  await page.getByRole("button", { name: "Create post" }).click();
+  await page.getByRole("button", { name: "Create", exact: true }).click();
   await page.getByRole("button", { name: "Poll", exact: true }).click();
   const q = `Which is worse? ${Date.now()}`;
   await page.getByLabel("Post text").fill(q);
@@ -146,7 +146,7 @@ test("admin invites a new member who can join and post", async ({ page, browser 
   await guest.getByRole("checkbox").check();
   await guest.getByRole("button", { name: "Join YORU" }).click();
   await guest.waitForURL("**/");
-  await expect(guest.getByText("What's on your mind?")).toBeVisible();
+  await expect(guest.getByRole("tablist", { name: "Feed" })).toBeVisible();
   await guest.goto(`/u/${handle}`);
   await expect(guest.getByRole("heading", { name: /Newbie/ })).toBeVisible();
   await ctx.close();
@@ -165,7 +165,7 @@ test("nightly check-in grows the streak and XP", async ({ page }) => {
 
 test("spoilers stay hidden until tapped", async ({ page }) => {
   await loginAs(page, /Zach/);
-  await page.getByRole("button", { name: "Create post" }).click();
+  await page.getByRole("button", { name: "Create", exact: true }).click();
   await page.getByLabel("Post text").fill(`ending recap ||the villain wins ${Date.now()}||`);
   await page.getByRole("button", { name: "Post", exact: true }).click();
   const spoiler = page.getByRole("button", { name: "Spoiler, tap to reveal" }).first();
@@ -177,6 +177,9 @@ test("spoilers stay hidden until tapped", async ({ page }) => {
 test("admins run announcements and quiet mode from site controls", async ({ page, browser }) => {
   await loginAs(page, /Ari/);
   await page.goto("/admin");
+  await expect(page.getByRole("heading", { name: "Watchtower" })).toBeVisible();
+  await expect(page.getByText("Night Watch is on")).toBeVisible();
+  await page.getByRole("tab", { name: "Stats" }).click();
   await expect(page.getByText("Active today")).toBeVisible();
   await page.getByRole("tab", { name: "Controls" }).click();
   await page.getByLabel("Announcement text").fill("Movie night Friday 9pm");
@@ -191,7 +194,7 @@ test("admins run announcements and quiet mode from site controls", async ({ page
   await loginAs(member, /Tyler/);
   await expect(member.getByRole("status").filter({ hasText: "Movie night Friday 9pm" })).toBeVisible();
   await expect(member.getByText(/Quiet mode: only admins can post/)).toBeVisible();
-  await member.getByRole("button", { name: "Create post" }).click();
+  await member.getByRole("button", { name: "Create", exact: true }).click();
   await member.getByLabel("Post text").fill("can I post?");
   await member.getByRole("button", { name: "Post", exact: true }).click();
   await expect(member.getByText(/YORU is in quiet mode right now/)).toBeVisible();
@@ -239,7 +242,7 @@ test("anyone can sign up without an invite, and can delete their account", async
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "Join YORU" }).click();
   await page.waitForURL("**/");
-  await expect(page.getByText("What's on your mind?")).toBeVisible();
+  await expect(page.getByRole("tablist", { name: "Feed" })).toBeVisible();
 
   await page.goto("/settings");
   await page.getByRole("button", { name: "Delete my account" }).click();
@@ -271,7 +274,7 @@ test("public pages work signed out and the contact form reaches the admin inbox"
 
   await loginAs(page, /Ari/);
   await page.goto("/admin");
-  await page.getByRole("tab", { name: "Inbox" }).click();
+  await page.getByRole("tab", { name: "Support" }).click();
   await expect(page.getByText("The sakura effect is too pretty.")).toBeVisible();
 });
 
@@ -305,7 +308,7 @@ test("a new member sees the welcome film once, and can skip and replay it", asyn
 
   // Remembered: not shown again after a reload.
   await page.reload();
-  await expect(page.getByText("What's on your mind?")).toBeVisible();
+  await expect(page.getByRole("tablist", { name: "Feed" })).toBeVisible();
   await page.waitForTimeout(2000);
   await expect(page.getByRole("dialog", { name: "Enter the Night" })).toBeHidden();
 
@@ -332,7 +335,7 @@ test("if the film can't load, the welcome falls back to readable highlights", as
   await expect(film.getByRole("alert")).toContainText("YORU Pro is in development");
   await film.getByRole("button", { name: /Enter YORU/ }).click();
   await expect(film).toBeHidden();
-  await expect(page.getByText("What's on your mind?")).toBeVisible();
+  await expect(page.getByRole("tablist", { name: "Feed" })).toBeVisible();
 });
 
 test("captions follow the member's language", async ({ page }) => {
@@ -405,7 +408,7 @@ test("posts can be saved into a named collection", async ({ page }) => {
   await loginAs(page, /Zach/);
   const card = page.locator("article").first();
   const snippet = ((await card.locator("p").first().textContent()) ?? "").trim().slice(0, 24);
-  await card.getByRole("button", { name: "More actions" }).click();
+  await card.getByRole("button", { name: "More options" }).click();
   await page.getByRole("menuitem", { name: "Add to collection" }).click();
   const name = `Best of ${Date.now() % 10000}`;
   await page.getByLabel("Name", { exact: true }).fill(name);
@@ -572,4 +575,60 @@ test("the Lab, hub, hubs and feed presets load", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /Anime Central/ })).toBeVisible();
   await page.goto("/pro/feeds?preset=feed.image_focus");
   await expect(page.getByText("Previewing the first 5 posts. Using this preset is part of YORU Pro.")).toBeVisible();
+});
+
+// ---------------------------------------------------------------- Night Watch
+
+async function postAs(page: Page, text: string) {
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await page.getByLabel("Post text").fill(text);
+  await page.getByRole("button", { name: "Post", exact: true }).click();
+}
+
+test("Night Watch refuses slurs however they're spelled, and the member can appeal from Account Standing", async ({ page }) => {
+  await loginAs(page, /Zach/);
+  await postAs(page, "you absolute f4gg0t");
+  await expect(page.getByText(/breaks our hate speech rule/)).toBeVisible();
+  await page.goto("/standing");
+  await expect(page.getByText("One active strike. Nothing is limited.")).toBeVisible();
+  await page.getByRole("button", { name: "Appeal" }).first().click();
+  await page.getByPlaceholder("Why should this be reversed?").fill("I was quoting someone who said it to me.");
+  await page.getByRole("button", { name: "Send appeal" }).click();
+  await expect(page.getByText(/Appeal (in review|granted|denied)/)).toBeVisible();
+
+  // The notice arrives from the official account, which can't be replied to.
+  await page.goto("/chat");
+  await page.getByRole("link", { name: /YORU.*Official/ }).click();
+  await expect(page.getByText(/breaks? our hate speech rule|broke our hate speech rule/).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Account Standing" })).toBeVisible();
+  await expect(page.getByLabel("Message")).toHaveCount(0);
+});
+
+test("held posts stay private until a moderator reviews them in Watchtower", async ({ page, browser }) => {
+  await loginAs(page, /Lucas/);
+  const text = `kys bro ${Date.now()}`;
+  await postAs(page, text);
+  await expect(page.locator("article", { hasText: text }).getByText("Under review.")).toBeVisible();
+
+  const ctx = await browser.newContext();
+  const admin = await ctx.newPage();
+  await loginAs(admin, /Ari/);
+  await admin.goto("/admin");
+  await admin.getByRole("tab", { name: "Queue" }).click();
+  await admin.getByRole("button", { name: new RegExp(text) }).click();
+  await admin.getByRole("button", { name: /Restore/ }).click();
+  await expect(admin.getByText("Restored and the member was told.")).toBeVisible();
+  await ctx.close();
+
+  await page.reload();
+  await expect(page.locator("article", { hasText: text }).getByText("Under review.")).toHaveCount(0);
+});
+
+test("Watch opens full screen and explains when there are no videos yet", async ({ page }) => {
+  await loginAs(page, /Ari/);
+  await page.goto("/watch");
+  await expect(page.getByRole("tab", { name: "For You" })).toBeVisible();
+  await expect(page.getByText("No videos yet")).toBeVisible();
+  await page.getByRole("button", { name: "Back" }).click();
+  await expect(page.getByRole("tablist", { name: "Feed" })).toBeVisible();
 });

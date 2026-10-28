@@ -105,8 +105,9 @@ export default function PrivacyPage() {
           <li>YORU is members-only: posts, comments, profiles and stories are visible to signed-in YORU members, not to the public web.</li>
           <li>Direct messages and private group chats are visible only to the people in that conversation.</li>
           <li>
-            Community admins can see reported content and use moderation tools. People who operate YORU can access stored data when needed to run,
-            secure or repair the service, or to respond to legal obligations.
+            Admins and moderators (members of the YORU team) can see reported content, content held for review and moderation records in
+            Watchtower. A reported direct or group message is shown to them; unreported messages are not. People who operate YORU can access
+            stored data when needed to run, secure or repair the service, or to respond to legal obligations.
           </li>
           <li>
             Cosmetics you equip (ring, banner, nameplate, badge, layout and featured milestone) and whether you have Pro are shown on your profile to
@@ -126,6 +127,21 @@ export default function PrivacyPage() {
           Members are only roasted by others or picked for &quot;Roast of the Day&quot; if they turn on &quot;Let others roast me&quot;. Under its
           commercial terms, Anthropic does not use these API inputs to train its models. If the AI is unavailable, an offline joke generator runs
           on our own server instead.
+        </p>
+
+        <h3>Automated moderation (Night Watch)</h3>
+        <p>
+          Every new post, comment and story is checked by automated rules that run in our own database (for example slurs, scams, other
+          people&apos;s phone numbers and spam floods). When AI review is turned on, the text and any image are also sent to Anthropic&apos;s Claude
+          API before they are posted, to check them against our rules; the same happens to content someone reports, including a reported direct
+          or group message, and to the content and explanation in an appeal. Unreported messages are never sent for moderation. Under its
+          commercial terms Anthropic does not use these inputs to train its models.
+        </p>
+        <p>
+          We keep a record of each moderation decision (the rule, the decision, the reason, and an excerpt of up to 600 characters) and any
+          strikes. You can see the decisions about you in Account Standing. Closed records are deleted after a year; strikes a year after they
+          expire. When a file is removed, we keep its fingerprint (a one-way SHA-256 hash, not the file) so the same file can&apos;t be uploaded
+          again. If a post suggests you might be at risk, Night Watch sends you a private message with free helplines; it doesn&apos;t punish you.
         </p>
 
         <h2>5. Payments</h2>
@@ -158,8 +174,8 @@ export default function PrivacyPage() {
             </tr>
             <tr>
               <td>Anthropic</td>
-              <td>AI comedy features (only when used)</td>
-              <td>The text described in section 4</td>
+              <td>AI comedy features (only when used) and automated moderation (when turned on)</td>
+              <td>The text and images described in section 4</td>
             </tr>
           </tbody>
         </table>
@@ -186,6 +202,7 @@ export default function PrivacyPage() {
             expire on their normal schedule.
           </li>
           <li>Stories expire from view after 24 hours. Support messages are kept as long as needed to handle your request.</li>
+          <li>Moderation records are deleted a year after the case is closed; strikes a year after they expire. Content removed by moderation is hidden, not erased, so it can be restored after an appeal or kept as evidence where the law requires.</li>
           <li>
             Drafts are kept until you post or delete them. Daily profile visit totals are kept while your account exists; the keys used to count
             each visitor once are deleted after about two days.

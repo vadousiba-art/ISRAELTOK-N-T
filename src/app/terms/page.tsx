@@ -62,9 +62,30 @@ export default function TermsPage() {
 
         <h2>5. Reporting, blocking and moderation</h2>
         <p>
-          Use the ••• menu on any post, comment, story, message or profile to report or block. Admins may remove content, mute, suspend or ban accounts,
-          and limit features (for example quiet mode or slow mode) when needed to keep YORU safe, with or without notice. Admin actions are logged. If
-          you think we got something wrong, contact us through the <Link href="/support">contact form</Link>.
+          Use the ••• menu on any post, comment, story, message or profile to report or block. Admins and moderators may remove content, mute, suspend
+          or ban accounts, and limit features (for example quiet mode or slow mode) when needed to keep YORU safe, with or without notice. Staff actions
+          are logged.
+        </p>
+        <p>
+          <b>Automated moderation (Night Watch).</b> New posts, comments and stories are checked automatically against these rules before or shortly
+          after they appear. Night Watch may refuse to post something, hold it for a moderator to review, show it behind a sensitive-content screen,
+          or remove it. Direct and group messages are only checked when someone reports them. Automated systems can make mistakes, so:
+        </p>
+        <ul>
+          <li>Every decision about your content is listed in Account Standing, with the rule it was based on, and you&apos;ll get a notice from the official YORU account.</li>
+          <li>
+            Breaking a rule can earn a strike. Strikes lead to a warning, then a 24-hour mute, then a 7-day mute, then a 30-day mute. Strikes expire
+            after 90 days. Spam limits (like posting the same thing twice) don&apos;t give strikes.
+          </li>
+          <li>Bans are never automatic. A person decides, usually after four active strikes or a child-safety violation.</li>
+          <li>
+            You can appeal any decision once, within 30 days, from Account Standing. An appeal may get an automated second opinion; when that isn&apos;t
+            clear, a person reviews it.
+          </li>
+          <li>Sexual content involving minors is removed, kept as evidence and reported to the authorities.</li>
+        </ul>
+        <p>
+          If you think we got something else wrong, contact us through the <Link href="/support">contact form</Link>.
         </p>
 
         <h2>6. AI features</h2>

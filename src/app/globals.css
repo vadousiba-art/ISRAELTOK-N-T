@@ -152,6 +152,11 @@ body {
   box-shadow: var(--shadow);
 }
 
+/* Unseen stories: the YORU ring (member color into ember and violet). */
+.story-ring-yoru {
+  background: conic-gradient(from 210deg, var(--brand), #f97316, #e11d74, #8b5cf6, var(--brand));
+}
+
 .ring-gradient {
   background: conic-gradient(from 200deg, var(--ring-a), var(--ring-b), var(--ring-a));
 }
