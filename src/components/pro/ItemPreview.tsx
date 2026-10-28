@@ -73,7 +73,7 @@ export function chatBackground(c: ChatP) {
 
 function ChatSwatch({ c, big }: { c: ChatP; big?: boolean }) {
   return (
-    <div className={clsx("flex h-full w-full flex-col justify-center gap-1.5 p-3", big && "gap-2 p-5")} style={{ background: chatBackground(c) }}>
+    <div className={clsx("flex h-full w-full flex-col justify-center gap-1.5 p-3", big && "gap-2 p-5")} data-chat-theme="preview" style={{ background: chatBackground(c), "--chat-me": c.me, "--chat-them": c.them } as React.CSSProperties}>
       <div className="max-w-[75%] self-start rounded-2xl rounded-bl-md px-3 py-1.5 text-xs" style={{ background: c.them, color: c.themInk }}>
         still up?
       </div>

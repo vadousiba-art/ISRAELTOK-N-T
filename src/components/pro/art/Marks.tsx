@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import clsx from "clsx";
 import type { BadgeP, CollectionP, MilestoneP, NameplateP } from "@/lib/pro/catalog";
 
@@ -36,25 +37,44 @@ const SHAPES: Record<BadgeP["shape"], string> = {
   prism: "M20,3 L37,35 H3 Z",
 };
 
-export function BadgeArt({ p, size = 28, title }: { p: BadgeP; size?: number; title?: string }) {
+// Badges glow, catch a moving highlight and give their glyph a small beat.
+const SPIN = new Set<BadgeP["shape"]>(["coin", "token", "orbit"]);
+export function BadgeArt({ p, size = 28, title, still }: { p: BadgeP; size?: number; title?: string; still?: boolean }) {
+  const uid = useId().replace(/:/g, "");
+  const clip = `${uid}c`;
   return (
-    <svg viewBox="0 0 40 40" width={size} height={size} role={title ? "img" : undefined} aria-label={title} aria-hidden={title ? undefined : true} className="shrink-0">
-      <path d={SHAPES[p.shape]} fill={p.b} stroke={p.a} strokeWidth="2" strokeLinejoin="round" />
-      {p.shape === "orbit" && <ellipse cx="20" cy="20" rx="17" ry="7" fill="none" stroke={p.a} strokeWidth="1.4" transform="rotate(-25 20 20)" />}
-      {(p.shape === "token" || p.shape === "coin") && <circle cx="20" cy="20" r="13.5" fill="none" stroke={p.a} strokeWidth="1" strokeOpacity="0.6" />}
-      <text x="20" y="21" fontSize={p.glyph.length > 1 ? 11 : 15} textAnchor="middle" dominantBaseline="central" fill={p.a} fontWeight="800">
-        {p.glyph}
-      </text>
+    <svg viewBox="-4 -4 48 48" width={size} height={size} role={title ? "img" : undefined} aria-label={title} aria-hidden={title ? undefined : true}
+      className={clsx("shrink-0 overflow-visible", (still ?? size < 24) && "pro-still")}>
+      <defs>
+        <clipPath id={clip}><path d={SHAPES[p.shape]} /></clipPath>
+      </defs>
+      <path className="pr a-breathe" d={SHAPES[p.shape]} fill="none" stroke={p.a} strokeWidth="3" opacity="0.35" style={{ filter: `blur(1.5px)` }} />
+      <g className={clsx("pr", SPIN.has(p.shape) ? "a-sway" : "a-bob")} style={{ "--d": "3.6s" } as React.CSSProperties}>
+        <path d={SHAPES[p.shape]} fill={p.b} stroke={p.a} strokeWidth="2" strokeLinejoin="round" />
+        {p.shape === "orbit" && <ellipse className="pr a-rot" cx="20" cy="20" rx="17" ry="7" fill="none" stroke={p.a} strokeWidth="1.4" transform="rotate(-25 20 20)" style={{ "--d": "8s" } as React.CSSProperties} />}
+        {(p.shape === "token" || p.shape === "coin") && <circle cx="20" cy="20" r="13.5" fill="none" stroke={p.a} strokeWidth="1" strokeOpacity="0.6" strokeDasharray="3 2" className="pr a-rot" style={{ "--d": "14s" } as React.CSSProperties} />}
+        <g clipPath={`url(#${clip})`}>
+          <rect className="pr a-sheen-b" x="-14" y="-6" width="10" height="52" fill="#fff" opacity="0.35" style={{ "--d": "3.8s" } as React.CSSProperties} />
+        </g>
+        <text className="pr a-pop" x="20" y="21" fontSize={p.glyph.length > 1 ? 11 : 15} textAnchor="middle" dominantBaseline="central" fill={p.a} fontWeight="800" style={{ "--d": "4s" } as React.CSSProperties}>
+          {p.glyph}
+        </text>
+      </g>
     </svg>
   );
 }
 
+// Earned emblems turn slowly and glow; unearned ones stay grey and still.
 export function MilestoneEmblem({ p, earned, size = 56 }: { p: MilestoneP; earned: boolean; size?: number }) {
   return (
-    <svg viewBox="0 0 60 60" width={size} height={size} aria-hidden className={clsx("shrink-0", !earned && "opacity-45 grayscale")}>
+    <svg viewBox="0 0 60 60" width={size} height={size} aria-hidden className={clsx("shrink-0 overflow-visible", !earned && "pro-still opacity-45 grayscale")}>
+      {earned && <circle className="pr a-breathe" cx="30" cy="30" r="28" fill="none" stroke={p.a} strokeWidth="3" opacity="0.4" style={{ filter: "blur(2px)" }} />}
       <circle cx="30" cy="30" r="27" fill={p.b} stroke={p.a} strokeWidth="2.5" />
-      <circle cx="30" cy="30" r="22" fill="none" stroke={p.a} strokeOpacity="0.4" strokeWidth="1" strokeDasharray={earned ? undefined : "2 3"} />
-      <text x="30" y="31" fontSize={p.emblem.length > 1 ? 14 : 22} textAnchor="middle" dominantBaseline="central" fill={p.a} fontWeight="800">
+      <circle className="pr a-rot" cx="30" cy="30" r="22" fill="none" stroke={p.a} strokeOpacity="0.5" strokeWidth="1" strokeDasharray={earned ? "6 3" : "2 3"} style={{ "--d": "16s" } as React.CSSProperties} />
+      {earned && [0, 120, 240].map((d, i) => (
+        <circle key={d} className="pr a-twinkle" cx={30 + 24.5 * Math.cos((d * Math.PI) / 180)} cy={30 + 24.5 * Math.sin((d * Math.PI) / 180)} r="1.2" fill="#fff" style={{ animationDelay: `${i * 0.7}s` }} />
+      ))}
+      <text className="pr a-bob" x="30" y="31" fontSize={p.emblem.length > 1 ? 14 : 22} textAnchor="middle" dominantBaseline="central" fill={p.a} fontWeight="800">
         {p.emblem}
       </text>
     </svg>
@@ -85,7 +105,8 @@ export function coverBackground(p: CollectionP) {
 export function CoverArt({ p, emoji, className, children }: { p: CollectionP; emoji?: string; className?: string; children?: React.ReactNode }) {
   return (
     <div className={clsx("relative flex items-center justify-center overflow-hidden", className)} style={{ background: coverBackground(p) }}>
-      <span className="text-3xl drop-shadow" aria-hidden>{emoji ?? p.emoji}</span>
+      <span aria-hidden className="pr a-sheen-w pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-white/10" style={{ "--d": "5s" } as React.CSSProperties} />
+      <span className="pr a-bob text-3xl drop-shadow" aria-hidden>{emoji ?? p.emoji}</span>
       {children}
     </div>
   );
