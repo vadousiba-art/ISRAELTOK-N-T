@@ -1301,8 +1301,12 @@ function renderFrame(t) {
 function renderCover() {
   renderFrame(11.95);
   g.save();
-  g.fillStyle = "rgba(0,0,0,0.55)";
-  g.fillRect(0, 1240, W, 520);
+  const band = g.createLinearGradient(0, 1180, 0, 1760);
+  band.addColorStop(0, "rgba(5,5,6,0)");
+  band.addColorStop(0.2, "rgba(5,5,6,0.92)");
+  band.addColorStop(1, "rgba(5,5,6,0.96)");
+  g.fillStyle = band;
+  g.fillRect(0, 1180, W, 740);
   g.textAlign = "center";
   g.textBaseline = "middle";
   g.fillStyle = "#fff";
