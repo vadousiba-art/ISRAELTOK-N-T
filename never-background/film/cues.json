@@ -1,0 +1,64 @@
+{
+  "_comment": "YORU — You were never a background character. 30 fps, 25 s. Picture (main.js) and sound (audio/synth.py) both read this file. Times in seconds.",
+  "fps": 30,
+  "duration": 25.0,
+  "bpm": 100,
+
+  "hook": [0.0, 3.3],
+  "crowdPush": [0.0, 2.45],
+  "eyeIn": [2.2, 2.42],
+  "line1": 0.15,
+  "line2": [1.55, 1.95, 2.35],
+  "crimsonLine": 2.6,
+  "piano1": 2.6,
+
+  "scroll": [3.3, 4.5],
+  "loved": [3.62, 5.45],
+  "favCard": 3.55,
+  "trendWave": [3.85, 4.4],
+  "interests": [4.5, 4.83, 5.16],
+
+  "typing": [5.5, 6.9],
+  "understood": [5.6, 6.85],
+  "typeText": [5.72, 6.3],
+  "hesitate": [6.3, 6.6],
+  "deleteText": [6.6, 6.88],
+
+  "group": [6.9, 7.5],
+  "sometimes": [7.0, 8.0],
+  "send": [7.5, 8.05],
+  "sendTap": 7.62,
+  "sink": [7.7, 8.05],
+
+  "alone": [8.05, 9.0],
+  "nobody": [8.12, 8.98],
+  "hush": [8.72, 9.0],
+
+  "close": [9.0, 9.55],
+  "blink": [9.08, 9.36],
+  "impact": 9.55,
+  "shatter": [9.6, 10.35],
+  "silhouettes": [9.85, 10.3],
+  "individuals": [10.25, 10.4, 10.55, 10.7, 10.85, 11.0],
+
+  "lookUp": [11.1, 12.35],
+  "share": [12.35, 13.4],
+  "replies": [12.55, 12.75, 12.95],
+  "boring": [12.5, 13.95],
+
+  "ui": [13.4, 15.6],
+  "uiShots": [13.4, 14.05, 14.55, 15.0],
+  "yourPeople": [14.1, 15.6],
+
+  "logo": [15.6, 17.0],
+  "logoLines": [15.6, 16.05],
+  "logoIn": 16.0,
+
+  "final": [17.0, 20.0],
+  "someone": [17.35, 19.95],
+  "question": [20.0, 22.7],
+  "questionIn": 20.05,
+  "questionHold": [20.45, 22.6],
+  "end": [22.7, 25.0],
+  "tagline": 23.15
+}

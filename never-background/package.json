@@ -1,0 +1,11 @@
+{
+  "name": "yoru-never-background",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "capture": "node capture/capture.mjs",
+    "audio": "python3 film/audio/synth.py",
+    "preview": "node film/render.mjs --preview",
+    "render": "node film/render.mjs"
+  }
+}
