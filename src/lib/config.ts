@@ -184,6 +184,21 @@ export const aiConfig = () => ({
   burstLimit: Number(env("AI_BURST_LIMIT_PER_MINUTE") ?? 6),
 });
 
+// Atlas (Jesse's assistant, /atlas). Keys are server-only. Gemini handles voice,
+// audio and images; OpenRouter offers the free text models. Models are
+// configurable because providers retire them (gemini-2.5-flash is already
+// closed to new keys).
+const list = (v: string | undefined, fallback: string[]) => (v ? v.split(",").map((s) => s.trim()).filter(Boolean) : fallback);
+export const atlasConfig = () => ({
+  geminiKey: env("GEMINI_API_KEY"),
+  // First model is the default; the rest are tried, in order, only when one is
+  // overloaded or rate-limited, and the reply says which model answered.
+  geminiModels: list(env("GEMINI_MODEL"), ["gemini-3.5-flash", "gemini-flash-lite-latest"]),
+  openrouterKey: env("OPENROUTER_API_KEY"),
+  perMinute: Number(env("ATLAS_LIMIT_PER_MINUTE") ?? 8),
+  perDay: Number(env("ATLAS_LIMIT_PER_DAY") ?? 100),
+});
+
 export const uploadConfig = {
   maxImageBytes: 10 * 1024 * 1024,
   maxVideoBytes: 50 * 1024 * 1024,

@@ -17,6 +17,7 @@ import { Menu } from "@/components/ui/Menu";
 import { EMPTY_LINES, pickLine, SUCCESS_TOASTS } from "@/lib/jokes";
 import type { Comment } from "@/lib/types";
 import { ReportDialog } from "./ReportDialog";
+import { AtlasAssist } from "@/components/atlas/AtlasAssist";
 
 type Node = Comment & { children: Node[] };
 
@@ -85,6 +86,7 @@ function CommentBox({
           aria-label={placeholder}
           dir="auto"
         />
+        <AtlasAssist value={text} onUse={(t) => setText(t.slice(0, 1000))} tasks={["comment", "rewrite"]} align="end" />
         <button onClick={send} disabled={!text.trim() || busy} className="text-brand disabled:opacity-40" aria-label="Send comment">
           {busy ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
         </button>

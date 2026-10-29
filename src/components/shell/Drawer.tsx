@@ -93,7 +93,7 @@ export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }
               <Search size={18} /> Quick jump…
             </button>
             <nav className="flex flex-col gap-0.5">
-              {items.filter((i) => i.group === "more" || i.href === "/explore" || i.href === "/notifications").map(({ href, label, icon: Icon, badge }) => (
+              {items.filter((i) => i.group === "more" || i.href === "/explore" || i.href === "/atlas" || i.href === "/notifications").map(({ href, label, icon: Icon, badge }) => (
                 <Link
                   key={href}
                   href={href}

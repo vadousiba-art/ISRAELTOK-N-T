@@ -38,7 +38,7 @@ export default function PrivacyPage() {
           </li>
           <li>
             <b>Content:</b> posts, photos, GIFs and videos, polls and votes, comments, reactions, awards, bookmarks, reposts and quotes, stories,
-            group and direct messages, and your AI Menace chat history.
+            group and direct messages, your AI Menace chat history and your Atlas conversation.
           </li>
           <li>
             <b>Drafts and scheduled posts:</b> drafts you save in Draft Studio and posts you schedule, including the time you picked. They are
@@ -144,6 +144,25 @@ export default function PrivacyPage() {
           again. If a post suggests you might be at risk, Night Watch sends you a private message with free helplines; it doesn&apos;t punish you.
         </p>
 
+        <h3 id="atlas">Atlas, the AI assistant</h3>
+        <p>
+          Atlas is an optional assistant in its own section of YORU. When you use it, what you send it goes to an AI provider to get a reply: your
+          message, any photo or audio you attach (including voice recordings), your recent Atlas conversation (the text of up to 16 earlier
+          messages), and your display name, username, bio and status so it can help you with YORU; if you ask about what&apos;s trending, YORU&apos;s
+          current trending tags are included too. Voice, audio and photos go to Google&apos;s Gemini API. Text goes to the model you pick: Gemini, or
+          a free model offered through OpenRouter, which passes it to the company that runs that model. The Atlas buttons in the post composer,
+          comments, chat and bio editor send only the text in that box and your profile basics. Atlas never posts, sends or changes anything for you;
+          it only suggests, and you decide.
+        </p>
+        <p>
+          Atlas uses these providers&apos; <b>free tiers</b>. On free tiers, Google and some model providers may use what you send to improve their
+          products, and people at those companies may review it. Don&apos;t share passwords, private information or anything about other people that
+          they wouldn&apos;t want shared. YORU keeps the text of your Atlas conversation (your latest 200 messages) and your model and voice
+          settings, so Atlas can pick up where you left off; you can clear the conversation at any time in Atlas. YORU does not store the photos or
+          audio you send Atlas, only a note that something was attached. Spoken replies use your device&apos;s built-in voices; on some browsers
+          those voices are provided online by the browser&apos;s maker.
+        </p>
+
         <h2>5. Payments</h2>
         <p>
           YORU Pro can&apos;t be bought yet, and YORU doesn&apos;t collect any payment or card information. Members who test Pro get it for free
@@ -177,6 +196,16 @@ export default function PrivacyPage() {
               <td>AI comedy features (only when used) and automated moderation (when turned on)</td>
               <td>The text and images described in section 4</td>
             </tr>
+            <tr>
+              <td>Google (Gemini API)</td>
+              <td>Atlas: voice, audio, photos and text (only when you use Atlas)</td>
+              <td>What you send Atlas, as described in section 4</td>
+            </tr>
+            <tr>
+              <td>OpenRouter</td>
+              <td>Atlas: routes text to the free model you pick (only when you use it)</td>
+              <td>What you send Atlas, as described in section 4</td>
+            </tr>
           </tbody>
         </table>
         <p>
@@ -202,6 +231,7 @@ export default function PrivacyPage() {
             expire on their normal schedule.
           </li>
           <li>Stories expire from view after 24 hours. Support messages are kept as long as needed to handle your request.</li>
+          <li>Your Atlas conversation keeps your latest 200 messages until you clear it or delete your account. Photos and audio sent to Atlas are not stored by YORU.</li>
           <li>Moderation records are deleted a year after the case is closed; strikes a year after they expire. Content removed by moderation is hidden, not erased, so it can be restored after an appeal or kept as evidence where the law requires.</li>
           <li>
             Drafts are kept until you post or delete them. Daily profile visit totals are kept while your account exists; the keys used to count

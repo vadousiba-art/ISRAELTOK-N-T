@@ -25,6 +25,7 @@ import { Modal } from "@/components/ui/Modal";
 import { ReportDialog } from "@/components/feed/ReportDialog";
 import { EMPTY_LINES } from "@/lib/jokes";
 import type { ChannelDetail, Message, ProfileLite } from "@/lib/types";
+import { AtlasAssist } from "@/components/atlas/AtlasAssist";
 
 const QUICK = ["💀", "😭", "🔥", "🫡", "🤡", "❤️", "W", "L"];
 
@@ -569,6 +570,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ id: string 
               >
                 <Bot size={22} />
               </button>
+              <AtlasAssist value={text} onUse={(t) => onChangeText(t.slice(0, 2000))} tasks={["message", "rewrite"]} className="self-center" />
               <textarea
                 ref={inputRef}
                 value={text}

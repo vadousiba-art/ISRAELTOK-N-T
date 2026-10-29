@@ -4,6 +4,7 @@ const en = {
   // navigation
   "nav.home": "Home",
   "nav.explore": "Explore",
+  "nav.atlas": "Atlas",
   "nav.chat": "Chat",
   "nav.notifications": "Notifications",
   "nav.menace": "AI Menace",

@@ -4,6 +4,7 @@ import type { Messages } from "../translate";
 const messages: Messages = {
   "nav.home": "Home",
   "nav.explore": "Verkennen",
+  "nav.atlas": "Atlas",
   "nav.chat": "Chat",
   "nav.notifications": "Meldingen",
   "nav.menace": "AI Menace",

@@ -625,3 +625,34 @@ body {
 .pro-np-staff .pro-np-emblem { color: var(--np-a); animation: np-emblem 2.6s ease-in-out infinite; }
 .pro-np-staff::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 35%; background: linear-gradient(90deg, transparent, rgb(46 230 255 / 0.35), transparent); animation: np-scanline 2.8s linear infinite; pointer-events: none; }
 :root:not([data-theme="dark"]) .pro-np-founder, :root:not([data-theme="dark"]) .pro-np-staff { background-color: #050403; }
+
+/* ---------- Atlas (the co-founder's assistant) ---------------------------
+   One orb, four states. Transforms and opacity only, so it stays on the GPU;
+   the global reduced-motion rules above stop all of it. --lvl (0–1) is the
+   live microphone level, set from JavaScript while listening. */
+.atlas-orb { position: relative; display: grid; place-items: center; --lvl: 0; --atlas: var(--brand); --atlas-2: hsl(calc(var(--accent-h) + 28), 95%, 62%); }
+.atlas-orb > * { position: absolute; border-radius: 9999px; pointer-events: none; }
+.atlas-halo { inset: -18%; background: radial-gradient(circle, color-mix(in srgb, var(--atlas) 38%, transparent) 0%, transparent 62%); filter: blur(6px); animation: atlas-breathe 4.6s ease-in-out infinite; }
+.atlas-ring { inset: 4%; border: 1.5px solid color-mix(in srgb, var(--atlas-2) 55%, transparent); }
+.atlas-ring-1 { animation: atlas-spin 18s linear infinite; border-style: dashed; border-color: color-mix(in srgb, var(--atlas-2) 45%, transparent); }
+.atlas-ring-2 { inset: 13%; border-color: color-mix(in srgb, var(--atlas) 50%, transparent); border-top-color: transparent; border-bottom-color: transparent; animation: atlas-spin-rev 11s linear infinite; }
+.atlas-arc { inset: 9%; border: 2.5px solid transparent; border-top-color: var(--atlas-2); border-right-color: color-mix(in srgb, var(--atlas-2) 40%, transparent); opacity: 0; transition: opacity 0.3s; animation: atlas-spin 1.1s linear infinite; }
+.atlas-core { inset: 24%; background: radial-gradient(circle at 38% 32%, #fff 0%, color-mix(in srgb, var(--atlas-2) 85%, #fff) 14%, var(--atlas) 46%, color-mix(in srgb, var(--atlas) 50%, #000) 100%);
+  box-shadow: 0 0 32px -2px var(--atlas), inset 0 0 18px rgb(0 0 0 / 0.35); animation: atlas-breathe 4.6s ease-in-out infinite; transition: transform 0.08s linear; }
+.atlas-wave { inset: 24%; display: flex; align-items: center; justify-content: center; gap: 7%; opacity: 0; transition: opacity 0.25s; }
+.atlas-wave i { display: block; width: 7%; height: 46%; border-radius: 9999px; background: rgb(255 255 255 / 0.92); transform: scaleY(0.25); }
+.atlas-listening .atlas-core { animation: none; transform: scale(calc(0.92 + var(--lvl) * 0.32)); }
+.atlas-listening .atlas-halo { animation: none; transform: scale(calc(1 + var(--lvl) * 0.5)); opacity: calc(0.55 + var(--lvl) * 0.45); }
+.atlas-listening .atlas-ring-2 { animation-duration: 4s; }
+.atlas-thinking .atlas-arc { opacity: 1; }
+.atlas-thinking .atlas-core { animation: atlas-breathe 1.4s ease-in-out infinite; }
+.atlas-thinking .atlas-ring-1 { animation-duration: 6s; }
+.atlas-speaking .atlas-wave { opacity: 1; }
+.atlas-speaking .atlas-wave i { animation: atlas-bar 0.9s ease-in-out infinite; }
+.atlas-speaking .atlas-core { animation: atlas-breathe 1.8s ease-in-out infinite; }
+@keyframes atlas-spin { to { transform: rotate(360deg); } }
+@keyframes atlas-spin-rev { to { transform: rotate(-360deg); } }
+@keyframes atlas-breathe { 0%, 100% { transform: scale(0.96); } 50% { transform: scale(1.04); } }
+@keyframes atlas-bar { 0%, 100% { transform: scaleY(0.25); } 50% { transform: scaleY(1); } }
+/* Streaming cursor at the end of a reply that's still being written. */
+.atlas-caret::after { content: ""; display: inline-block; width: 0.5em; height: 1em; margin-left: 2px; vertical-align: -0.15em; border-radius: 2px; background: var(--brand); animation: pro-pulse 1s steps(1) infinite; }
