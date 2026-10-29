@@ -163,6 +163,18 @@ export default function PrivacyPage() {
           those voices are provided online by the browser&apos;s maker.
         </p>
 
+        <h3 id="push">Push notifications</h3>
+        <p>
+          Push notifications are off until you turn them on and allow them on a device. When you do, your browser (or the YORU Android app,
+          which runs in Chrome) gives YORU a push address at its push service (Google for Chrome and Android, Mozilla for Firefox, Apple for
+          Safari, Microsoft for Edge) and two keys. YORU stores those with a short device name like &quot;Chrome on Android&quot;. Each
+          notification is encrypted so that only your device can read it; the push service delivers it without being able to read it, though it
+          can see that something was sent to your device and when. Notifications follow your notification settings, and their text (for example a
+          message preview) can appear on your lock screen; your phone&apos;s settings control that. YORU deletes a device&apos;s push address when
+          you turn notifications off there, when the push service says the device is gone, after repeated failed deliveries, or when you delete
+          your account.
+        </p>
+
         <h2>5. Payments</h2>
         <p>
           YORU Pro can&apos;t be bought yet, and YORU doesn&apos;t collect any payment or card information. Members who test Pro get it for free
@@ -200,6 +212,11 @@ export default function PrivacyPage() {
               <td>Google (Gemini API)</td>
               <td>Atlas: voice, audio, photos and text (only when you use Atlas)</td>
               <td>What you send Atlas, as described in section 4</td>
+            </tr>
+            <tr>
+              <td>Your browser&apos;s push service (Google, Mozilla, Apple or Microsoft)</td>
+              <td>Delivers push notifications to your device (only if you turn them on)</td>
+              <td>An encrypted notification and your device&apos;s push address</td>
             </tr>
             <tr>
               <td>OpenRouter</td>

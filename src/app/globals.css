@@ -656,3 +656,11 @@ body {
 @keyframes atlas-bar { 0%, 100% { transform: scaleY(0.25); } 50% { transform: scaleY(1); } }
 /* Streaming cursor at the end of a reply that's still being written. */
 .atlas-caret::after { content: ""; display: inline-block; width: 0.5em; height: 1em; margin-left: 2px; vertical-align: -0.15em; border-radius: 2px; background: var(--brand); animation: pro-pulse 1s steps(1) infinite; }
+
+/* ---------- Push notification prompt ------------------------------------ */
+@keyframes push-ring { 0%, 70%, 100% { transform: rotate(0); } 74% { transform: rotate(14deg); } 78% { transform: rotate(-12deg); } 82% { transform: rotate(9deg); } 86% { transform: rotate(-6deg); } 90% { transform: rotate(3deg); } }
+@keyframes push-pulse { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(1.45); opacity: 0; } }
+@keyframes push-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+.push-ring { transform-origin: 50% 10%; animation: push-ring 3.2s ease-in-out infinite; }
+.push-pulse { animation: push-pulse 2.4s ease-out infinite; }
+.push-card { animation: push-in 0.35s ease-out both; }

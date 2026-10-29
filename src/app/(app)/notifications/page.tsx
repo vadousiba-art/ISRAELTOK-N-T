@@ -10,6 +10,7 @@ import { byFn, useRpc } from "@/lib/client/hooks";
 import { rpc } from "@/lib/client/api";
 import { useLive } from "@/components/providers/LiveProvider";
 import { Avatar } from "@/components/ui/Avatar";
+import { PushPrompt } from "@/components/notifications/PushPrompt";
 import { Button, ChaosLoader, Empty, PageTitle, TimeAgo } from "@/components/ui/bits";
 import { AWARD_INFO, EMPTY_LINES, NOTIFICATION_TEXT, REACTION_EMOJI } from "@/lib/jokes";
 import { levelTitle } from "@/lib/progress";
@@ -74,6 +75,7 @@ export default function NotificationsPage() {
           </Button>
         )}
       </div>
+      <PushPrompt className="mb-3" />
       {!data && <ChaosLoader />}
       {data && data.length === 0 && <Empty emoji="🧘" text={EMPTY_LINES.notifications} />}
       <div className="-mx-3 sm:-mx-4">

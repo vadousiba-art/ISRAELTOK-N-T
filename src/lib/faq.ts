@@ -46,7 +46,11 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Is there an iPhone app?",
-    a: "Not yet. Open yoru-social.vercel.app in Safari, tap Share, then Add to Home Screen. It opens full screen like an app.",
+    a: "Not yet. Open yoru-social.vercel.app in Safari, tap Share, then Add to Home Screen. It opens full screen like an app, and from there you can turn on notifications (iOS 16.4 or newer).",
+  },
+  {
+    q: "How do I get notifications when YORU is closed?",
+    a: "Open Notifications (or Settings → Notifications) and tap Turn on notifications, then allow them when your phone or browser asks. They work in the Android app, in Chrome, Edge, Firefox and Safari, and on iPhone once YORU is on your Home Screen. Settings → Notifications chooses what you hear about, and Turn off stops them on that device.",
   },
   {
     q: "Who can see my posts?",

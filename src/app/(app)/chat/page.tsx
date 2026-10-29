@@ -13,6 +13,7 @@ import { Empty, TimeAgo } from "@/components/ui/bits";
 import { NewChatDialog } from "@/components/chat/NewChatDialog";
 import { OFFICIAL_ID } from "@/lib/nightwatch";
 import type { Channel } from "@/lib/types";
+import { PushPrompt } from "@/components/notifications/PushPrompt";
 
 // Inbox (like Discord): a rail of your group chats on the left, direct
 // messages on the right with who's active now, and YORU's official notices
@@ -82,6 +83,8 @@ export default function InboxPage() {
             className="mt-3 w-full rounded-xl border border-line bg-card-2 px-3.5 py-2.5 text-[14.5px] outline-none placeholder:text-muted focus:border-ink/40"
           />
         )}
+
+        {!needle && <PushPrompt className="mt-3" />}
 
         {active.length > 0 && !needle && (
           <section className="mt-4" aria-label="Active now">

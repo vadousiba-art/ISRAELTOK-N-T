@@ -22,6 +22,7 @@ Never commit `.env*` files (they are git-ignored, except `.env.example`). Never 
 | `UPLOAD_CLEANUP_MIN_AGE_HOURS` | Optional (default 48, minimum 24) | You | Server |
 | `MAINTENANCE_READ_ONLY` | Only during a database cutover: `true` pauses all writes | You | Server |
 | `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `AI_*` | AI Menace (existing) | Anthropic console | Server only |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Push notifications (website, installed web app, Android app) | `npx web-push generate-vapid-keys` (once; changing them signs everyone out of push) | Public key: server (sent to browsers). Private key: **Server only** (Vercel: Sensitive) |
 | `GEMINI_API_KEY` | Atlas: voice, audio, images (and text when Gemini is picked) | Google AI Studio → Get API key | **Server only** (Vercel: Sensitive) |
 | `OPENROUTER_API_KEY` | Atlas: the free text models | openrouter.ai → Settings → Keys | **Server only** (Vercel: Sensitive) |
 | `GEMINI_MODEL`, `ATLAS_LIMIT_*` | Optional: Gemini models (default then fallbacks) and per-member limits | You | Server |

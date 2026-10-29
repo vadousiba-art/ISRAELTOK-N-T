@@ -199,6 +199,16 @@ export const atlasConfig = () => ({
   perDay: Number(env("ATLAS_LIMIT_PER_DAY") ?? 100),
 });
 
+// Push notifications (Web Push / VAPID). The public key goes to browsers; the
+// private key signs pushes and is server-only. Generate a pair once with
+// `npx web-push generate-vapid-keys`.
+export const pushConfig = () => ({
+  publicKey: env("VAPID_PUBLIC_KEY"),
+  privateKey: env("VAPID_PRIVATE_KEY"),
+  // Who push services can contact about our pushes: a mailto: or the site.
+  subject: env("VAPID_SUBJECT") ?? (env("SUPPORT_EMAIL") ? `mailto:${env("SUPPORT_EMAIL")}` : env("NEXT_PUBLIC_SITE_URL") ?? "https://yoru-social.vercel.app"),
+});
+
 export const uploadConfig = {
   maxImageBytes: 10 * 1024 * 1024,
   maxVideoBytes: 50 * 1024 * 1024,

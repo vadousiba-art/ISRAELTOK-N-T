@@ -27,6 +27,7 @@ import { WHATS_NEW_EVENT } from "@/lib/releases";
 import Link from "next/link";
 import type { MessageKey } from "@/lib/i18n/messages/en";
 import type { CurrentlyKind, Me, NotificationPrefs, Profile, ProfileLite } from "@/lib/types";
+import { PushPrompt } from "@/components/notifications/PushPrompt";
 
 function Section({ title, id, children }: { title: string; id?: string; children: React.ReactNode }) {
   return (
@@ -270,7 +271,8 @@ export default function SettingsPage() {
         />
       </Section>
 
-      <Section title={t("settings.notifications")}>
+      <Section title={t("settings.notifications")} id="notifications">
+        <PushPrompt variant="settings" />
         {NOTIF.map((key) => (
           <Toggle
             key={key}

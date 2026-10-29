@@ -25,6 +25,7 @@ import { WelcomeExperience } from "@/components/welcome/WelcomeExperience";
 import { ProRuntime } from "@/components/pro/ProRuntime";
 import { LocaleSync } from "@/components/yoru/LocaleSync";
 import type { Me } from "@/lib/types";
+import { syncPush } from "@/lib/client/push";
 
 type ComposerOpts = { tab?: ComposerTab; file?: File | null; text?: string };
 type ShellCtx = {
@@ -55,6 +56,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       router.replace(`/login?next=${encodeURIComponent(pathname)}`);
     }
   }, [error, router, pathname]);
+
+  // Push: keep this device linked to whoever is signed in, clear the app badge.
+  const signedIn = Boolean(me?.id);
+  useEffect(() => {
+    if (signedIn) syncPush().catch(() => {});
+  }, [signedIn]);
 
   // Watchtower and the inbox use the extra width instead of the right rail.
   const wide = pathname.startsWith("/admin");
