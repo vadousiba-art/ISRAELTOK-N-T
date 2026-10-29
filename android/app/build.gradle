@@ -2,41 +2,42 @@ plugins {
     id "com.android.application"
 }
 
-// YORU for Android: the website as a Trusted Web Activity. Chrome renders it
-// full screen (no address bar, verified by /.well-known/assetlinks.json), so
-// sign-in, uploads, voice and push notifications work exactly as on the web,
-// and notifications are shown as YORU's own (Android 13+ asks permission).
+// YORU for Android: the live web app in a full-screen WebView, with the
+// phone's own permissions (asked once, on first launch) and notifications in
+// the notification shade. Firebase is optional and configured from the server
+// at runtime (see docs/notifications.md); without it the app checks for new
+// notifications in the background.
 //
+// Override the site with: gradle assembleRelease -PitnUrl=https://...
 // Release signing reads android/keystore.properties (never committed):
 //   storeFile=/path/to/release.jks
 //   storePassword=...
 //   keyAlias=...
 //   keyPassword=...
 
+def itnUrl = project.findProperty("itnUrl") ?: "https://yoru-social.vercel.app"
 def keystoreProps = new Properties()
 def keystoreFile = rootProject.file("keystore.properties")
 if (keystoreFile.exists()) {
     keystoreFile.withInputStream { keystoreProps.load(it) }
 }
-def host = project.findProperty("yoruHost") ?: "yoru-social.vercel.app"
 
 android {
-    namespace "com.yoru.social"
+    namespace "com.israeltoknt.app"
     compileSdk 36
 
     defaultConfig {
         applicationId "com.yoru.social"
         minSdk 24
         targetSdk 36
-        versionCode 6
-        versionName "2.3.0"
-        manifestPlaceholders = [
-            hostName  : host,
-            // Signed-in members go straight to their feed; others to login.
-            launchUrl : "https://${host}/login?app=android",
-        ]
-        resValue "string", "asset_statements",
-            "[{ \\\"relation\\\": [\\\"delegate_permission/common.handle_all_urls\\\"], \\\"target\\\": { \\\"namespace\\\": \\\"web\\\", \\\"site\\\": \\\"https://${host}\\\" } }]"
+        versionCode 7
+        versionName "2.4.0"
+        buildConfigField "String", "APP_URL", "\"${itnUrl}\""
+        manifestPlaceholders = [hostName: new URI(itnUrl).host]
+    }
+
+    buildFeatures {
+        buildConfig true
     }
 
     signingConfigs {
@@ -47,6 +48,8 @@ android {
                 keyAlias keystoreProps["keyAlias"]
                 keyPassword keystoreProps["keyPassword"]
             }
+            enableV1Signing true
+            enableV2Signing true
         }
     }
 
@@ -54,7 +57,7 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
-            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt")
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             if (keystoreFile.exists()) signingConfig signingConfigs.release
         }
     }
@@ -66,5 +69,8 @@ android {
 }
 
 dependencies {
-    implementation "com.google.androidbrowserhelper:androidbrowserhelper:2.7.4"
+    implementation "androidx.core:core:1.17.0"
+    implementation "androidx.work:work-runtime:2.10.5"
+    implementation platform("com.google.firebase:firebase-bom:34.4.0")
+    implementation "com.google.firebase:firebase-messaging"
 }

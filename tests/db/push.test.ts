@@ -100,4 +100,17 @@ describe("push notifications", () => {
     await expect(as(null, "push_subscribe", sub(99))).rejects.toThrow(/permission denied/);
     await expect(as(u.ari, "push_subscribe", { ...sub(98), p_endpoint: "http://insecure.example/x" })).rejects.toThrow(/INVALID/);
   });
+
+  it("registers the Android app's Firebase token (no keys) and hands it out with its kind", async () => {
+    const token = `fcm-token_${"a1:".repeat(50)}`;
+    expect(await as(u.mo, "push_subscribe", { p_endpoint: token, p_p256dh: null, p_auth: null, p_device: "YORU app on Android", p_kind: "fcm" })).toEqual({ devices: 1 });
+    const post = await as<string>(u.mo, "create_post", { p_body: "moonrise" });
+    await as(u.zed, "add_comment", { p_post_id: post, p_body: "wow" });
+    const items = await claim();
+    expect(items).toHaveLength(1);
+    expect(items[0].devices).toEqual([{ kind: "fcm", endpoint: token, p256dh: null, auth: null }]);
+    await expect(as(u.mo, "push_subscribe", { p_endpoint: "not a token", p_p256dh: null, p_auth: null, p_device: "", p_kind: "fcm" })).rejects.toThrow(/INVALID/);
+    await expect(as(u.mo, "push_subscribe", { p_endpoint: "https://push.example/nokeys", p_p256dh: null, p_auth: null })).rejects.toThrow();
+    await expect(as(u.mo, "push_subscribe", { ...sub(97), p_kind: "carrier-pigeon" })).rejects.toThrow(/INVALID/);
+  });
 });

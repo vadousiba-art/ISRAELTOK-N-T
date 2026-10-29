@@ -209,6 +209,33 @@ export const pushConfig = () => ({
   subject: env("VAPID_SUBJECT") ?? (env("SUPPORT_EMAIL") ? `mailto:${env("SUPPORT_EMAIL")}` : env("NEXT_PUBLIC_SITE_URL") ?? "https://yoru-social.vercel.app"),
 });
 
+// Android app notifications through Firebase Cloud Messaging (instant). The
+// service account JSON (or its base64) from Firebase → Project settings →
+// Service accounts. Server-only. Without it the app checks for notifications
+// in the background instead (every ~15 minutes).
+export function firebaseAccount(): { project_id: string; client_email: string; private_key: string } | null {
+  const raw = env("FIREBASE_SERVICE_ACCOUNT");
+  if (!raw) return null;
+  try {
+    const json = JSON.parse(raw.trim().startsWith("{") ? raw : Buffer.from(raw, "base64").toString("utf8"));
+    return json.project_id && json.client_email && json.private_key ? json : null;
+  } catch {
+    return null;
+  }
+}
+
+// What the Android app needs to start Firebase (all public client values from
+// the Firebase console's Android app settings). Sent to the app at runtime so
+// instant notifications can be turned on without a new APK.
+export function firebaseClient(): { projectId: string; appId: string; apiKey: string; senderId: string } | null {
+  const sa = firebaseAccount();
+  const appId = env("FIREBASE_ANDROID_APP_ID");
+  const apiKey = env("FIREBASE_API_KEY");
+  if (!sa || !appId || !apiKey) return null;
+  const senderId = env("FIREBASE_SENDER_ID") ?? appId.split(":")[1] ?? "";
+  return senderId ? { projectId: sa.project_id, appId, apiKey, senderId } : null;
+}
+
 export const uploadConfig = {
   maxImageBytes: 10 * 1024 * 1024,
   maxVideoBytes: 50 * 1024 * 1024,

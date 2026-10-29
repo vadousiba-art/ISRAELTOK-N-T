@@ -50,7 +50,11 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "How do I get notifications when YORU is closed?",
-    a: "Open Notifications (or Settings → Notifications) and tap Turn on notifications, then allow them when your phone or browser asks. They work in the Android app, in Chrome, Edge, Firefox and Safari, and on iPhone once YORU is on your Home Screen. Settings → Notifications chooses what you hear about, and Turn off stops them on that device.",
+    a: "In the Android app, allow notifications when the app first opens (or tap Turn on notifications later); they show up in your phone's notification shade. On the website, open Notifications (or Settings → Notifications), tap Turn on notifications and allow them when your browser asks. They work in Chrome, Edge, Firefox and Safari, and on iPhone once YORU is on your Home Screen. Settings → Notifications chooses what you hear about.",
+  },
+  {
+    q: "Why does the Android app ask for the microphone and camera?",
+    a: "So you can talk to Atlas and take photos or videos to post without being asked every time. The app asks once, the first time it opens, and you can say yes or no to each. They're only used while you're recording or taking a picture, and you can change them any time in your phone's Settings → Apps → YORU → Permissions.",
   },
   {
     q: "Who can see my posts?",

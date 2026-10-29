@@ -8,7 +8,9 @@
 -- allows notifications; the server encrypts each message for that device and
 -- sends it there (Web Push, RFC 8030/8291/8292).
 --
---   * push_subscriptions  one row per device that turned notifications on.
+--   * push_subscriptions  one row per device that turned notifications on:
+--                         a browser (Web Push) or the Android app (Firebase
+--                         Cloud Messaging token, when Firebase is set up).
 --   * push_outbox         a short queue: every new row in public.notifications
 --                         for someone with a device is queued here, and the
 --                         server sends and deletes it. Members without a
@@ -23,13 +25,16 @@
 create table if not exists public.push_subscriptions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles (id) on delete cascade,
-  endpoint text not null unique check (endpoint ~ '^https://' and char_length(endpoint) <= 1000),
-  p256dh text not null check (char_length(p256dh) between 40 and 200),
-  auth text not null check (char_length(auth) between 10 and 100),
+  kind text not null default 'webpush' check (kind in ('webpush', 'fcm')),
+  endpoint text not null unique check (char_length(endpoint) <= 4096 and (
+    (kind = 'webpush' and endpoint ~ '^https://') or (kind = 'fcm' and endpoint ~ '^[A-Za-z0-9_:-]{20,}$'))),
+  p256dh text check (p256dh is null or char_length(p256dh) between 40 and 200),
+  auth text check (auth is null or char_length(auth) between 10 and 100),
   device text not null default '' check (char_length(device) <= 80),
   created_at timestamptz not null default now(),
   last_ok timestamptz,
-  failures int not null default 0
+  failures int not null default 0,
+  check (kind = 'fcm' or (p256dh is not null and auth is not null))
 );
 create index if not exists push_subscriptions_user on public.push_subscriptions (user_id);
 
@@ -62,16 +67,20 @@ create trigger notifications_push after insert on public.notifications for each 
 -- A device turns notifications on (or refreshes its subscription). An
 -- endpoint belongs to one device, so if someone else signs in on that device
 -- the subscription moves to them.
-create or replace function public.push_subscribe(p_endpoint text, p_p256dh text, p_auth text, p_device text default '')
+create or replace function public.push_subscribe(p_endpoint text, p_p256dh text, p_auth text, p_device text default '', p_kind text default 'webpush')
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare
   v uuid := public.require_member();
   n int;
 begin
-  if p_endpoint !~ '^https://' or char_length(p_endpoint) > 1000 then raise exception 'INVALID|That push address isn''t valid.'; end if;
-  insert into public.push_subscriptions (user_id, endpoint, p256dh, auth, device)
-  values (v, p_endpoint, p_p256dh, p_auth, left(coalesce(p_device, ''), 80))
-  on conflict (endpoint) do update set user_id = v, p256dh = excluded.p256dh, auth = excluded.auth, device = excluded.device, failures = 0;
+  if p_kind not in ('webpush', 'fcm') or char_length(p_endpoint) > 4096
+     or (p_kind = 'webpush' and p_endpoint !~ '^https://')
+     or (p_kind = 'fcm' and p_endpoint !~ '^[A-Za-z0-9_:-]{20,}$') then
+    raise exception 'INVALID|That push address isn''t valid.';
+  end if;
+  insert into public.push_subscriptions (user_id, kind, endpoint, p256dh, auth, device)
+  values (v, p_kind, p_endpoint, case when p_kind = 'webpush' then p_p256dh end, case when p_kind = 'webpush' then p_auth end, left(coalesce(p_device, ''), 80))
+  on conflict (endpoint) do update set user_id = v, kind = excluded.kind, p256dh = excluded.p256dh, auth = excluded.auth, device = excluded.device, failures = 0;
   -- Ten devices per member is plenty; drop the oldest beyond that.
   delete from public.push_subscriptions where id in (
     select id from public.push_subscriptions where user_id = v order by created_at desc offset 10
@@ -106,7 +115,7 @@ begin
     'created_at', n.created_at,
     'actor', case when a.id is null then null else jsonb_build_object('name', a.display_name, 'username', a.username, 'avatar', a.avatar_url) end,
     'unread', (select count(*) from public.notifications u where u.user_id = n.user_id and u.read_at is null),
-    'devices', (select coalesce(jsonb_agg(jsonb_build_object('endpoint', s.endpoint, 'p256dh', s.p256dh, 'auth', s.auth)), '[]'::jsonb)
+    'devices', (select coalesce(jsonb_agg(jsonb_build_object('kind', s.kind, 'endpoint', s.endpoint, 'p256dh', s.p256dh, 'auth', s.auth)), '[]'::jsonb)
                 from public.push_subscriptions s where s.user_id = n.user_id)
   )), '[]'::jsonb) into out
   from taken t
@@ -128,11 +137,11 @@ begin
 end $$;
 
 revoke execute on function public.push_enqueue() from public, anon, authenticated;
-revoke execute on function public.push_subscribe(text, text, text, text) from public, anon;
+revoke execute on function public.push_subscribe(text, text, text, text, text) from public, anon;
 revoke execute on function public.push_unsubscribe(text) from public, anon;
 revoke execute on function public.push_claim(int) from public, anon, authenticated;
 revoke execute on function public.push_report(text[], text[], text[]) from public, anon, authenticated;
-grant execute on function public.push_subscribe(text, text, text, text) to authenticated, service_role;
+grant execute on function public.push_subscribe(text, text, text, text, text) to authenticated, service_role;
 grant execute on function public.push_unsubscribe(text) to authenticated, service_role;
 grant execute on function public.push_claim(int) to service_role;
 grant execute on function public.push_report(text[], text[], text[]) to service_role;

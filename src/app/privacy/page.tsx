@@ -165,14 +165,27 @@ export default function PrivacyPage() {
 
         <h3 id="push">Push notifications</h3>
         <p>
-          Push notifications are off until you turn them on and allow them on a device. When you do, your browser (or the YORU Android app,
-          which runs in Chrome) gives YORU a push address at its push service (Google for Chrome and Android, Mozilla for Firefox, Apple for
-          Safari, Microsoft for Edge) and two keys. YORU stores those with a short device name like &quot;Chrome on Android&quot;. Each
-          notification is encrypted so that only your device can read it; the push service delivers it without being able to read it, though it
-          can see that something was sent to your device and when. Notifications follow your notification settings, and their text (for example a
-          message preview) can appear on your lock screen; your phone&apos;s settings control that. YORU deletes a device&apos;s push address when
-          you turn notifications off there, when the push service says the device is gone, after repeated failed deliveries, or when you delete
-          your account.
+          Push notifications are off until you turn them on and allow them on a device. On the website and the installed web app, your browser
+          gives YORU a push address at its push service (Google for Chrome, Mozilla for Firefox, Apple for Safari, Microsoft for Edge) and two
+          keys. YORU stores those with a short device name like &quot;Chrome on Windows&quot;. Each notification is encrypted so that only your
+          device can read it; the push service delivers it without being able to read it, though it can see that something was sent to your
+          device and when. Notifications follow your notification settings, and their text (for example a message preview) can appear on your
+          lock screen; your phone&apos;s settings control that. YORU deletes a device&apos;s push address when you turn notifications off there,
+          when you log out, when the push service says the device is gone, after repeated failed deliveries, or when you delete your account.
+        </p>
+        <p>
+          In the YORU Android app, notifications are shown by the app itself. It checks YORU for new notifications in the background (about every
+          15 minutes, using your sign-in on that phone) or, when YORU has turned on instant delivery, receives them through Google&apos;s Firebase
+          Cloud Messaging. For instant delivery YORU stores a Firebase token for the phone, and the notification&apos;s title and text pass through
+          Google to reach it (they are not end-to-end encrypted on that route).
+        </p>
+
+        <h3 id="app-permissions">Android app permissions</h3>
+        <p>
+          The first time you open the Android app it asks, with Android&apos;s own dialogs, for notifications, the microphone and the camera. You can
+          allow or refuse each one, and change them any time in your phone&apos;s Settings → Apps → YORU → Permissions. The microphone is only used
+          while you record a message to Atlas, and the camera only while you take a photo or video to attach. Nothing is recorded in the
+          background, and YORU&apos;s own pages are the only ones the app lets use them.
         </p>
 
         <h2>5. Payments</h2>
@@ -217,6 +230,11 @@ export default function PrivacyPage() {
               <td>Your browser&apos;s push service (Google, Mozilla, Apple or Microsoft)</td>
               <td>Delivers push notifications to your device (only if you turn them on)</td>
               <td>An encrypted notification and your device&apos;s push address</td>
+            </tr>
+            <tr>
+              <td>Google (Firebase Cloud Messaging)</td>
+              <td>Instant notifications in the Android app (only if YORU turns it on and you allow notifications)</td>
+              <td>The notification&apos;s title and text, and the phone&apos;s Firebase token</td>
             </tr>
             <tr>
               <td>OpenRouter</td>

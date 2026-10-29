@@ -12,6 +12,7 @@ import { post } from "@/lib/client/api";
 import { useT } from "@/components/providers/I18nProvider";
 import { useShell } from "./AppShell";
 import { useNavItems } from "./navItems";
+import { forgetPushDevice } from "@/lib/client/push";
 
 // Desktop rail: icons on laptops, icons with labels on wide screens. Everything
 // beyond the main six lives in the More menu.
@@ -109,6 +110,7 @@ export function SideNav() {
                 role="menuitem"
                 className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14.5px] text-ink-2 hover:bg-card-2"
                 onClick={async () => {
+                  await forgetPushDevice().catch(() => {});
                   await post("/api/auth/logout").catch(() => null);
                   router.replace("/login");
                   router.refresh();

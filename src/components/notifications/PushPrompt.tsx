@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import clsx from "clsx";
-import { BellRing, Check, Loader2, Lock, Send, Share, SquarePlus, X } from "lucide-react";
+import { BellRing, Check, Loader2, Lock, Send, Settings2, Share, SquarePlus, X } from "lucide-react";
 import { useApp } from "@/components/providers/AppProvider";
-import { disablePush, enablePush, pushStatus, sendTestPush, type PushStatus } from "@/lib/client/push";
+import { disablePush, enablePush, onYoruApp, pushStatus, sendTestPush, yoruApp, type PushStatus } from "@/lib/client/push";
 
 const SNOOZE = "yoru-push-snooze";
 const snoozed = () => {
@@ -26,9 +26,26 @@ function Bell({ ringing }: { ringing?: boolean }) {
   );
 }
 
-const BLOCKED_HELP = typeof navigator !== "undefined" && /Android/.test(navigator.userAgent)
-  ? "Notifications are blocked. Open your phone's Settings → Apps → YORU (or Chrome) → Notifications, turn them on, then come back."
-  : "Notifications are blocked for YORU in this browser. Click the icon left of the address bar → Notifications → Allow, then reload.";
+const blockedHelp = () => yoruApp()
+  ? "Notifications are off for YORU on this phone. Turn them on in the app's notification settings."
+  : typeof navigator !== "undefined" && /Android/.test(navigator.userAgent)
+    ? "Notifications are blocked. Open your phone's Settings → Apps → Chrome → Notifications, turn them on, then come back."
+    : "Notifications are blocked for YORU in this browser. Click the icon left of the address bar → Notifications → Allow, then reload.";
+
+function Blocked({ className }: { className?: string }) {
+  const app = yoruApp();
+  return (
+    <div className={className}>
+      <p className="flex gap-1.5 text-sm text-ink-2"><Lock size={15} className="mt-0.5 shrink-0" />{blockedHelp()}</p>
+      {app && (
+        <button type="button" onClick={() => app.openNotificationSettings()}
+          className="mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-1.5 text-sm font-bold text-white">
+          <Settings2 size={14} /> Open settings
+        </button>
+      )}
+    </div>
+  );
+}
 
 // "card": the invitation on Notifications and Inbox (hidden once on, or
 // dismissed for two weeks). "settings": the full control in Settings.
@@ -43,7 +60,9 @@ export function PushPrompt({ variant = "card", className }: { variant?: "card" |
   useEffect(() => {
     let live = true;
     pushStatus().then((s) => live && setStatus(s)).catch(() => live && setStatus("unsupported"));
-    return () => { live = false; };
+    // In the app: the member may have changed it in the phone's settings.
+    const stop = yoruApp() ? onYoruApp((e) => { if (e.type === "notifications") pushStatus().then((s) => live && setStatus(s)); }) : null;
+    return () => { live = false; stop?.(); };
   }, []);
 
   async function turnOn() {
@@ -52,7 +71,7 @@ export function PushPrompt({ variant = "card", className }: { variant?: "card" |
       const s = await enablePush(true);
       setStatus(s);
       if (s === "on") toast("Notifications are on. A test is on its way.", "success", "🔔");
-      else if (s === "blocked") toast("Notifications were blocked. You can allow them in your browser settings.", "error");
+      else if (s === "blocked") toast(yoruApp() ? "Notifications are off for YORU. You can turn them on in your phone's settings." : "Notifications were blocked. You can allow them in your browser settings.", "error");
     } catch (err) {
       toastError(err);
     } finally {
@@ -62,6 +81,10 @@ export function PushPrompt({ variant = "card", className }: { variant?: "card" |
   async function turnOff() {
     setBusy("off");
     try {
+      if (yoruApp()) {
+        await disablePush(); // opens the phone's notification settings
+        return;
+      }
       setStatus(await disablePush());
       toast("Notifications are off on this device.", "success");
     } catch (err) {
@@ -107,7 +130,7 @@ export function PushPrompt({ variant = "card", className }: { variant?: "card" |
               </>
             )}
             {status === "needs-install" && <InstallSteps />}
-            {status === "blocked" && <p className="mt-1 flex gap-1.5 text-sm text-ink-2"><Lock size={15} className="mt-0.5 shrink-0" />{BLOCKED_HELP}</p>}
+            {status === "blocked" && <Blocked className="mt-1" />}
           </div>
         </div>
       </div>
@@ -131,7 +154,7 @@ export function PushPrompt({ variant = "card", className }: { variant?: "card" |
                 {busy === "test" ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />} Send a test
               </button>
               <button type="button" onClick={turnOff} disabled={busy !== null} className="rounded-full px-3.5 py-1.5 text-sm font-bold text-muted hover:text-ink disabled:opacity-60">
-                {busy === "off" ? "Turning off…" : "Turn off"}
+                {busy === "off" ? "Turning off…" : yoruApp() ? "Phone settings" : "Turn off"}
               </button>
             </>
           )}
@@ -142,7 +165,10 @@ export function PushPrompt({ variant = "card", className }: { variant?: "card" |
           )}
         </div>
         {status === "needs-install" && <InstallSteps />}
-        {status === "blocked" && <p className="mt-2 flex gap-1.5 text-sm text-ink-2"><Lock size={15} className="mt-0.5 shrink-0" />{BLOCKED_HELP}</p>}
+        {status === "blocked" && <Blocked className="mt-2" />}
+        {status === "on" && yoruApp()?.pushMode() === "background" && (
+          <p className="mt-2 text-xs text-muted">On this phone, new notifications can take up to about 15 minutes to show while YORU is closed.</p>
+        )}
         {status === "unsupported" && <p className="mt-2 text-sm text-muted">This browser can&apos;t show notifications. Chrome, Edge, Firefox and Safari can.</p>}
         {status === "unavailable" && <p className="mt-2 text-sm text-muted">Push notifications aren&apos;t switched on for YORU yet.</p>}
       </div>

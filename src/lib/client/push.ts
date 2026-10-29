@@ -2,9 +2,10 @@
 
 import { ApiError, get, post } from "./api";
 
-// Push notifications in the browser (website, installed web app and the
-// Android app, which runs YORU in Chrome). The permission prompt is only ever
-// shown from a tap on a YORU button, never on page load.
+// Push notifications on the website and installed web app (Web Push), and in
+// the Android app, which shows them itself through window.YoruApp (the
+// phone's own permission; the app asks on first launch). The browser prompt
+// is only ever shown from a tap on a YORU button, never on page load.
 
 export type PushStatus =
   | "unsupported" // this browser can't do push
@@ -13,6 +14,50 @@ export type PushStatus =
   | "off"
   | "on"
   | "unavailable"; // the server isn't set up for push
+
+// The Android app's bridge (android/app/src/main/java/.../AppBridge.java).
+export type YoruAppBridge = {
+  version(): string;
+  notificationState(): "granted" | "default" | "denied";
+  pushMode(): "instant" | "background";
+  requestNotifications(): void;
+  openNotificationSettings(): void;
+  testNotification(): boolean;
+  syncPush(): void;
+  pushToken(): string;
+  forgetPush(): void;
+  speak(text: string, lang: string, rate: number, id: string): void;
+  stopSpeaking(): void;
+};
+export type YoruAppEvent =
+  | { type: "notifications"; state: "granted" | "default" | "denied"; mode: "instant" | "background" }
+  | { type: "speech"; state: "start" | "end" | "error"; id: string };
+
+export const yoruApp = (): YoruAppBridge | null =>
+  typeof window !== "undefined" ? ((window as unknown as { YoruApp?: YoruAppBridge }).YoruApp ?? null) : null;
+
+export function onYoruApp(fn: (e: YoruAppEvent) => void) {
+  const h = (e: Event) => fn((e as CustomEvent<YoruAppEvent>).detail);
+  window.addEventListener("yoru-app", h);
+  return () => window.removeEventListener("yoru-app", h);
+}
+
+const fromApp = (state: string): PushStatus => (state === "granted" ? "on" : state === "denied" ? "blocked" : "off");
+
+// The app answers a permission request with an event (after Android's dialog,
+// or when the member comes back from Settings).
+function appPermission(app: YoruAppBridge): Promise<PushStatus> {
+  return new Promise((resolve) => {
+    const stop = onYoruApp((e) => {
+      if (e.type !== "notifications") return;
+      stop();
+      clearTimeout(timer);
+      resolve(fromApp(e.state));
+    });
+    const timer = setTimeout(() => { stop(); resolve(fromApp(app.notificationState())); }, 120_000);
+    app.requestNotifications();
+  });
+}
 
 const supported = () => typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
 const ios = () => typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -35,6 +80,8 @@ let key: Promise<{ publicKey: string | null; enabled: boolean }> | null = null;
 const serverKey = () => (key ??= get<{ publicKey: string | null; enabled: boolean }>("/api/push"));
 
 export async function pushStatus(): Promise<PushStatus> {
+  const app = yoruApp();
+  if (app) return fromApp(app.notificationState());
   if (!supported()) return ios() && !standalone() ? "needs-install" : "unsupported";
   if (ios() && !standalone()) return "needs-install";
   if (Notification.permission === "denied") return "blocked";
@@ -54,6 +101,15 @@ function urlBase64ToBytes(s: string) {
 // Must be called from a tap: asks permission, subscribes this device and
 // tells YORU where to send. Optionally sends a test straight away.
 export async function enablePush(test = true): Promise<PushStatus> {
+  const app = yoruApp();
+  if (app) {
+    const s = app.notificationState() === "granted" ? "on" : await appPermission(app);
+    if (s === "on") {
+      app.syncPush();
+      if (test) app.testNotification();
+    }
+    return s;
+  }
   if (!supported()) throw new ApiError("UNSUPPORTED", ios() ? "On iPhone, add YORU to your Home Screen first (Share → Add to Home Screen), then turn notifications on from there." : "This browser can't show notifications. Try Chrome, Edge, Firefox or Safari.", 0);
   const permission = await Notification.requestPermission();
   if (permission !== "granted") return permission === "denied" ? "blocked" : "off";
@@ -77,12 +133,23 @@ export async function enablePush(test = true): Promise<PushStatus> {
 }
 
 export async function sendTestPush() {
+  const app = yoruApp();
+  if (app) {
+    if (!app.testNotification()) throw new ApiError("INVALID", "Notifications are off for YORU on this phone.", 400);
+    return;
+  }
   const sub = await (await registration()).pushManager.getSubscription();
   if (!sub) throw new ApiError("INVALID", "Notifications aren't on for this device yet.", 400);
   await post("/api/push", { subscription: sub.toJSON(), device: deviceName(), test: true });
 }
 
+// In the app, notifications are switched off in the phone's settings.
 export async function disablePush(): Promise<PushStatus> {
+  const app = yoruApp();
+  if (app) {
+    app.openNotificationSettings();
+    return fromApp(app.notificationState());
+  }
   if (!supported()) return "unsupported";
   const sub = await (await registration()).pushManager.getSubscription();
   if (sub) {
@@ -96,6 +163,14 @@ export async function disablePush(): Promise<PushStatus> {
 // member who is signed in now (another account may have used this browser),
 // and clear the app icon badge while YORU is open.
 export async function syncPush() {
+  const app = yoruApp();
+  if (app) {
+    if (app.notificationState() === "granted" && !sessionStorage.getItem("yoru-push-synced")) {
+      app.syncPush();
+      sessionStorage.setItem("yoru-push-synced", "1");
+    }
+    return;
+  }
   if (!supported() || Notification.permission !== "granted") return;
   if ("clearAppBadge" in navigator) (navigator as unknown as { clearAppBadge: () => Promise<void> }).clearAppBadge().catch(() => {});
   if (sessionStorage.getItem("yoru-push-synced")) return;
@@ -103,4 +178,22 @@ export async function syncPush() {
   if (!sub) return;
   await post("/api/push", { subscription: sub.toJSON(), device: deviceName() }).catch(() => {});
   sessionStorage.setItem("yoru-push-synced", "1");
+}
+
+// Before signing out: stop sending this member's pushes to this device (the
+// next person to sign in here gets their own once they're signed in).
+export async function forgetPushDevice() {
+  sessionStorage.removeItem("yoru-push-synced");
+  const del = (url: string, body: unknown) =>
+    fetch(url, { method: "DELETE", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).catch(() => {});
+  const app = yoruApp();
+  if (app) {
+    const token = app.pushToken();
+    if (token) await del("/api/push/app", { token });
+    app.forgetPush();
+    return;
+  }
+  if (!supported() || Notification.permission !== "granted") return;
+  const sub = await (await registration()).pushManager.getSubscription().catch(() => null);
+  if (sub) await del("/api/push", { endpoint: sub.endpoint });
 }

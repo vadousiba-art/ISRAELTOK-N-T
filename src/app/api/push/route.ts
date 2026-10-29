@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { pushConfig } from "@/lib/config";
-import { deliver, pushReady } from "@/lib/server/push";
+import { deliver, webPushEnabled } from "@/lib/server/push";
 import { getUserDb } from "@/lib/server/db";
 import { AppError, assertWritable, handle } from "@/lib/server/errors";
 
@@ -17,14 +17,14 @@ const Body = z.object({ subscription: Sub, device: z.string().trim().max(80).opt
 export async function GET() {
   return handle(async () => {
     await getUserDb();
-    return { publicKey: pushConfig().publicKey ?? null, enabled: pushReady() };
+    return { publicKey: pushConfig().publicKey ?? null, enabled: webPushEnabled() };
   });
 }
 
 export async function POST(req: NextRequest) {
   return handle(async () => {
     assertWritable();
-    if (!pushReady()) throw new AppError("NOT_CONFIGURED", "Push notifications aren't switched on for YORU yet.", 503);
+    if (!webPushEnabled()) throw new AppError("NOT_CONFIGURED", "Push notifications aren't switched on for YORU yet.", 503);
     const db = await getUserDb();
     const { subscription: s, device, test } = Body.parse(await req.json().catch(() => ({})));
     const out = await db.rpc<{ devices: number }>("push_subscribe", { p_endpoint: s.endpoint, p_p256dh: s.keys.p256dh, p_auth: s.keys.auth, p_device: device ?? "" });

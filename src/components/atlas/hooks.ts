@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError } from "@/lib/client/api";
+import { onYoruApp, yoruApp } from "@/lib/client/push";
 
 // Microphone recording for Atlas. The clip goes to the server as-is (WebM on
 // Chrome/Android, MP4 on Safari, Ogg on Firefox): Gemini understands it
@@ -105,20 +106,28 @@ export function useRecorder(maxSeconds: number) {
 
 // Spoken replies with the device's own voices (no extra API calls). Long
 // replies are split into sentences: some browsers cut off long utterances.
+// In the Android app (no speechSynthesis in its WebView) the phone speaks.
 export function useSpeech() {
   const [speaking, setSpeaking] = useState<string | null>(null);
-  const supported = typeof window !== "undefined" && "speechSynthesis" in window;
+  const app = yoruApp();
+  const supported = typeof window !== "undefined" && (Boolean(app) || "speechSynthesis" in window);
 
   const stop = useCallback(() => {
-    if (supported) window.speechSynthesis.cancel();
+    if (app) app.stopSpeaking();
+    else if (supported) window.speechSynthesis.cancel();
     setSpeaking(null);
-  }, [supported]);
+  }, [app, supported]);
 
   const speak = useCallback((id: string, text: string) => {
     if (!supported || !text) return;
+    const lang = document.documentElement.lang || navigator.language || "en";
+    if (app) {
+      app.speak(text, lang, 1.04, id);
+      setSpeaking(id);
+      return;
+    }
     const synth = window.speechSynthesis;
     synth.cancel();
-    const lang = document.documentElement.lang || navigator.language || "en";
     const voices = synth.getVoices().filter((v) => v.lang.toLowerCase().startsWith(lang.slice(0, 2).toLowerCase()));
     const voice = voices.find((v) => /natural|neural|premium|enhanced|google/i.test(v.name)) ?? voices[0];
     const parts = text.match(/[^.!?。！？]+[.!?。！？]*\s*/g) ?? [text];
@@ -131,8 +140,14 @@ export function useSpeech() {
       synth.speak(u);
     });
     setSpeaking(id);
-  }, [supported]);
+  }, [app, supported]);
 
-  useEffect(() => () => { if (supported) window.speechSynthesis.cancel(); }, [supported]);
+  useEffect(() => {
+    if (!app) return;
+    return onYoruApp((e) => {
+      if (e.type === "speech" && e.state !== "start") setSpeaking((s) => (s === e.id || !e.id ? null : s));
+    });
+  }, [app]);
+  useEffect(() => () => { if (app) app.stopSpeaking(); else if (supported) window.speechSynthesis.cancel(); }, [app, supported]);
   return { speaking, speak, stop, supported };
 }

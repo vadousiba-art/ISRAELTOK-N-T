@@ -28,6 +28,7 @@ import Link from "next/link";
 import type { MessageKey } from "@/lib/i18n/messages/en";
 import type { CurrentlyKind, Me, NotificationPrefs, Profile, ProfileLite } from "@/lib/types";
 import { PushPrompt } from "@/components/notifications/PushPrompt";
+import { forgetPushDevice } from "@/lib/client/push";
 
 function Section({ title, id, children }: { title: string; id?: string; children: React.ReactNode }) {
   return (
@@ -358,6 +359,7 @@ export default function SettingsPage() {
           <Button
             variant="danger"
             onClick={async () => {
+              await forgetPushDevice().catch(() => {});
               await post("/api/auth/logout").catch(() => null);
               router.replace("/login");
               router.refresh();

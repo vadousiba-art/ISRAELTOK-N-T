@@ -18,6 +18,7 @@ import { useOpenGates } from "@/lib/client/gates";
 import { WHATS_NEW_EVENT } from "@/lib/releases";
 import { LevelChip } from "@/components/yoru/Progression";
 import { PALETTE_EVENT } from "@/lib/progress";
+import { forgetPushDevice } from "@/lib/client/push";
 
 export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { me } = useShell();
@@ -42,6 +43,7 @@ export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }
   }, [open, onClose]);
 
   const logout = async () => {
+    await forgetPushDevice().catch(() => {});
     await post("/api/auth/logout").catch(() => null);
     router.replace("/login");
     router.refresh();
