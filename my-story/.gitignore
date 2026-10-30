@@ -1,0 +1,7 @@
+# personal: family photos, the story text and the rendered video stay local
+photos/
+out/
+SCRIPT.md
+film/cues.json
+film/audio/story.wav
+__pycache__/
