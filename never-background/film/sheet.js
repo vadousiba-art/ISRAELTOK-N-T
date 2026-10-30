@@ -1,22 +1,21 @@
-// Character sheet for checking the art (node film/render.mjs --sheet).
-import { head, profile, standing, phoneHead, silhouette, torso } from "./art.js";
-import { PAPER } from "./manga.js";
+// Character sheet for checking the art (node film/render.mjs --sheet): colour versions.
+import { head, standing, PAL } from "./art.js";
 
 export function sheet(g) {
-  g.fillStyle = PAPER;
+  const bg = g.createLinearGradient(0, 0, 0, 1920);
+  bg.addColorStop(0, "#ffb27a");
+  bg.addColorStop(0.5, "#e2557a");
+  bg.addColorStop(1, "#3a2b6e");
+  g.fillStyle = bg;
   g.fillRect(0, 0, 1080, 1920);
   const at = (x, y, s, fn) => { g.save(); g.translate(x, y); g.scale(s, s); fn(); g.restore(); };
-  at(0, 0, 0.6, () => head(g, { headphones: true, eyes: "open", mouth: "neutral" }));
-  at(360, 0, 0.6, () => head(g, { headphones: true, eyes: "up", mouth: "smile", rim: 1, brows: "determined", look: [0.2, -1] }));
-  at(720, 0, 0.6, () => head(g, { headphones: true, eyes: "down", mouth: "sad", light: "below", brows: "worried", look: [0, 1] }));
-  at(0, 440, 0.6, () => head(g, { hair: "bob", mouth: "grin", eyes: "smile", earring: true, collar: "tee" }));
-  at(360, 440, 0.6, () => head(g, { hair: "curly", tone: 0.35, mouth: "smile", headset: true, collar: "jacket" }));
-  at(720, 440, 0.6, () => head(g, { hair: "cap", tone: 0.18, mouth: "open", collar: "dark", eyes: "wide" }));
-  at(0, 880, 0.6, () => head(g, { hair: "long", glasses: true, mouth: "soft", collar: "tee" }));
-  at(360, 880, 0.6, () => head(g, { hair: "buns", mouth: "grin", eyes: "smile", blush: true, tone: 0.1 }));
-  at(720, 880, 0.6, () => head(g, { hair: "undercut", shave: true, tone: 0.45, mouth: "smile", earring: true, collar: "jacket" }));
-  at(0, 1320, 0.6, () => profile(g, { headphones: true, eyes: "closed" }));
-  at(360, 1320, 0.6, () => profile(g, { light: "below" }));
-  at(740, 1310, 0.23, () => standing(g, { headphones: true, mouth: "soft", eyes: "open", rim: 1 }));
-  at(900, 1350, 0.5, () => { g.translate(80, 80); phoneHead(g, { seed: 3 }); });
+  at(0, 0, 0.6, () => head(g, { pal: PAL.hero, headphones: true, eyes: "open", mouth: "soft", rim: 1 }));
+  at(360, 0, 0.6, () => head(g, { pal: PAL.bob, hair: "bob", mouth: "grin", eyes: "smile", earring: true, collar: "tee" }));
+  at(720, 0, 0.6, () => head(g, { pal: PAL.curly, hair: "curly", mouth: "smile", headset: true, collar: "jacket" }));
+  at(0, 440, 0.6, () => head(g, { pal: PAL.cap, hair: "cap", mouth: "open", collar: "dark", eyes: "wide" }));
+  at(360, 440, 0.6, () => head(g, { pal: PAL.long, hair: "long", glasses: true, mouth: "soft", collar: "tee" }));
+  at(720, 440, 0.6, () => head(g, { pal: PAL.buns, hair: "buns", mouth: "grin", eyes: "smile", blush: true }));
+  at(0, 880, 0.6, () => head(g, { pal: PAL.undercut, hair: "undercut", shave: true, mouth: "smile", earring: true, collar: "jacket" }));
+  at(380, 900, 0.4, () => standing(g, { pal: PAL.hero, headphones: true, eyes: "open", mouth: "soft", rim: 1 }));
+  at(760, 880, 0.6, () => head(g, { headphones: true, eyes: "open", mouth: "soft" }));
 }

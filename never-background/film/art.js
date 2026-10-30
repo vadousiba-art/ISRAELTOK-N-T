@@ -5,6 +5,25 @@
 import { INK, PAPER, CRIMSON, rng, clamp, lerp } from "./manga.js";
 
 export const GREY = "#8d8b88";
+
+// Colours. MONO is the black-and-white manga world; the others are the
+// colour that comes back at the end. Line art stays ink in both.
+export const MONO = {
+  color: false, skin: PAPER, skinDot: INK, hair: INK, shine: PAPER, cloth: PAPER, clothDot: INK, dark: INK,
+  iris: ["#050505", "#2b2b2e", "#77767a"], white: "#fbfaf7", lip: INK, blush: INK, acc: INK, lid: "rgba(10,10,10,0.35)",
+  jeans: PAPER, jeansDot: INK, shoe: PAPER,
+};
+const C0 = { color: true, white: "#fffaf3", lip: "#6a1f2b", blush: "#ef8a95", acc: CRIMSON, lid: "rgba(70,30,40,0.28)", jeans: "#3d4f75", jeansDot: "#222d47", shoe: "#f7f3ec" };
+export const PAL = {
+  hero: { ...C0, skin: "#f3cfb3", skinDot: "#c98b6b", hair: "#1a2136", shine: "#8fa3d6", cloth: "#2f3546", clothDot: "#151926", dark: "#2f3546", iris: ["#1f120c", "#6b3b24", "#d39a64"] },
+  bob: { ...C0, skin: "#f6d6bd", skinDot: "#d39a7c", hair: "#6b3523", shine: "#e0a37a", cloth: "#8fd6c4", clothDot: "#4f9d8b", dark: "#8fd6c4", iris: ["#24150e", "#6d4429", "#b98552"] },
+  curly: { ...C0, skin: "#8d5b3d", skinDot: "#5c3822", hair: "#22150f", shine: "#9a7a5f", cloth: "#eaae3e", clothDot: "#a8741a", dark: "#eaae3e", iris: ["#120a06", "#4a2a18", "#8a5a36"] },
+  cap: { ...C0, skin: "#edc19f", skinDot: "#c48e6b", hair: "#22336b", shine: "#6f86cc", cloth: "#f08a4b", clothDot: "#b85a24", dark: "#f08a4b", iris: ["#14202e", "#2f5372", "#6f9cc0"] },
+  long: { ...C0, skin: "#f4dccb", skinDot: "#d2a58c", hair: "#1c2747", shine: "#7d95d6", cloth: "#b8a6ec", clothDot: "#7c69bf", dark: "#b8a6ec", iris: ["#15122a", "#3e3478", "#8b7fd0"] },
+  buns: { ...C0, skin: "#f7dcc8", skinDot: "#dca286", hair: "#ef86ad", shine: "#ffd3e4", cloth: "#f7b48c", clothDot: "#cf7d55", dark: "#f7b48c", iris: ["#2a1020", "#7a2c52", "#d77aa2"] },
+  undercut: { ...C0, skin: "#6f4632", skinDot: "#472a1c", hair: "#7350c4", shine: "#b9a0f2", cloth: "#2e9a92", clothDot: "#1c6660", dark: "#2e9a92", iris: ["#100804", "#3a2214", "#7a5236"] },
+};
+let K = MONO;
 export const SHADE = "#2a2a2c";
 const P = (d) => new Path2D(d);
 
@@ -150,12 +169,12 @@ const HAIR = {
 };
 
 function hairShine(g, lines, w = 7) {
-  for (const l of lines) taper(g, l, w, { color: PAPER, a: 0.45, b: 0.45, steps: 24 });
+  for (const l of lines) taper(g, l, w, { color: K.shine, a: 0.45, b: 0.45, steps: 24 });
 }
 
 function curlyHair(g) {
   const r = rng(77);
-  g.fillStyle = INK;
+  g.fillStyle = K.hair;
   g.beginPath();
   for (let i = 0; i <= 26; i++) {
     const a = Math.PI * (1.08 + (0.84 * i) / 26) - 0.02;
@@ -167,7 +186,7 @@ function curlyHair(g) {
   }
   g.arc(306, 220, 210, 0, Math.PI * 2);
   g.fill();
-  g.strokeStyle = PAPER;
+  g.strokeStyle = K.shine;
   g.lineWidth = 3;
   for (let i = 0; i < 26; i++) {
     const x = 160 + r() * 290, y = 60 + r() * 200;
@@ -193,15 +212,15 @@ function eye(g, cx, cy, s, state, look, side, glow) {
   const lid = state === "down" ? 16 : state === "wide" ? -10 : 0;
   // White of the eye
   const white = `M-58 ${4 + lid} C-40 ${-30 + lid} 30 ${-34 + lid} 58 ${-6 + lid} C52 30 20 46 -4 46 C-34 46 -52 30 -58 ${4 + lid} Z`;
-  fill(g, white, "#fbfaf7");
+  fill(g, white, K.white);
   g.save();
   g.clip(P(white));
   // Iris
   const ix = lx * 16, iy = 10 + ly * 12 + lid * 0.5;
   const grd = g.createLinearGradient(0, iy - 40, 0, iy + 40);
-  grd.addColorStop(0, "#050505");
-  grd.addColorStop(0.62, "#2b2b2e");
-  grd.addColorStop(1, "#77767a");
+  grd.addColorStop(0, K.iris[0]);
+  grd.addColorStop(0.62, K.iris[1]);
+  grd.addColorStop(1, K.iris[2]);
   g.fillStyle = grd;
   g.beginPath();
   g.ellipse(ix, iy, 30, 40, 0, 0, Math.PI * 2);
@@ -223,8 +242,14 @@ function eye(g, cx, cy, s, state, look, side, glow) {
   g.beginPath();
   g.arc(ix - 11, iy + 18, 4.5, 0, Math.PI * 2);
   g.fill();
+  if (K.color) {
+    g.fillStyle = "rgba(255,255,255,0.55)";
+    g.beginPath();
+    g.ellipse(ix - 4, iy + 26, 12, 5, 0, 0, Math.PI * 2);
+    g.fill();
+  }
   // Lid shadow
-  g.fillStyle = "rgba(10,10,10,0.35)";
+  g.fillStyle = K.lid;
   g.fill(P(`M-60 ${-40 + lid} L60 ${-40 + lid} L60 ${-2 + lid} C30 ${-22 + lid} -30 ${-20 + lid} -60 ${8 + lid} Z`));
   g.restore();
   // Upper lid line + lashes
@@ -243,7 +268,7 @@ function brow(g, x, y, s, side, mood, outline = false) {
   g.translate(x, y);
   g.scale(side * s, s);
   const pts = [[-44, 6 + dy[0]], [-6, -3], [38, 3 + dy[1]]];
-  if (outline) taper(g, pts, 15, { color: PAPER, a: 0.25, b: 0.55, steps: 20 });
+  if (outline) taper(g, pts, 15, { color: K.color ? K.skin : PAPER, a: 0.25, b: 0.55, steps: 20 });
   taper(g, pts, 8, { a: 0.25, b: 0.55, steps: 20 });
   g.restore();
 }
@@ -252,10 +277,12 @@ function mouth(g, kind) {
   if (kind === "smile") taper(g, [[262, 500], [296, 518], [342, 500]], 6, { a: 0.3, b: 0.3, steps: 18 });
   else if (kind === "grin") {
     const m = "M258 494 C280 492 330 492 350 492 C344 540 270 540 258 494 Z";
-    fill(g, m, INK);
+    fill(g, m, K.lip);
+    stroke(g, m, INK, 4);
     fill(g, "M268 498 L340 498 C336 508 272 508 268 498 Z", PAPER);
   } else if (kind === "open") {
-    fill(g, "M286 500 C292 490 322 490 326 500 C324 524 290 524 286 500 Z", INK);
+    fill(g, "M286 500 C292 490 322 490 326 500 C324 524 290 524 286 500 Z", K.lip);
+    stroke(g, "M286 500 C292 490 322 490 326 500 C324 524 290 524 286 500 Z", INK, 3);
   } else if (kind === "sad") taper(g, [[276, 510], [304, 502], [334, 510]], 5, { a: 0.4, b: 0.4, steps: 14 });
   else if (kind === "soft") taper(g, [[276, 502], [306, 510], [336, 500]], 5, { a: 0.4, b: 0.4, steps: 14 });
   else taper(g, [[280, 504], [306, 507], [332, 503]], 5, { a: 0.4, b: 0.4, steps: 14 });
@@ -268,29 +295,58 @@ function mouth(g, kind) {
  *      earring, headset, collar, blush, glow (iris reflection colour), hairTone }
  */
 export function head(g, o = {}) {
+  const prev = K;
+  K = o.pal || MONO;
+  try {
+    headInner(g, o);
+  } finally {
+    K = prev;
+  }
+}
+
+function headInner(g, o) {
   const h = HAIR[o.hair || "messy"];
   const eyes = o.eyes || "open";
   const look = o.look || [0, 0];
   // Back hair
-  if (h.back) fill(g, h.back, INK);
-  if (h.buns) for (const [x, y, r] of h.buns) { g.fillStyle = INK; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); hairShine(g, [[[x - r * 0.5, y - r * 0.3], [x, y - r * 0.62], [x + r * 0.4, y - r * 0.5]]], 6); }
+  if (h.back) fill(g, h.back, K.hair);
+  if (h.buns) for (const [x, y, r] of h.buns) { g.fillStyle = K.hair; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); hairShine(g, [[[x - r * 0.5, y - r * 0.3], [x, y - r * 0.62], [x + r * 0.4, y - r * 0.5]]], 6); }
   if (h.curly) curlyHair(g);
   // Neck
-  ink(g, NECK, 6);
-  tone(g, NECK, (x, y) => clamp(0.65 - (y - 520) / 300), { cell: 8 });
+  ink(g, NECK, 6, K.skin);
+  tone(g, NECK, (x, y) => clamp(0.65 - (y - 520) / 300), { cell: 8, color: K.skinDot });
   if (o.collar !== false) collar(g, o.collar || "hoodie");
   // Headphones band sits behind the jaw
   if (o.headphones) {
     taper(g, [[176, 560], [190, 640], [306, 676], [424, 640], [438, 560]], 22, { a: 0.1, b: 0.1 });
   }
   // Face
-  ink(g, EAR_L, 5);
-  ink(g, EAR_R, 5);
-  ink(g, FACE, 6);
-  if (o.tone) tone(g, FACE, o.tone, { cell: 7 });
-  if (o.shave) tone(g, "M150 270 L150 340 L180 300 L460 300 L456 270 Z", 0.4, { cell: 6 });
+  ink(g, EAR_L, 5, K.skin);
+  ink(g, EAR_R, 5, K.skin);
+  ink(g, FACE, 6, K.skin);
+  if (o.tone && !K.color) tone(g, FACE, o.tone, { cell: 7 });
+  if (K.color) {
+    // soft form shading: cheek warmth and a shadow down the far side
+    g.save();
+    g.clip(P(FACE));
+    const sh = g.createLinearGradient(150, 0, 460, 0);
+    sh.addColorStop(0, "rgba(255,255,255,0.10)");
+    sh.addColorStop(0.65, "rgba(0,0,0,0)");
+    sh.addColorStop(1, "rgba(60,20,30,0.22)");
+    g.fillStyle = sh;
+    g.fillRect(140, 250, 330, 360);
+    for (const x of [214, 394]) {
+      const bl = g.createRadialGradient(x, 456, 4, x, 456, 46);
+      bl.addColorStop(0, "rgba(239,120,140,0.38)");
+      bl.addColorStop(1, "rgba(239,120,140,0)");
+      g.fillStyle = bl;
+      g.fillRect(x - 50, 406, 100, 100);
+    }
+    g.restore();
+  }
+  if (o.shave) tone(g, "M150 270 L150 340 L180 300 L460 300 L456 270 Z", 0.4, { cell: 6, color: K.color ? K.hair : INK });
   // Shadow under the fringe
-  tone(g, "M150 270 C200 330 410 330 456 270 L456 250 L150 250 Z", 0.5, { cell: 7 });
+  tone(g, "M150 270 C200 330 410 330 456 270 L456 250 L150 250 Z", 0.5, { cell: 7, color: K.skinDot });
   if (o.light === "below") {
     // Phone light from below: lower face bright, a soft dark band above.
     g.save();
@@ -303,7 +359,7 @@ export function head(g, o = {}) {
     g.fillRect(100, 240, 400, 380);
     g.restore();
   }
-  if (o.blush) for (const x of [214, 394]) hatch(g, `M${x - 34} 452 L${x + 34} 440 L${x + 30} 466 L${x - 30} 476 Z`, { gap: 7, angle: -1.1, w: 2 });
+  if (o.blush) for (const x of [214, 394]) hatch(g, `M${x - 34} 452 L${x + 34} 440 L${x + 30} 466 L${x - 30} 476 Z`, { gap: 7, angle: -1.1, w: 2, color: K.blush });
   // Brows, eyes, nose, mouth
   const by = eyes === "down" ? 272 : 262;
   eye(g, 234, 380, 1.12, eyes, [-look[0], look[1]], -1, o.glow);
@@ -314,18 +370,33 @@ export function head(g, o = {}) {
   if (h.cap) {
     taper(g, [[156, 300], [166, 360]], 8, { a: 0.2, b: 0.2, steps: 8 });
     taper(g, [[450, 300], [442, 360]], 8, { a: 0.2, b: 0.2, steps: 8 });
-    fill(g, "M126 286 C120 150 206 84 306 84 C406 84 492 150 486 286 Z", INK);
-    fill(g, "M96 290 C190 250 420 250 524 290 C500 320 120 320 96 290 Z", INK);
-    stroke(g, "M98 290 C190 252 420 252 522 290", PAPER, 3);
+    fill(g, "M126 286 C120 150 206 84 306 84 C406 84 492 150 486 286 Z", K.hair);
+    fill(g, "M96 290 C190 250 420 250 524 290 C500 320 120 320 96 290 Z", K.color ? K.hair : INK);
+    stroke(g, "M126 286 C120 150 206 84 306 84 C406 84 492 150 486 286 Z", INK, 5);
+    stroke(g, "M96 290 C190 250 420 250 524 290 C500 320 120 320 96 290 Z", INK, 5);
+    stroke(g, "M98 290 C190 252 420 252 522 290", K.shine, 3);
     g.fillStyle = PAPER;
     g.beginPath();
     g.arc(306, 180, 30, 0, Math.PI * 2);
     g.fill();
     fill(g, "M296 162 L320 166 L300 200 Z", INK);
   } else if (h.front) {
-    fill(g, h.front, o.hairTone ? GREY : INK);
-    if (o.hairTone) stroke(g, h.front, INK, 6);
-    if (h.side) for (const s of h.side) fill(g, s, o.hairTone ? GREY : INK);
+    fill(g, h.front, o.hairTone ? GREY : K.hair);
+    if (o.hairTone || K.color) stroke(g, h.front, INK, 5);
+    if (h.side) for (const s of h.side) fill(g, s, o.hairTone ? GREY : K.hair);
+    if (K.color) {
+      // a glossy band of reflected light across the hair
+      g.save();
+      g.clip(P(h.front));
+      const gl = g.createLinearGradient(0, 60, 0, 300);
+      gl.addColorStop(0, "rgba(255,255,255,0.0)");
+      gl.addColorStop(0.35, "rgba(255,255,255,0.10)");
+      gl.addColorStop(0.6, "rgba(0,0,0,0.0)");
+      gl.addColorStop(1, "rgba(0,0,0,0.18)");
+      g.fillStyle = gl;
+      g.fillRect(60, 20, 500, 400);
+      g.restore();
+    }
     if (h.shine) hairShine(g, h.shine, 8);
   }
   // Brows sit over the fringe (drawn "through" the hair), outlined in paper.
@@ -335,7 +406,7 @@ export function head(g, o = {}) {
   }
   if (h.curly) {
     // Curls falling over the forehead
-    g.fillStyle = INK;
+    g.fillStyle = K.hair;
     g.beginPath();
     for (const [x, y, r] of [[190, 260, 44], [250, 246, 46], [312, 240, 48], [374, 246, 46], [430, 262, 44]]) {
       g.moveTo(x + r, y);
@@ -376,7 +447,7 @@ export function head(g, o = {}) {
       g.translate(x, 600);
       g.rotate(r);
       fill(g, "M-40 -54 C-10 -64 30 -60 44 -40 L44 46 C30 64 -10 66 -40 56 Z", INK);
-      stroke(g, "M-24 -36 L-24 36", PAPER, 4);
+      stroke(g, "M-24 -36 L-24 36", K.color ? K.acc : PAPER, K.color ? 7 : 4);
       g.restore();
     }
   }
@@ -395,17 +466,24 @@ export function head(g, o = {}) {
 
 export function collar(g, kind) {
   if (kind === "hoodie") {
-    ink(g, "M92 720 C120 640 196 600 236 600 C270 650 344 650 378 600 C420 600 494 640 520 720 Z", 6);
-    tone(g, "M92 720 C120 640 196 600 236 600 C270 650 344 650 378 600 C420 600 494 640 520 720 Z", 0.28, { cell: 9 });
-    stroke(g, "M262 640 L254 712", INK, 5);
-    stroke(g, "M352 640 L360 712", INK, 5);
+    const d = "M92 720 C120 640 196 600 236 600 C270 650 344 650 378 600 C420 600 494 640 520 720 Z";
+    ink(g, d, 6, K.cloth);
+    tone(g, d, K.color ? (x) => (x > 380 ? 0.45 : 0.12) : 0.28, { cell: 9, color: K.clothDot });
+    stroke(g, "M262 640 L254 712", K.color ? K.acc : INK, 5);
+    stroke(g, "M352 640 L360 712", K.color ? K.acc : INK, 5);
   } else if (kind === "tee") {
-    ink(g, "M80 720 C110 650 190 620 236 616 C260 660 352 660 376 616 C424 620 504 650 532 720 Z", 6);
+    const d = "M80 720 C110 650 190 620 236 616 C260 660 352 660 376 616 C424 620 504 650 532 720 Z";
+    ink(g, d, 6, K.cloth);
+    if (K.color) tone(g, d, (x) => (x > 400 ? 0.4 : 0), { cell: 9, color: K.clothDot });
   } else if (kind === "jacket") {
-    fill(g, "M70 720 C100 640 190 604 236 600 L306 700 L376 600 C424 604 512 640 542 720 Z", INK);
-    stroke(g, "M236 600 L272 720 M376 600 L340 720", PAPER, 4);
+    const d = "M70 720 C100 640 190 604 236 600 L306 700 L376 600 C424 604 512 640 542 720 Z";
+    fill(g, d, K.color ? K.cloth : INK);
+    if (K.color) { tone(g, d, (x) => (x > 400 ? 0.45 : 0.1), { cell: 9, color: K.clothDot }); stroke(g, d, INK, 5); }
+    stroke(g, "M236 600 L272 720 M376 600 L340 720", K.color ? INK : PAPER, 4);
   } else if (kind === "dark") {
-    fill(g, "M80 720 C110 640 196 604 236 600 C270 650 344 650 378 600 C420 604 504 640 532 720 Z", INK);
+    const d = "M80 720 C110 640 196 604 236 600 C270 650 344 650 378 600 C420 604 504 640 532 720 Z";
+    fill(g, d, K.color ? K.cloth : INK);
+    if (K.color) { tone(g, d, (x) => (x > 400 ? 0.45 : 0.1), { cell: 9, color: K.clothDot }); stroke(g, d, INK, 5); }
   }
 }
 
@@ -536,23 +614,28 @@ export function torso(g, { tone: tn = 0.25, dark = false, strings = true } = {})
 }
 
 // Standing figure, hands in pockets (for the final panel). Head box on top;
-// the figure is about five heads tall and ends near y 2460.
+// the figure ends near y 2230.
 export function standing(g, o = {}) {
-  const legs = "M176 1500 L180 2380 L296 2380 L306 1640 L316 2380 L432 2380 L436 1500 Z";
-  ink(g, legs, 8);
-  tone(g, legs, (x) => (x > 330 ? 0.7 : 0.45), { cell: 10, box: [150, 1450, 320, 960] });
-  stroke(g, "M304 1640 L304 1520", INK, 5);
-  stroke(g, "M232 1860 L230 2040 M382 1860 L384 2040", INK, 3);
-  ink(g, "M128 2410 C124 2370 170 2356 292 2362 C318 2390 318 2444 292 2456 L142 2456 C122 2450 120 2432 128 2410 Z", 7);
-  ink(g, "M320 2362 C442 2356 488 2370 484 2410 C492 2432 490 2450 470 2456 L320 2456 C294 2444 294 2390 320 2362 Z", 7);
-  stroke(g, "M150 2436 L284 2436 M328 2436 L462 2436", INK, 3);
-  const body = "M66 1560 C60 1180 96 860 170 720 C200 690 230 680 250 680 L362 680 C382 680 412 690 442 720 C516 860 552 1180 546 1560 Z";
-  ink(g, body, 8);
-  tone(g, body, (x) => (x > 400 ? 0.5 : 0.16), { cell: 10, box: [40, 660, 540, 920] });
-  // Arms down to the pocket, pocket, hem
-  stroke(g, "M104 820 C96 1000 108 1180 170 1330 M508 820 C516 1000 504 1180 442 1330", INK, 7);
-  stroke(g, "M150 1300 C230 1270 382 1270 462 1300 L450 1440 L162 1440 Z", INK, 6);
-  stroke(g, "M70 1500 C220 1530 392 1530 542 1500", INK, 5);
-  stroke(g, "M262 700 L250 880 M350 700 L362 880", INK, 5);
+  const prev = K;
+  K = o.pal || MONO;
+  try {
+    const legs = "M162 1500 L176 2150 L296 2150 L306 1650 L316 2150 L436 2150 L450 1500 Z";
+    ink(g, legs, 8, K.jeans);
+    tone(g, legs, (x) => (x > 330 ? 0.7 : 0.45), { cell: 10, box: [150, 1450, 320, 720], color: K.jeansDot });
+    stroke(g, "M306 1650 L306 1520", INK, 5);
+    stroke(g, "M232 1800 L230 1960 M382 1800 L384 1960", INK, 3);
+    ink(g, "M120 2180 C116 2140 164 2126 294 2132 C320 2160 320 2214 294 2226 L136 2226 C114 2220 112 2202 120 2180 Z", 7, K.shoe);
+    ink(g, "M318 2132 C448 2126 496 2140 492 2180 C500 2202 498 2220 476 2226 L318 2226 C292 2214 292 2160 318 2132 Z", 7, K.shoe);
+    stroke(g, "M142 2206 L286 2206 M326 2206 L470 2206", K.color ? K.acc : INK, K.color ? 6 : 3);
+    const body = "M66 1560 C60 1180 96 860 170 720 C200 690 230 680 250 680 L362 680 C382 680 412 690 442 720 C516 860 552 1180 546 1560 Z";
+    ink(g, body, 8, K.cloth);
+    tone(g, body, (x) => (x > 400 ? 0.5 : 0.16), { cell: 10, box: [40, 660, 540, 920], color: K.clothDot });
+    stroke(g, "M104 820 C96 1000 108 1180 170 1330 M508 820 C516 1000 504 1180 442 1330", INK, 7);
+    stroke(g, "M150 1300 C230 1270 382 1270 462 1300 L450 1440 L162 1440 Z", INK, 6);
+    stroke(g, "M70 1500 C220 1530 392 1530 542 1500", INK, 5);
+    stroke(g, "M262 700 L250 880 M350 700 L362 880", K.color ? K.acc : INK, 5);
+  } finally {
+    K = prev;
+  }
   head(g, { ...o, collar: "hoodie" });
 }

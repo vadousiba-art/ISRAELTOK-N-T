@@ -4,7 +4,7 @@
 // database (nothing touches production). The three accounts are fictional
 // demo users; the film labels these screens "REAL YORU SCREENS · DEMO ACCOUNTS".
 //
-//   bash ../promo-03/capture/server.sh      (fresh local demo server on :3200)
+//   bash capture/server.sh      (fresh local demo server on :3200, normal logo)
 //   node capture/capture.mjs
 
 import fs from "node:fs";
@@ -46,6 +46,18 @@ async function session(key) {
     if (document.documentElement) add();
     else document.addEventListener("DOMContentLoaded", add, { once: true });
   });
+  // Same clock shift as the server (capture/server.sh), so the page renders
+  // the normal logo, not the seasonal one.
+  await ctx.addInitScript((shift) => {
+    const Real = Date;
+    class Shifted extends Real {
+      constructor(...a) { if (a.length === 0) super(Real.now() + shift); else super(...a); }
+      static now() { return Real.now() + shift; }
+    }
+    Shifted.parse = Real.parse;
+    Shifted.UTC = Real.UTC;
+    window.Date = Shifted;
+  }, 25 * 24 * 3600 * 1000);
   // The welcome film opens once per member; answer "already seen".
   await ctx.route("**/api/rpc/get_welcome_state", (r) => r.fulfill({ json: { data: { seen: 999, account_age_hours: 9999 } } }));
   const page = await ctx.newPage();

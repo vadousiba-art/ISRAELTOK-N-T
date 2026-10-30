@@ -1,56 +1,67 @@
-"""Original score and sound design for YORU — "You were never a background character."
+"""Score and sound design for YORU — "You were never a background character." (v2, 34.5 s)
 
-Everything is synthesized here (additive piano, oscillators, filtered noise,
-saturation, convolution reverb) and placed on cues.json, the timeline the
-picture uses. D minor, 100 BPM (beat 0.6 s).
+Real instruments from VS Chamber Orchestra: Community Edition (CC0): upright
+piano, violin/viola/cello sections, contrabass, harp, glockenspiel, timpani.
+Sound effects from Mixkit (Mixkit Sound Effects Free License). Electronic
+pulse, drums, risers and reverb are synthesized here. Everything is placed on
+cues.json, the timeline the picture uses. D minor; F major from the moment
+colour comes back.
 
-  0.0–2.75   near silence: room tone, a few distant phone buzzes
-  2.75–8.7   a fragile piano; a distant electronic pulse grows and the piano
-             starts to distort; interface foley (scroll, typing, deleting, send)
-  8.7–9.15   silence
-  9.15–9.55  a held breath (reverse swell)
-  9.55–15.6  release: impact, cinematic percussion, distorted guitar,
-             atmospheric synths, the melodic payoff
-  16.0       logo hit
-  17.0–25.0  warm and hopeful (F major), quieter under the question, final chord
+  0–3.95    near silence: a distant crowd, phones buzzing, paper falling
+  3.95–14.95 a fragile piano; strings creep in; a pulse grows; the piano frays
+  14.95–15.45 silence. A single heartbeat. A held breath.
+  16.1      the impact: shatter, timpani, low strings; a driving build
+  18.95     colour: harp, glockenspiel, strings open into F major, the theme
+  25.55     the logo hit
+  26.7–30.2 warm and hopeful; 30.2–33 almost nothing under the question
+  33–34.5   final chord
 
-Output: film/audio/never-background.wav, 48 kHz stereo, 16-bit.
+Output: film/audio/never-background.wav (48 kHz stereo 16-bit).
+Needs ./fetch-assets.sh first.
 """
 
 import json
 import pathlib
+import sys
 import wave
 
 import numpy as np
 from scipy import signal
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import bank as B  # noqa: E402
+
 FILM = pathlib.Path(__file__).resolve().parent.parent
 C = json.loads((FILM / "cues.json").read_text())
-SR = 48000
+SR = B.SR
 DUR = C["duration"]
 N = int(round(DUR * SR))
 TAIL = 4 * SR
 BEAT = 60.0 / C["bpm"]
-rng = np.random.default_rng(404)
+rng = np.random.default_rng(2026)
+BANK = B.build()
 
 dry = np.zeros((N + TAIL, 2))
 verb = np.zeros((N + TAIL, 2))
 
 
-# ------------------------------------------------------------------ helpers
 def tt(dur):
     return np.arange(int(dur * SR)) / SR
 
 
+def stereo(sig, pan=0.0):
+    if sig.ndim == 2:
+        l, r = np.cos((pan + 1) * np.pi / 4), np.sin((pan + 1) * np.pi / 4)
+        return sig * np.array([l, r]) * np.sqrt(2)
+    l, r = np.cos((pan + 1) * np.pi / 4), np.sin((pan + 1) * np.pi / 4)
+    return np.stack([sig * l, sig * r], 1) * np.sqrt(2)
+
+
 def place(sig, at, gain=1.0, pan=0.0, send=0.0):
-    if sig.ndim == 1:
-        l = np.cos((pan + 1) * np.pi / 4)
-        r = np.sin((pan + 1) * np.pi / 4)
-        sig = np.stack([sig * l, sig * r], axis=1) * np.sqrt(2)
+    sig = stereo(sig, pan)
     i = int(round(at * SR))
     if i < 0:
-        sig = sig[-i:]
-        i = 0
+        sig, i = sig[-i:], 0
     j = min(len(dry), i + len(sig))
     if i >= j:
         return
@@ -64,398 +75,387 @@ def env(t, a=0.002, d=0.3):
     return np.minimum(1.0, t / max(a, 1e-6)) * np.exp(-t / d)
 
 
-def adsr(n, a, d, s, r, sr=SR):
-    a, d, r = int(a * sr), int(d * sr), int(r * sr)
-    sus = max(0, n - a - d - r)
-    return np.concatenate([np.linspace(0, 1, max(a, 1)), np.linspace(1, s, max(d, 1)), np.full(sus, s), np.linspace(s, 0, max(r, 1))])[:n]
-
-
-def sos(kind, f, order=2):
-    nyq = SR / 2
-    wn = [min(x / nyq, 0.99) for x in f] if isinstance(f, (list, tuple)) else min(f / nyq, 0.99)
-    return signal.butter(order, wn, btype=kind, output="sos")
+def fade(x, a=0.01, r=0.3):
+    n = len(x)
+    e = np.ones(n)
+    na, nr = min(n, int(a * SR)), min(n, int(r * SR))
+    if na:
+        e[:na] = np.linspace(0, 1, na)
+    if nr:
+        e[n - nr:] *= np.linspace(1, 0, nr) ** 1.5
+    return x * (e[:, None] if x.ndim == 2 else e)
 
 
 def filt(x, kind, f, order=2):
-    return signal.sosfilt(sos(kind, f, order), x, axis=0)
-
-
-def noise(n):
-    return rng.standard_normal(n)
-
-
-def midi(m):
-    return 440.0 * 2 ** ((m - 69) / 12)
+    nyq = SR / 2
+    wn = [min(v / nyq, 0.99) for v in f] if isinstance(f, (list, tuple)) else min(f / nyq, 0.99)
+    return signal.sosfilt(signal.butter(order, wn, btype=kind, output="sos"), x, axis=0)
 
 
 NOTE = {"C": 0, "C#": 1, "Db": 1, "D": 2, "Eb": 3, "E": 4, "F": 5, "F#": 6, "G": 7, "Ab": 8, "A": 9, "Bb": 10, "B": 11}
 
 
 def m(name):
-    # "A4" -> midi number
-    n, o = name[:-1], int(name[-1])
-    return 12 * (o + 1) + NOTE[n]
+    return 12 * (int(name[-1]) + 1) + NOTE[name[:-1]]
 
 
-def saw(f, t):
-    # band-limited-ish saw (additive, up to 8 kHz)
-    out = np.zeros_like(t)
-    k = 1
-    while k * f < 8000 and k < 60:
-        out += np.sin(2 * np.pi * k * f * t) / k
-        k += 1
-    return out * (2 / np.pi)
+def midi_hz(n):
+    return 440.0 * 2 ** ((n - 69) / 12)
 
 
 # ------------------------------------------------------------------ instruments
-def piano(note, dur=2.5, vel=0.8, bright=1.0):
-    f0 = midi(note) if isinstance(note, (int, float)) else midi(m(note))
-    t = tt(dur)
-    out = np.zeros_like(t)
-    B = 0.00035
-    for k in range(1, 16):
-        fk = k * f0 * np.sqrt(1 + B * k * k)
-        if fk > 12000:
-            break
-        amp = (1 / k**1.15) * (bright if k > 4 else 1)
-        dec = 2.6 / (1 + 0.45 * k) * (1.4 if f0 < 200 else 1)
-        for det in (-0.6, 0.6):
-            out += amp * np.sin(2 * np.pi * (fk + det * k * 0.25) * t + rng.uniform(0, 6)) * np.exp(-t / dec)
-    hammer = filt(noise(len(t)), "bandpass", [800, 4000]) * env(t, 0.0005, 0.012) * 0.6
-    out = (out / 6 + hammer) * vel
-    out *= adsr(len(t), 0.003, 0.1, 1.0, 0.25)
-    return out
+def nearest(inst, note, layer=None):
+    rows = BANK[inst]
+    if layer is not None:
+        rows = [r for r in rows if r["layer"] == layer] or BANK[inst]
+    r = min(rows, key=lambda r: (abs(r["midi"] - note), r["layer"]))
+    return r
 
 
-def kick(t_len=0.5, f0=110, f1=42):
-    t = tt(t_len)
-    ph = 2 * np.pi * np.cumsum(f1 + (f0 - f1) * np.exp(-t / 0.05)) / SR
-    return (np.sin(ph) * env(t, 0.001, 0.22) + filt(noise(len(t)), "highpass", 3000) * env(t, 0.0005, 0.006) * 0.4)
+def piano(name, dur=2.5, vel=0.6):
+    n = m(name) if isinstance(name, str) else name
+    layer = 1 if vel < 0.4 else 2 if vel < 0.75 else 3
+    r = nearest("piano", n, layer)
+    x = B.shift(B.sample(r["file"]), n - r["midi"])
+    x = x[: int((dur + 0.6) * SR)]
+    return fade(x, 0.001, min(0.6, dur * 0.5)) * (0.6 + 0.5 * vel)
 
 
-def snare(t_len=0.4):
-    t = tt(t_len)
-    n = filt(noise(len(t)), "bandpass", [1500, 7000]) * env(t, 0.001, 0.12)
-    tone = np.sin(2 * np.pi * 190 * t) * env(t, 0.001, 0.07)
-    return n * 0.7 + tone * 0.5
+def strings(inst, name, dur, vel=0.6, attack=0.25, release=0.6, start=0.12):
+    n = m(name) if isinstance(name, str) else name
+    layer = None
+    if inst in ("violins", "violas"):
+        layer = 1 if vel < 0.6 else 2
+    elif inst in ("cellos", "basses"):
+        layer = 1 if vel < 0.6 else 3
+    r = nearest(inst, n, layer)
+    x = B.sample(r["file"])
+    x = x[int(start * SR):]
+    x = B.shift(x, n - r["midi"])
+    need = int((dur + release) * SR)
+    if len(x) < need:  # extend long notes with a crossfaded loop of the body
+        body = x[int(0.6 * SR): int(min(len(x), 6 * SR))]
+        while len(x) < need:
+            k = int(0.25 * SR)
+            ramp_ = np.linspace(0, 1, k)[:, None]
+            x = np.vstack([x[:-k], x[-k:] * (1 - ramp_) + body[:k] * ramp_, body[k:]])
+    x = x[:need]
+    return fade(x, attack, release) * vel
 
 
-def taiko(t_len=1.4, f=62):
-    t = tt(t_len)
-    ph = 2 * np.pi * np.cumsum(f * (1 + 0.35 * np.exp(-t / 0.04))) / SR
-    body = np.sin(ph) * env(t, 0.002, 0.45)
-    skin = filt(noise(len(t)), "bandpass", [100, 900]) * env(t, 0.001, 0.08)
-    return np.tanh((body + skin * 0.6) * 1.6)
+def section(notes, dur, vel=0.5, **kw):
+    """A string chord: notes are (inst, note) pairs."""
+    parts = [strings(inst, nm, dur, vel, **kw) for inst, nm in notes]
+    n = max(len(x) for x in parts)
+    out = np.zeros((n, 2))
+    for x in parts:
+        out[: len(x)] += x
+    return out / np.sqrt(len(parts))
 
 
-def hat(t_len=0.08, open_=False):
-    t = tt(0.35 if open_ else t_len)
-    return filt(noise(len(t)), "highpass", 7000) * env(t, 0.0005, 0.12 if open_ else 0.025)
+def harp(name, vel=0.7):
+    n = m(name)
+    r = nearest("harp", n)
+    x = B.shift(B.sample(r["file"]), n - r["midi"])[: int(3.5 * SR)]
+    return fade(x, 0.001, 1.0) * vel
 
 
-def guitar_chord(root, dur, mute=False, drive=7.0):
-    t = tt(dur)
-    f = midi(root)
-    x = saw(f, t) + saw(f * 1.4983, t) * 0.8 + saw(f * 2, t) * 0.6 + saw(f * 1.003, t) * 0.5
-    x *= adsr(len(t), 0.004, 0.08 if mute else 0.3, 0.5 if mute else 0.85, 0.05 if mute else 0.2)
-    if mute:
-        x *= np.exp(-t / 0.11)
-    y = np.tanh(x * drive)
-    y = filt(y, "highpass", 90)
-    y = filt(y, "lowpass", 4200, 4)
-    return y * 0.55
+def glock(name, vel=0.5):
+    n = m(name)
+    r = nearest("glock", n)
+    x = B.shift(B.sample(r["file"]), n - r["midi"])[: int(3.0 * SR)]
+    return fade(x, 0.001, 1.2) * vel
 
 
-def pad(notes, dur, bright=1800, gain=1.0):
-    t = tt(dur)
-    out = np.zeros((len(t), 2))
-    for i, n in enumerate(notes):
-        f = midi(m(n))
-        for d, side in ((-0.09, 0), (0.08, 1), (0.0, None)):
-            s = saw(f * (1 + d / 100 * 8), t)
-            if side is None:
-                out += np.stack([s, s], 1) * 0.5
-            else:
-                out[:, side] += s
-    out = filt(out, "lowpass", bright, 2)
-    out *= adsr(len(t), 0.5, 0.4, 0.85, 0.8)[:, None]
-    return out / (len(notes) * 2.2) * gain
+def timpani(roll=False, idx=0):
+    files = BANK["timpani_roll" if roll else "timpani_hit"]
+    return B.sample(files[idx % len(files)])
 
 
-def lead(note, dur, gain=1.0):
-    t = tt(dur)
-    f = midi(m(note))
-    vib = 1 + 0.004 * np.sin(2 * np.pi * 5.4 * t) * np.minimum(1, t / 0.25)
-    ph = 2 * np.pi * np.cumsum(f * vib) / SR
-    x = 0.6 * np.sign(np.sin(ph)) * 0.35 + 0.65 * np.sin(ph) + 0.25 * np.sin(2 * ph) + 0.12 * np.sin(3 * ph)
-    x = filt(np.tanh(x * 1.6), "lowpass", 3800, 2)
-    return x * adsr(len(t), 0.012, 0.12, 0.8, min(0.25, dur * 0.4)) * gain
+def sfx(i, start=0.0, dur=None):
+    x = B.load_mp3(B.STOCK / "sfx" / f"{i}.mp3")
+    x = x[int(start * SR):]
+    if dur:
+        x = x[: int(dur * SR)]
+    return x
 
 
-# ------------------------------------------------------------------ 0 – 2.75: near silence
-room = filt(noise(N), "lowpass", 320) * 0.004 + filt(noise(N), "bandpass", [1800, 5000]) * 0.0007
-room *= np.minimum(1, np.arange(N) / (0.6 * SR))
-place(np.stack([room, filt(noise(N), "lowpass", 320) * 0.004], 1), 0)
-for at, pan in ((0.55, -0.6), (1.25, 0.5), (1.85, -0.2), (2.3, 0.7)):
-    t = tt(0.35)
-    buzz = np.sign(np.sin(2 * np.pi * 165 * t)) * (0.5 + 0.5 * np.sign(np.sin(2 * np.pi * 9 * t)))
-    buzz = filt(buzz, "bandpass", [120, 900]) * adsr(len(t), 0.01, 0.05, 1, 0.08)
-    place(buzz, at, 0.008, pan, 0.4)
-# paper drifting (notifications falling), faint
-for i in range(9):
-    t = tt(0.5)
-    sw = filt(noise(len(t)), "bandpass", [2500, 7000]) * np.sin(np.pi * t / 0.5) ** 2
-    place(sw, 0.2 + i * 0.27, 0.006, rng.uniform(-0.8, 0.8), 0.3)
+def kick(f0=95, f1=42, d=0.4):
+    t = tt(d)
+    ph = 2 * np.pi * np.cumsum(f1 + (f0 - f1) * np.exp(-t / 0.045)) / SR
+    return np.sin(ph) * env(t, 0.001, 0.2) + filt(rng.standard_normal(len(t)), "highpass", 3000) * env(t, 0.0005, 0.005) * 0.3
 
-# ------------------------------------------------------------------ 2.75 – 8.7: piano, pulse, foley
+
+def hat(d=0.06):
+    t = tt(d)
+    return filt(rng.standard_normal(len(t)), "highpass", 8000) * env(t, 0.0005, 0.02)
+
+
+def clap(d=0.3):
+    t = tt(d)
+    n = filt(rng.standard_normal(len(t)), "bandpass", [900, 5000])
+    e = sum(env(np.maximum(0, t - o), 0.001, 0.02) * (t >= o) for o in (0, 0.012, 0.024)) + env(t, 0.03, 0.12) * 0.6
+    return n * e
+
+
+# ------------------------------------------------------------------ 0 – 3.95: the room
+crowd = filt(sfx(444, 12.0, 6.0), "lowpass", 900)
+crowd = filt(crowd, "highpass", 150)
+place(fade(crowd, 0.9, 1.6), 0.15, 0.2, 0, 0.3)
+for at, pan in ((0.75, -0.6), (1.45, 0.55), (2.2, -0.25), (2.85, 0.7)):
+    t = tt(0.32)
+    buzz = np.sign(np.sin(2 * np.pi * 168 * t)) * (0.5 + 0.5 * np.sign(np.sin(2 * np.pi * 9 * t)))
+    place(filt(buzz, "bandpass", [120, 800]) * env(t, 0.01, 0.2), at, 0.018, pan, 0.4)
+for i, at in enumerate((0.4, 1.1, 1.9, 2.6, 3.3)):
+    place(sfx(2380), at, 0.06, (-1) ** i * 0.5, 0.4)
+
+# ------------------------------------------------------------------ 3.95 – 14.95: fragile piano, strings, the pulse
 P0 = C["piano1"]
-motif = [  # (beat offset from P0, note, dur, vel)
-    (0, "A4", 3.0, 0.55),
-    (1, "F4", 2.6, 0.45),
-    (2, "E4", 2.6, 0.42),
-    (3, "D4", 3.2, 0.5),
-    (4, "A4", 2.5, 0.45),
-    (5, "C5", 2.5, 0.42),
-    (6, "Bb4", 2.5, 0.42),
-    (7, "A4", 3.0, 0.45),
-    (8, "F4", 2.4, 0.42),
-    (8.5, "E4", 2.4, 0.38),
-    (9, "D4", 3.0, 0.42),
+mel = [  # (beat, note, beats)
+    (0, "A4", 1.5), (1.5, "F4", 0.5), (2, "E4", 1), (3, "D4", 1.8),
+    (4.5, "C5", 1.5), (6, "Bb4", 0.5), (6.5, "A4", 1), (7.5, "F4", 1.6),
+    (9, "A4", 1.2), (10.2, "G4", 0.5), (10.7, "F4", 0.8), (11.5, "E4", 1.5),
+    (13, "D4", 0.6), (13.6, "E4", 0.6), (14.2, "F4", 1.3),
 ]
-left = [(0, "D3"), (4, "Bb2"), (7, "F2"), (9, "A2")]
-for b, n, d, v in motif:
-    place(piano(n, d, v), P0 + b * BEAT, 0.5, 0.1, 0.55)
-for b, n in left:
-    place(piano(n, 4.0, 0.5, 0.6), P0 + b * BEAT, 0.42, -0.15, 0.5)
-
-# distorted piano echo (grows from 5.4 s): the same notes, crushed and saturated
-for b, n, d, v in motif[4:]:
+for b, nm, d in mel:
     at = P0 + b * BEAT
-    k = np.clip((at - 5.0) / 3.5, 0, 1)
-    p = piano(n, d * 0.8, v)
-    crushed = np.round(p * 24) / 24
-    dist = np.tanh(crushed * 4) * 0.4
-    place(filt(dist, "bandpass", [300, 3200]), at + 0.02, 0.22 * k, -0.3, 0.6)
-
-# electronic pulse: muffled sub pulse on eighths, rising
-t0, t1 = 3.3, 8.72
-n8 = int((t1 - t0) / (BEAT / 2))
-for i in range(n8):
+    if at > C["hush"][0] - 0.1:
+        continue
+    place(piano(nm, d * BEAT + 1.2, 0.42), at, 0.55, 0.1, 0.5)
+for b, nm in ((0, "D3"), (4.5, "Bb2"), (9, "F2"), (11.5, "C3"), (13, "A2")):
+    place(piano(nm, 4.0, 0.3), P0 + b * BEAT, 0.42, -0.15, 0.45)
+# frayed piano doubles (bit-crushed, saturated) from the typing onward
+for b, nm, d in mel[6:]:
+    at = P0 + b * BEAT
+    if at > C["hush"][0] - 0.1:
+        continue
+    k = np.clip((at - 9.0) / 5.0, 0, 1)
+    p = piano(nm, d * BEAT + 0.8, 0.5)
+    crushed = np.tanh(np.round(p * 14) / 14 * 3) * 0.5
+    place(filt(crushed, "bandpass", [350, 3000]), at + 0.025, 0.25 * k, -0.35, 0.6)
+# strings: cellos under the scroll, violas with the things they love, a thin tense violin line later
+place(strings("cellos", "D3", 4.6, 0.35, attack=1.4, release=1.2), 5.0, 0.5, -0.3, 0.6)
+place(strings("basses", "D2", 4.6, 0.3, attack=1.6, release=1.2), 5.2, 0.4, -0.2, 0.5)
+place(strings("violas", "F3", 3.0, 0.35, attack=0.9, release=1.0), 7.3, 0.42, 0.3, 0.6)
+place(strings("violas", "A3", 3.0, 0.3, attack=0.9, release=1.0), 7.3, 0.36, 0.35, 0.6)
+place(strings("cellos", "Bb2", 3.2, 0.38, attack=0.8, release=1.0), 9.3, 0.5, -0.3, 0.6)
+place(strings("cellos", "A2", 3.6, 0.4, attack=0.8, release=0.6), 12.0, 0.5, -0.3, 0.6)
+v1 = strings("violins", "A5", 3.6, 0.3, attack=2.2, release=0.4)
+place(v1, 11.4, 0.34, 0.25, 0.7)
+v2 = strings("violins", "Bb5", 2.0, 0.25, attack=1.6, release=0.3)
+place(v2, 13.1, 0.26, -0.25, 0.7)
+# the pulse: a muffled sub on eighth notes, growing
+t0, t1 = 9.3, C["hush"][0]
+for i in range(int((t1 - t0) / (BEAT / 2))):
     at = t0 + i * BEAT / 2
     k = (at - t0) / (t1 - t0)
-    t = tt(0.28)
+    t = tt(0.3)
     p = np.sin(2 * np.pi * 55 * t) * env(t, 0.004, 0.12) + 0.3 * np.sin(2 * np.pi * 110 * t) * env(t, 0.002, 0.05)
-    p = filt(p, "lowpass", 300 + 900 * k)
-    place(p, at, (0.05 + 0.2 * k) * (1.0 if i % 2 == 0 else 0.6), 0, 0.15)
-# a tense high drone creeping in
-t = tt(t1 - 4.6)
-dr = (np.sin(2 * np.pi * midi(m("A5")) * t) + 0.6 * np.sin(2 * np.pi * midi(m("Bb5")) * t)) * np.linspace(0, 1, len(t)) ** 2
-place(filt(dr, "lowpass", 2500) * 0.016, 4.6, 1, 0.2, 0.8)
+    place(filt(p, "lowpass", 260 + 900 * k), at, (0.05 + 0.22 * k) * (1.0 if i % 2 == 0 else 0.55), 0, 0.15)
 
-# foley — scrolling
-for i in range(7):
-    at = C["scroll"][0] + 0.05 + i * 0.38
-    if C["favCard"] < at < C["trendWave"][0]:
+# foley
+for i in range(6):  # thumb scrolls
+    at = C["scroll"][0] + 0.15 + i * 0.45
+    if C["favHold"][0] < at < C["favHold"][1]:
         continue
     t = tt(0.18)
-    s = filt(noise(len(t)), "bandpass", [1200, 5000]) * np.sin(np.pi * t / 0.18) ** 2
-    place(s, at, 0.03, 0.2, 0.2)
-# the trend wave: a rushing, same-y whoosh
-t = tt(C["trendWave"][1] - C["trendWave"][0] + 0.2)
-wv = filt(noise(len(t)), "bandpass", [600, 2400]) * np.linspace(0, 1, len(t)) ** 1.5 * adsr(len(t), 0.01, 0.1, 1, 0.12)
-place(wv, C["trendWave"][0], 0.07, 0, 0.3)
-# panels slamming in (things they love): soft paper slaps with a small bell
+    place(filt(rng.standard_normal(len(t)), "bandpass", [1200, 5000]) * np.sin(np.pi * t / 0.18) ** 2, at, 0.025, 0.2, 0.2)
+place(sfx(1492), C["trendWave"][0] - 0.55, 0.22, 0, 0.3)  # the same-y trend wave
+place(sfx(2350), C["noteRise"][0] - 0.05, 0.3, -0.2, 0.6)  # the note escapes
 for at in C["interests"]:
-    t = tt(0.3)
-    slap = filt(noise(len(t)), "bandpass", [400, 3000]) * env(t, 0.001, 0.04)
-    place(slap, at, 0.12, rng.uniform(-0.4, 0.4), 0.4)
-    place(piano("A5", 1.2, 0.35, 1.2), at, 0.12, 0.3, 0.7)
-# typing and deleting
-MSG = "have you ever heard of"
-a, b = C["typeText"]
-for i in range(len(MSG)):
-    at = a + (b - a) * i / len(MSG)
+    place(sfx(1104), at - 0.05, 0.5, rng.uniform(-0.4, 0.4), 0.4)
+    place(piano("A6", 1.2, 0.25), at, 0.15, 0.3, 0.7)
+place(sfx(1492), C["slideUp"][0] - 0.75, 0.12, 0.2, 0.2)
+typ = sfx(1393, 0.0, C["typeText"][1] - C["typeText"][0])
+place(fade(typ, 0.01, 0.05), C["typeText"][0], 0.55, 0.3, 0.1)
+for i in range(10):
+    at = C["deleteText"][0] + (C["deleteText"][1] - C["deleteText"][0]) * i / 10
     t = tt(0.05)
-    click = filt(noise(len(t)), "bandpass", [2000, 6500]) * env(t, 0.0005, 0.008)
-    place(click, at + rng.uniform(-0.01, 0.01), 0.07, 0.3, 0.1)
-d0, d1 = C["deleteText"]
-for i in range(9):
-    at = d0 + (d1 - d0) * i / 9
-    t = tt(0.05)
-    click = filt(noise(len(t)), "bandpass", [900, 2600]) * env(t, 0.0005, 0.01)
-    place(click, at, 0.08, 0.3, 0.1)
-# the group laughing, muffled and far away as they move on
-for i, at in enumerate([6.95, 7.1, 7.22, 7.36]):
-    t = tt(0.18)
-    f = 280 + i * 40
-    hah = np.sin(2 * np.pi * f * t * (1 - 0.15 * t)) * filt(noise(len(t)), "lowpass", 1200) * 0.6 * env(t, 0.01, 0.08)
-    place(filt(hah, "lowpass", 900), at, 0.05, 0.5 - i * 0.2, 0.7)
-# send tap and the message sinking
+    place(filt(rng.standard_normal(len(t)), "bandpass", [900, 2600]) * env(t, 0.0005, 0.01), at, 0.06, 0.3, 0.1)
+place(sfx(1492), C["slideDown"][0] - 0.75, 0.12, -0.2, 0.2)
+for i, at in enumerate([11.62, 11.78, 11.92, 12.1, 12.26]):  # the group laughing, far away
+    t = tt(0.17)
+    f = 260 + (i % 3) * 45
+    hah = np.sin(2 * np.pi * f * t * (1 - 0.12 * t)) * filt(rng.standard_normal(len(t)), "lowpass", 1400) * env(t, 0.01, 0.07)
+    place(filt(hah, "lowpass", 1000), at, 0.06, 0.5 - i * 0.2, 0.7)
+place(sfx(1492), C["slideUp2"][0] - 0.75, 0.12, 0.2, 0.2)
 t = tt(0.06)
-place(filt(noise(len(t)), "bandpass", [1500, 5000]) * env(t, 0.0005, 0.01), C["sendTap"], 0.1, 0.2)
+place(filt(rng.standard_normal(len(t)), "bandpass", [1500, 5000]) * env(t, 0.0005, 0.01), C["sendTap"], 0.1, 0.2)
 t = tt(0.5)
-place(np.sin(2 * np.pi * (900 - 600 * t) * t) * env(t, 0.005, 0.18) * 0.3, C["sendTap"] + 0.02, 0.06, 0, 0.5)
-t = tt(C["sink"][1] - C["sink"][0])
-sink = filt(noise(len(t)), "lowpass", 600) * np.linspace(0, 1, len(t))
-place(sink, C["sink"][0], 0.08, 0, 0.4)
+place(np.sin(2 * np.pi * (900 - 600 * t) * t) * env(t, 0.005, 0.18), C["sendTap"] + 0.02, 0.05, 0, 0.5)
+place(sfx(1486, 0.0, 2.4), C["ink1"][0] - 0.55, 0.2, 0, 0.4)  # sinking under the ink
+rain = filt(sfx(1253, 3.0, 3.2), "lowpass", 5000)
+place(fade(rain, 0.5, 0.45), C["alone"][0] - 0.2, 0.55, 0, 0.1)
 
-# ------------------------------------------------------------------ 8.72 – 9.55: silence, then a held breath
-hush0, hush1 = C["hush"]
-# (silence: nothing placed from hush0 to 9.15 except the piano tail, ducked in the mix below)
-t = tt(C["impact"] - 9.15)
-k = np.linspace(0, 1, len(t))
-swell = filt(noise(len(t)), "bandpass", [500, 6000]) * k**3
-swell += np.sin(2 * np.pi * (60 + 140 * k**2) * t) * k**2 * 0.5
-place(np.stack([swell, filt(noise(len(t)), "bandpass", [500, 6000]) * k**3], 1), 9.15, 0.11, 0, 0.8)
+# ------------------------------------------------------------------ 14.95 – 16.1: silence, a heartbeat, a held breath
+place(sfx(490), C["heartbeat"] - 0.02, 0.9, 0, 0.3)
+imp = sfx(788)
+PEAK788 = 2.18
+lead_in = C["impact"] - (C["hush"][1])  # the impact's own rising whoosh, from the end of the silence
+breath = imp[int((PEAK788 - lead_in) * SR):].copy()
+nl = int(lead_in * SR)
+breath[:nl] *= (np.linspace(0, 1, nl) ** 2.5)[:, None]  # stays under the heartbeat, then swells into the hit
+place(fade(breath, 0.05, 0.8), C["hush"][1], 1.0, 0, 0.35)
 
-# ------------------------------------------------------------------ 9.55: the impact and the release
+# ------------------------------------------------------------------ 16.1: the impact, the build
 I0 = C["impact"]
-t = tt(3.0)
-boom = np.sin(2 * np.pi * np.cumsum(30 + 40 * np.exp(-t / 0.15)) / SR) * env(t, 0.001, 0.9)
-crack = filt(noise(len(t)), "highpass", 1500) * env(t, 0.0005, 0.09)
-place(np.tanh(boom * 1.4) * 0.7 + crack * 0.5, I0, 0.95, 0, 0.5)
-t = tt(0.6)
-slash = filt(noise(len(t)), "bandpass", [2000, 9000]) * env(t, 0.002, 0.12)
-place(np.stack([slash * 0.5, slash], 1), I0 + 0.04, 0.35, 0, 0.6)
-# shards
-for i in range(14):
-    t = tt(0.25)
-    f = rng.uniform(3000, 9000)
-    sh = np.sin(2 * np.pi * f * t) * env(t, 0.0005, 0.05) + filt(noise(len(t)), "highpass", 5000) * env(t, 0.0005, 0.02)
-    place(sh, I0 + 0.08 + rng.uniform(0, 0.6), 0.05, rng.uniform(-0.9, 0.9), 0.6)
+place(sfx(759), I0, 0.55, 0.1, 0.3)  # glass
+place(timpani(False, 3), I0, 1.2, 0, 0.4)
+place(section([("cellos", "D3"), ("basses", "D2"), ("violas", "A3")], 0.9, 0.9, attack=0.01, release=0.5), I0, 0.9, 0, 0.4)
+t = tt(2.5)
+place(np.sin(2 * np.pi * np.cumsum(30 + 40 * np.exp(-t / 0.18)) / SR) * env(t, 0.001, 0.9), I0, 0.55, 0, 0.3)
+for i in range(16):  # shards
+    t = tt(0.2)
+    f = rng.uniform(3500, 9000)
+    sh = np.sin(2 * np.pi * f * t) * env(t, 0.0005, 0.05) + filt(rng.standard_normal(len(t)), "highpass", 5000) * env(t, 0.0005, 0.02)
+    place(sh, I0 + 0.08 + rng.uniform(0, 0.7), 0.035, rng.uniform(-0.9, 0.9), 0.6)
 
-# groove: 100 BPM from the impact to the logo
-R0, R1 = I0, C["logo"][0]
-nbeats = int((R1 - R0) / BEAT)
-for b in range(nbeats):
-    at = R0 + b * BEAT
-    place(kick(), at, 0.55 if b % 2 == 0 else 0.4, 0)
+# the groove from the impact to the logo (84 BPM)
+G0, G1 = I0, C["logo"][0]
+chords = [  # (start, [(inst, note)...], bass)
+    (I0, ["D4", "F4", "A4"], "D2"),
+    (I0 + 2 * BEAT, ["D4", "F4", "Bb4"], "Bb1"),
+    (C["bloom"][0], ["F4", "A4", "C5"], "F2"),
+    (C["bloom"][0] + 2 * BEAT, ["E4", "G4", "C5"], "C2"),
+    (C["bloom"][0] + 4 * BEAT, ["D4", "F4", "A4"], "D2"),
+    (C["bloom"][0] + 6 * BEAT, ["D4", "F4", "Bb4"], "Bb1"),
+    (C["bloom"][0] + 8 * BEAT, ["F4", "A4", "C5"], "F2"),
+    (C["bloom"][0] + 10 * BEAT, ["E4", "G4", "C5"], "C2"),
+]
+for i, (st, ch, bass) in enumerate(chords):
+    en = chords[i + 1][0] if i + 1 < len(chords) else G1 + 0.3
+    if st >= G1:
+        break
+    dur = en - st
+    major = st >= C["bloom"][0] - 0.01
+    vel = 0.55 if major else 0.45
+    hi = [("violins", nm[:-1] + str(int(nm[-1]) + 1)) for nm in ch] if major else [("violas", nm) for nm in ch]
+    place(section(hi, dur, vel, attack=0.35 if major else 0.2, release=0.5), st, 0.42, 0.15, 0.55)
+    place(section([("cellos", ch[0][:-1] + str(int(ch[0][-1]) - 1)), ("basses", bass[:-1] + str(int(bass[-1]) + 1))], dur, vel, attack=0.15, release=0.4), st, 0.5, -0.2, 0.45)
+    # driving low-string ostinato (eighths), short notes from the sustained samples
+    for e in range(int(dur / (BEAT / 2))):
+        at = st + e * BEAT / 2
+        s = strings("cellos", bass[:-1] + str(int(bass[-1]) + 1), BEAT * 0.38, 0.75, attack=0.01, release=0.08, start=0.05)
+        place(s, at, 0.32 if e % 2 == 0 else 0.22, -0.4, 0.2)
+nb = int((G1 - G0) / BEAT)
+for b in range(nb):
+    at = G0 + b * BEAT
+    place(kick(), at, 0.5 if b % 2 == 0 else 0.36, 0)
     if b % 2 == 1:
-        place(snare(), at, 0.32, 0.05, 0.3)
-    for s16 in range(4):
-        place(hat(), at + s16 * BEAT / 4, 0.05 if s16 % 2 else 0.08, 0.35)
+        place(clap(), at, 0.22, 0.05, 0.35)
+    for s8 in range(2):
+        place(hat(), at + s8 * BEAT / 2, 0.05 if s8 else 0.07, 0.35)
     if b % 4 == 0:
-        place(taiko(), at, 0.38, -0.25, 0.4)
-    if b % 4 == 3:
-        place(taiko(f=82), at + BEAT / 2, 0.26, 0.3, 0.4)
-# guitar: i–VI–III–VII (D5 Bb5 F5 C5), chugging eighths with a held hit each bar
-prog = ["D3", "Bb2", "F2", "C3"]
-for bar in range(int(np.ceil(nbeats / 2))):
-    root = m(prog[bar % 4])
-    at = R0 + bar * 2 * BEAT
-    if at >= R1:
-        break
-    place(guitar_chord(root, BEAT * 0.95), at, 0.24, -0.45, 0.15)
-    place(guitar_chord(root, BEAT * 0.95), at + 0.012, 0.24, 0.45, 0.15)
-    for e in range(1, 4):
-        place(guitar_chord(root, BEAT / 2, mute=True), at + BEAT * 0.5 * e + BEAT * 0.5, 0.16, -0.5 if e % 2 else 0.5, 0.1)
-# atmospheric pad
-chords = [["D3", "A3", "F4"], ["Bb2", "F3", "D4"], ["F3", "C4", "A4"], ["C3", "G3", "E4"]]
-for bar in range(int(np.ceil(nbeats / 2))):
-    at = R0 + bar * 2 * BEAT
-    if at >= R1:
-        break
-    place(pad(chords[bar % 4], 2 * BEAT + 0.6, 2200), at, 0.32, 0, 0.6)
-# the melodic payoff
-mel = [
-    (0, "D5", 1), (1, "F5", 0.5), (1.5, "E5", 0.5), (2, "D5", 1), (3, "A4", 1),
+        place(timpani(False, b), at, 0.55, -0.25, 0.4)
+
+# colour returns: harp glissando, glockenspiel, the theme
+B0 = C["bloom"][0]
+gl = ["F3", "A3", "C4", "F4", "A4", "C5", "F5", "A5", "C6"]
+for i, nm in enumerate(gl):
+    place(harp(nm, 0.7), B0 - 0.36 + i * 0.045, 0.5, -0.5 + i * 0.12, 0.6)
+for i, nm in enumerate(["C6", "F6", "A6"]):
+    place(glock(nm, 0.5), B0 + 0.05 + i * 0.12, 0.35, 0.3, 0.7)
+place(sfx(2350), B0 - 0.1, 0.35, 0, 0.6)
+theme = [  # (beat from bloom, note, beats)
+    (0, "C5", 1), (1, "F5", 0.5), (1.5, "E5", 0.5), (2, "C5", 1), (3, "A4", 1),
     (4, "Bb4", 1), (5, "D5", 0.5), (5.5, "C5", 0.5), (6, "A4", 2),
     (8, "F5", 1), (9, "G5", 0.5), (9.5, "A5", 0.5), (10, "G5", 1), (11, "F5", 1),
-    (12, "E5", 1.5), (13.5, "D5", 0.5), (14, "C5", 1), (15, "E5", 1),
+    (12, "E5", 1.5), (13.5, "D5", 0.5), (14, "C5", 2),
 ]
-M0 = C["individuals"][0] - 0.1
-for b, n, d in mel:
-    at = M0 + b * BEAT
-    if at > R1 - 0.1:
+for b, nm, d in theme:
+    at = B0 + 0.1 + b * BEAT
+    if at > G1 - 0.1:
         break
-    x = lead(n, d * BEAT * 0.98)
-    place(x, at, 0.2, 0.15, 0.45)
-    place(x, at + 0.28, 0.06, -0.4, 0.6)  # echo
-# a piano doubling the payoff an octave down, for warmth
-for b, n, d in mel[:10]:
-    place(piano(m(n) - 12, 1.8, 0.4), M0 + b * BEAT, 0.16, -0.1, 0.4)
+    place(piano(nm, d * BEAT + 0.8, 0.8), at, 0.55, 0.1, 0.45)
+    place(strings("violins", nm[:-1] + str(int(nm[-1]) + 1), d * BEAT * 0.98, 0.45, attack=0.06, release=0.25), at, 0.32, 0.25, 0.55)
 
-# ------------------------------------------------------------------ 15.6 – 17.0: logo
-L0 = C["logoLines"][0]
-t = tt(C["logoIn"] - L0)
+# ------------------------------------------------------------------ 25.1 – 26.95: the logo
+L0, LI = C["logo"][0], C["logoIn"]
+t = tt(LI - (L0 - 0.4))
 k = np.linspace(0, 1, len(t))
-rise = filt(noise(len(t)), "bandpass", [800, 8000]) * k**2
-place(rise, L0, 0.08, 0, 0.6)
-t = tt(3.0)
-hit = np.tanh(np.sin(2 * np.pi * np.cumsum(38 + 50 * np.exp(-t / 0.12)) / SR) * env(t, 0.001, 0.8) * 1.5)
-shimmer = sum(np.sin(2 * np.pi * midi(m(n)) * t) for n in ("D6", "A6", "F6")) * env(t, 0.01, 1.4) * 0.15
-place(hit * 0.7 + shimmer, C["logoIn"], 0.7, 0, 0.6)
-place(pad(["D3", "A3", "D4", "F4"], 1.6, 1500), C["logoIn"], 0.25, 0, 0.8)
+rise = filt(rng.standard_normal(len(t)), "bandpass", [700, 7000]) * k**2.5
+place(rise, L0 - 0.4, 0.09, 0, 0.6)
+place(fade(timpani(True, 2)[: int((LI - L0 + 0.1) * SR)], 0.4, 0.05), L0 - 0.05, 0.55, 0, 0.4)
+place(sfx(1143), LI - 0.55, 0.9, 0, 0.35)
+place(section([("violins", "F5"), ("violins", "C6"), ("violas", "A4"), ("cellos", "F3"), ("basses", "F2")], 1.5, 0.75, attack=0.01, release=1.0), LI, 0.6, 0, 0.6)
+for nm in ("F2", "C3", "F3"):
+    place(piano(nm, 2.5, 0.85), LI, 0.4, 0, 0.5)
+for i, nm in enumerate(["F6", "C7", "A6"]):
+    place(glock(nm, 0.45), LI + 0.08 + i * 0.1, 0.3, 0.2, 0.7)
 
-# ------------------------------------------------------------------ 17.0 – 25.0: warm, hopeful (F major), then the question
+# ------------------------------------------------------------------ 26.7 – 30.2: warm and hopeful
 F0 = C["final"][0]
-warm = [(["F3", "C4", "A4"], 0.0, 1.3), (["C3", "G3", "E4"], 1.2, 1.1), (["Bb2", "F3", "D4"], 2.2, 1.0)]
-for ch, off, d in warm:
-    place(pad(ch, d + 0.8, 1300), F0 + off, 0.26, 0, 0.7)
-arp = ["F4", "A4", "C5", "A4", "E4", "G4", "D4"]
-for i, n in enumerate(arp):
-    place(piano(n, 2.0, 0.3), F0 + i * 0.42, 0.22, 0.2 if i % 2 else -0.2, 0.55)
-# the payoff phrase again, in major, on piano
-hope = [(0, "C5"), (1, "F5"), (1.5, "E5"), (2, "C5"), (3, "A4"), (4, "Bb4"), (5, "D5"), (5.5, "C5"), (6, "A4")]
-H0 = F0 + 0.15
-for b, n in hope:
-    place(piano(n, 2.2, 0.45), H0 + b * 0.47, 0.3, 0.1, 0.6)
-# question: let it breathe (a held F chord, very soft, one high note)
+warm = [(0.0, ["F4", "A4", "C5"], "F2"), (0.95, ["E4", "G4", "C5"], "C2"), (1.85, ["D4", "F4", "A4"], "D2"), (2.7, ["D4", "F4", "Bb4"], "Bb1")]
+for i, (off, ch, bass) in enumerate(warm):
+    d = (warm[i + 1][0] - off) if i + 1 < len(warm) else 1.3
+    place(section([("violins", nm) for nm in ch], d + 0.3, 0.6, attack=0.45, release=0.7), F0 + off, 0.8, 0.15, 0.7)
+    place(section([("cellos", bass[:-1] + str(int(bass[-1]) + 1)), ("violas", ch[0])], d + 0.3, 0.6, attack=0.4, release=0.7), F0 + off, 0.75, -0.2, 0.6)
+arp = ["F4", "A4", "C5", "A4", "E4", "G4", "C5", "G4", "D4", "F4", "A4", "F4", "D4", "F4", "Bb4"]
+for i, nm in enumerate(arp):
+    at = F0 + 0.1 + i * 0.22
+    if at > C["ink2"][0]:
+        break
+    place(piano(nm, 1.6, 0.4), at, 0.45, 0.25 if i % 2 else -0.25, 0.55)
+for b, nm in ((0, "C6"), (1, "F6"), (1.5, "E6"), (2, "C6"), (3, "A5")):
+    place(piano(nm, 1.8, 0.45), F0 + 0.4 + b * BEAT, 0.42, 0.1, 0.7)
+city = filt(sfx(2678, 20.0, 4.0), "lowpass", 2500)
+place(fade(city, 0.8, 0.8), F0, 0.14, 0, 0.2)
+place(sfx(1486, 0.0, 2.0), C["ink2"][0] - 0.5, 0.1, 0, 0.5)
+
+# ------------------------------------------------------------------ 30.2 – 33.0: the question breathes
 Q0 = C["question"][0]
-place(pad(["F3", "C4", "A4"], C["question"][1] - Q0 + 0.6, 800, 0.8), Q0, 0.08, 0, 0.8)
-place(piano("A5", 3.0, 0.22), C["questionIn"] + 0.35, 0.1, 0.2, 0.8)
-# end card: final chord with an added 9th, a soft chime on the tagline
+place(strings("violins", "A5", C["question"][1] - Q0 + 0.2, 0.35, attack=1.0, release=1.0), Q0, 0.7, 0.15, 0.8)
+place(strings("violas", "C5", C["question"][1] - Q0 + 0.2, 0.3, attack=1.2, release=1.0), Q0 + 0.3, 0.35, 0.0, 0.8)
+place(strings("cellos", "F3", C["question"][1] - Q0 + 0.2, 0.35, attack=1.2, release=1.0), Q0, 0.65, -0.15, 0.8)
+place(piano("A5", 2.8, 0.3), C["questionIn"] + 0.4, 0.4, 0.2, 0.8)
+place(piano("F5", 2.8, 0.25), C["questionIn"] + 1.4, 0.32, -0.1, 0.8)
+
+# ------------------------------------------------------------------ 33.0 – 34.5: final chord
 E0 = C["end"][0]
-for n in ("F2", "C3", "F3", "A3", "G4", "C5"):
-    place(piano(n, 4.0, 0.42, 0.9), E0 + 0.05, 0.17, 0, 0.7)
-place(pad(["F3", "A3", "C4", "G4"], DUR - E0, 1100, 0.9), E0, 0.14, 0, 0.8)
-t = tt(2.5)
-chime = sum(np.sin(2 * np.pi * midi(m(n)) * t) * (0.6 if n == "C6" else 0.4) for n in ("F5", "C6")) * env(t, 0.003, 0.9)
-place(chime, C["tagline"], 0.08, 0.1, 0.8)
+for nm in ("F2", "C3", "F3", "A3", "G4", "C5"):
+    place(piano(nm, 2.5, 0.42), E0 + 0.05, 0.3, 0, 0.7)
+place(section([("violins", "A4"), ("violins", "C5"), ("violas", "F4"), ("cellos", "F3")], DUR - E0, 0.5, attack=0.4, release=0.6), E0, 0.6, 0, 0.8)
+for i, nm in enumerate(["F5", "C6"]):
+    place(glock(nm, 0.4), C["tagline"] + i * 0.14, 0.26, 0.1, 0.8)
 
 
 # ------------------------------------------------------------------ mix
-def reverb_ir(seconds=2.8, predelay=0.02):
+def reverb_ir(seconds=3.0, predelay=0.025):
     n = int(seconds * SR)
     t = np.arange(n) / SR
-    ir = np.zeros((n, 2))
-    for ch in range(2):
-        x = rng.standard_normal(n) * np.exp(-t / (seconds / 6.5))
-        x = filt(x, "lowpass", 6500)
-        ir[:, ch] = x
-    pd = int(predelay * SR)
-    ir = np.vstack([np.zeros((pd, 2)), ir])
+    ir = np.stack([filt(rng.standard_normal(n) * np.exp(-t / (seconds / 6.5)), "lowpass", 6000) for _ in range(2)], 1)
+    ir = np.vstack([np.zeros((int(predelay * SR), 2)), ir])
     return ir / np.sqrt((ir**2).sum(axis=0))
 
 
 ir = reverb_ir()
 wet = np.stack([signal.fftconvolve(verb[:, c], ir[:, c])[: len(verb)] for c in range(2)], 1)
-mix = dry + wet * 0.5
+mix = dry + wet * 0.55
 
-# True silence before the release: fade out 8.72 – 8.86 s, nothing until
-# 9.18 s, then only the held breath rising into the impact.
-g = np.ones(len(mix))
-a, a2, b, c2 = int(hush0 * SR), int((hush0 + 0.14) * SR), int(9.18 * SR), int(C["impact"] * SR)
-g[a:a2] = np.linspace(1, 0.0, a2 - a) ** 2
-g[a2:b] = 0.0
-g[b:c2] = np.linspace(0.0, 1, c2 - b)
-mix *= g[:, None]
+# true silence before the release: out over 14.95–15.1, nothing until the heartbeat
+gain = np.ones(len(mix))
+a, a2, b = int(C["hush"][0] * SR), int((C["hush"][0] + 0.15) * SR), int((C["heartbeat"] - 0.03) * SR)
+gain[a:a2] = np.linspace(1, 0, a2 - a) ** 2
+gain[a2:b] = 0.0
+mix *= gain[:, None]
+# (the heartbeat and the held breath start after this window, so they survive it)
 
 mix = mix[:N]
-# gentle master: high-pass, soft clip, normalise to about -1 dBFS peak
-mix = filt(mix, "highpass", 28)
-mix = np.tanh(mix * 1.15) / np.tanh(1.15)
-peak = np.max(np.abs(mix))
-mix = mix / peak * 0.89
-# fade the very end
-fade = int(0.6 * SR)
-mix[-fade:] *= np.linspace(1, 0, fade)[:, None] ** 1.5
+mix = filt(mix, "highpass", 30)
+# gentle RMS compression (2.2:1 above -26 dB) so it holds up on phone speakers
+lvl = np.sqrt(signal.sosfiltfilt(signal.butter(1, 6 / (SR / 2), output="sos"), (mix**2).mean(1)) + 1e-12)
+db = 20 * np.log10(lvl / (np.max(lvl) + 1e-12))
+gr = np.where(db > -26, (db + 26) * (1 - 1 / 2.2), 0.0)
+mix *= (10 ** (-gr / 20))[:, None]
+mix = np.tanh(mix * 1.1) / np.tanh(1.1)
+mix = mix / np.max(np.abs(mix)) * 0.89
+fo = int(0.5 * SR)
+mix[-fo:] *= np.linspace(1, 0, fo)[:, None] ** 1.5
 
 out = FILM / "audio" / "never-background.wav"
 with wave.open(str(out), "wb") as w:
     w.setnchannels(2)
     w.setsampwidth(2)
     w.setframerate(SR)
-    w.writeframes((mix * 32767).astype("<i2").tobytes())
-rms = np.sqrt(np.mean(mix**2))
-print(f"wrote {out}  {DUR:.1f}s  peak {20*np.log10(np.max(np.abs(mix))):.1f} dBFS  rms {20*np.log10(rms):.1f} dBFS")
+    w.writeframes((np.clip(mix, -1, 1) * 32767).astype("<i2").tobytes())
+print(f"wrote {out}  {DUR:.1f}s  rms {20*np.log10(np.sqrt(np.mean(mix**2))):.1f} dBFS")
