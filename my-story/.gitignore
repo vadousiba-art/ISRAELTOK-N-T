@@ -5,3 +5,5 @@ SCRIPT.md
 film/cues.json
 film/audio/story.wav
 __pycache__/
+carousel/slides.json
+carousel/audio/song.wav
