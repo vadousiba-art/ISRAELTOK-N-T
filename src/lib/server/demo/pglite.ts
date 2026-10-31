@@ -50,6 +50,12 @@ async function open(): Promise<PGlite> {
       .catch(() => {});
   });
 
+  // Post Planner: demo mode has no pg_cron, so this process publishes due
+  // drafts once a minute (the same function pg_cron runs on Supabase).
+  const tick = () => db.query("select public.pro_publish_due(50, 'demo')").catch(() => {});
+  void tick();
+  setInterval(tick, 60_000).unref?.();
+
   const humans = await db.query<{ n: number }>("select count(*)::int as n from public.profiles where not is_bot");
   if (humans.rows[0].n === 0) {
     await seedDemo(db);

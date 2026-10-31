@@ -10,6 +10,7 @@ import { byFn, useRpc } from "@/lib/client/hooks";
 import { rpc } from "@/lib/client/api";
 import { useLive } from "@/components/providers/LiveProvider";
 import { Avatar } from "@/components/ui/Avatar";
+import { PushPrompt } from "@/components/notifications/PushPrompt";
 import { Button, ChaosLoader, Empty, PageTitle, TimeAgo } from "@/components/ui/bits";
 import { AWARD_INFO, EMPTY_LINES, NOTIFICATION_TEXT, REACTION_EMOJI } from "@/lib/jokes";
 import { levelTitle } from "@/lib/progress";
@@ -28,10 +29,13 @@ const ICON: Record<string, string> = {
   level_up: "⬆️",
   announcement: "📣",
   system: "🛡️",
+  moderation: "🛡️",
+  report_update: "🛡️",
 };
 
 function href(n: AppNotification) {
   if (n.kind === "level_up") return "/leaderboard";
+  if (n.kind === "report_update") return "/standing";
   if (n.post_id) return `/post/${n.post_id}`;
   if (n.channel_id) return `/chat/${n.channel_id}`;
   if (n.actor) return `/u/${n.actor.username}`;
@@ -71,9 +75,10 @@ export default function NotificationsPage() {
           </Button>
         )}
       </div>
+      <PushPrompt className="mb-3" />
       {!data && <ChaosLoader />}
       {data && data.length === 0 && <Empty emoji="🧘" text={EMPTY_LINES.notifications} />}
-      <div className="space-y-2">
+      <div className="-mx-3 sm:-mx-4">
         {data?.map((n, i) => {
           let detail = n.body;
           if (n.kind === "reaction") detail = REACTION_EMOJI[n.body as ReactionKind] ?? n.body;
@@ -82,7 +87,7 @@ export default function NotificationsPage() {
             <motion.div key={n.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: Math.min(i * 0.02, 0.3) }}>
               <Link
                 href={href(n)}
-                className={clsx("card flex items-start gap-3 p-3 transition hover:border-brand", !n.read && "border-brand/60 bg-brand/5")}
+                className={clsx("flex items-start gap-3 px-3 py-3 transition-colors hover:bg-card-2 sm:px-4", !n.read && "bg-brand/[0.06]")}
               >
                 <div className="relative">
                   {n.kind === "level_up" ? (
@@ -98,13 +103,13 @@ export default function NotificationsPage() {
                       <b>Level up!</b> You reached level {n.body} · {levelTitle(Number(n.body)).en}
                     </p>
                   ) : (
-                    <p className="text-[15px]">
-                      <b>{n.actor?.display_name ?? "Someone"}</b> {NOTIFICATION_TEXT[n.kind] ?? n.kind}
+                    <p className="text-[14.5px] leading-snug">
+                      <b className="font-semibold">{n.actor?.display_name ?? "Someone"}</b> {NOTIFICATION_TEXT[n.kind] ?? n.kind}
                       {n.kind === "reaction" && ` ${detail}`}
                     </p>
                   )}
                   {detail && n.kind !== "reaction" && n.kind !== "like" && n.kind !== "level_up" && (
-                    <p className="mt-0.5 line-clamp-2 text-sm text-muted">{detail}</p>
+                    <p className="mt-0.5 line-clamp-2 text-[13.5px] text-ink-2">{detail}</p>
                   )}
                   <TimeAgo iso={n.created_at} className="text-xs text-muted" />
                 </div>

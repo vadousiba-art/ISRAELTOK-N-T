@@ -1,6 +1,6 @@
 // Shapes returned by the Postgres RPCs (see supabase/migrations/0001_core.sql).
 
-export type Role = "owner" | "admin" | "member";
+export type Role = "owner" | "admin" | "moderator" | "member";
 
 export interface ProfileLite {
   id: string;
@@ -17,6 +17,14 @@ export interface ProfileLite {
   level?: number;
   accent_hue?: number;
   flair?: string;
+  // Pro Universe (migration 0009): the public look, effective items only.
+  look?: PublicLook | null;
+}
+
+export interface PublicLook {
+  ring?: string;
+  nameplate?: string;
+  badge?: string;
 }
 
 export type CurrentlyKind = "watching" | "reading" | "listening" | "playing";
@@ -168,6 +176,8 @@ export interface PostCore {
 
 export interface Post extends PostCore {
   repost_of: PostCore | null;
+  // Night Watch: "label" = behind a sensitive screen, "held" = under review.
+  mod?: { state: "label" | "held"; label: string | null } | null;
 }
 
 export interface Comment {

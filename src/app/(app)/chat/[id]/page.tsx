@@ -4,7 +4,8 @@ import { use, useCallback, useEffect, useLayoutEffect, useRef, useState } from "
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, Bot, Copy, Flag, ImageIcon, Loader2, LogOut, MoreHorizontal, Reply, Send, SmilePlus, Trash2, UserPlus, Users, X } from "lucide-react";
+import { ArrowLeft, Bot, Copy, Flag, ImageIcon, Loader2, LogOut, MoreHorizontal, Reply, Send, ShieldCheck, SmilePlus, Trash2, UserPlus, Users, X } from "lucide-react";
+import { OFFICIAL_ID } from "@/lib/nightwatch";
 import clsx from "clsx";
 import { useSWRConfig } from "swr";
 import { byFn, useRpc } from "@/lib/client/hooks";
@@ -14,6 +15,9 @@ import { useApp } from "@/components/providers/AppProvider";
 import { useLive } from "@/components/providers/LiveProvider";
 import { useShell } from "@/components/shell/AppShell";
 import { Avatar } from "@/components/ui/Avatar";
+import { item, type ChatP } from "@/lib/pro/catalog";
+import { useMyPro, useTryOn } from "@/lib/client/pro";
+import { chatBackground } from "@/components/pro/ItemPreview";
 import { ChaosLoader, Empty, NameLink, timeAgo } from "@/components/ui/bits";
 import { RichText } from "@/components/ui/RichText";
 import { Menu } from "@/components/ui/Menu";
@@ -21,6 +25,7 @@ import { Modal } from "@/components/ui/Modal";
 import { ReportDialog } from "@/components/feed/ReportDialog";
 import { EMPTY_LINES } from "@/lib/jokes";
 import type { ChannelDetail, Message, ProfileLite } from "@/lib/types";
+import { AtlasAssist } from "@/components/atlas/AtlasAssist";
 
 const QUICK = ["💀", "😭", "🔥", "🫡", "🤡", "❤️", "W", "L"];
 
@@ -92,8 +97,8 @@ function Bubble({
             className={clsx(
               "rounded-3xl px-3.5 py-2 text-[15px] leading-snug",
               m.deleted && "italic text-muted",
-              !m.deleted && mine && "rounded-br-lg bg-brand text-white",
-              !m.deleted && !mine && !m.is_ai && "rounded-bl-lg bg-card-2 text-ink",
+              !m.deleted && mine && "chat-me rounded-br-lg bg-brand text-white",
+              !m.deleted && !mine && !m.is_ai && "chat-them rounded-bl-lg bg-card-2 text-ink",
               !m.deleted && m.is_ai && "rounded-bl-lg border border-roast/50 bg-gradient-to-br from-roast/20 to-volt/20 text-ink",
               m.deleted && "border border-dashed border-line",
             )}
@@ -269,6 +274,19 @@ function MembersDialog({ channel, open, onClose, onChanged }: { channel: Channel
 export default function ChatRoomPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { me } = useShell();
+  // Chat Personalization: only changes how this conversation looks to you.
+  const { data: pro } = useMyPro();
+  const tryingChat = useTryOn().chat;
+  const chatItem = item<ChatP>(tryingChat !== undefined ? tryingChat : pro?.equips.chat?.active ? pro.equips.chat.item : null);
+  const chatThemeProps = chatItem?.cat === "chat"
+    ? {
+        "data-chat-theme": chatItem.id,
+        style: {
+          background: chatBackground(chatItem.p),
+          "--chat-me": chatItem.p.me, "--chat-me-ink": chatItem.p.meInk, "--chat-them": chatItem.p.them, "--chat-them-ink": chatItem.p.themInk,
+        } as React.CSSProperties,
+      }
+    : null;
   const { toastError, toast, supabase } = useApp();
   const router = useRouter();
   const { mutate: mutateAll } = useSWRConfig();
@@ -409,6 +427,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ id: string 
 
   const title = channel.kind === "dm" ? (channel.members.find((m) => m.id !== me.id)?.display_name ?? "DM") : channel.name;
   const dmUser = channel.kind === "dm" ? channel.members.find((m) => m.id !== me.id) : null;
+  const official = dmUser?.id === OFFICIAL_ID;
   const mentionOptions =
     mentionQ !== null
       ? channel.members.filter((m) => m.id !== me.id && m.username.toLowerCase().startsWith(mentionQ)).slice(0, 5)
@@ -435,6 +454,8 @@ export default function ChatRoomPage({ params }: { params: Promise<{ id: string 
                   ...
                 </motion.span>
               </span>
+            ) : official ? (
+              "Official notices from the YORU team"
             ) : dmUser ? (
               dmUser.online ? "online" : "offline (touching grass)"
             ) : (
@@ -454,7 +475,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ id: string 
       )}
       {!messages && <ChaosLoader />}
       {messages && messages.length === 0 && <Empty emoji="🪦" text={EMPTY_LINES.messages} />}
-      <div>
+      <div {...chatThemeProps} className={chatThemeProps ? "-mx-3 rounded-3xl px-3 py-2 sm:mx-0" : undefined}>
         {messages?.map((m, i) => {
           const prev = messages[i - 1];
           const showHeader =
@@ -475,7 +496,18 @@ export default function ChatRoomPage({ params }: { params: Promise<{ id: string 
         })}
       </div>
 
-      <div className="sticky bottom-[calc(84px+env(safe-area-inset-bottom))] z-30 mt-4 lg:bottom-4">
+      {official ? (
+        <div className="sticky bottom-[calc(76px+env(safe-area-inset-bottom))] z-30 mt-4 lg:bottom-4">
+          <div className="flex items-center gap-3 rounded-2xl border border-line bg-card p-3 shadow-2xl">
+            <ShieldCheck size={22} className="shrink-0 text-[#5865f2]" />
+            <p className="min-w-0 flex-1 text-[13px] text-ink-2">This channel only sends notices, so replies aren&apos;t read. To appeal a decision, use Account Standing.</p>
+            <Link href="/standing" className="shrink-0 rounded-full bg-ink px-3.5 py-2 text-[13px] font-semibold text-bg">
+              Account Standing
+            </Link>
+          </div>
+        </div>
+      ) : (
+      <div className="sticky bottom-[calc(76px+env(safe-area-inset-bottom))] z-30 mt-4 lg:bottom-4">
         <div>
           <AnimatePresence>
             {mentionOptions.length > 0 && (
@@ -538,6 +570,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ id: string 
               >
                 <Bot size={22} />
               </button>
+              <AtlasAssist value={text} onUse={(t) => onChangeText(t.slice(0, 2000))} tasks={["message", "rewrite"]} className="self-center" />
               <textarea
                 ref={inputRef}
                 value={text}
@@ -570,6 +603,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ id: string 
           </div>
         </div>
       </div>
+      )}
       <input
         ref={fileRef}
         type="file"

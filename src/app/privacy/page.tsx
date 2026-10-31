@@ -38,7 +38,15 @@ export default function PrivacyPage() {
           </li>
           <li>
             <b>Content:</b> posts, photos, GIFs and videos, polls and votes, comments, reactions, awards, bookmarks, reposts and quotes, stories,
-            group and direct messages, and your AI Menace chat history.
+            group and direct messages, your AI Menace chat history and your Atlas conversation.
+          </li>
+          <li>
+            <b>Drafts and scheduled posts:</b> drafts you save in Draft Studio and posts you schedule, including the time you picked. They are
+            private to you until they are posted.
+          </li>
+          <li>
+            <b>Profile cosmetics and Pro settings:</b> the cosmetics you equip, your wishlist, and choices such as feed filters, muted words,
+            interest hub tags, dashboard layout and sound settings.
           </li>
           <li>
             <b>Safety and support:</b> reports you file, people you block, and messages you send through our contact form (including the email you
@@ -52,13 +60,26 @@ export default function PrivacyPage() {
             points.
           </li>
           <li>
+            <b>Milestones:</b> Profile Evolution milestones are worked out from your own activity on YORU (for example posting streaks) and saved
+            with the date you earned them.
+          </li>
+          <li>
+            <b>Profile visit counts:</b> when a signed-in member opens your profile, we add one to a daily total for your profile. To count each
+            visitor only once a day, we keep a hashed key made from the visitor, your profile and the date. That key is deleted after about two
+            days and is never shown to anyone, including you and admins. You only see totals, never who visited.
+          </li>
+          <li>
+            <b>Your analytics</b> (reach, reactions, comments, visit totals) are calculated only from your own posts and profile, and only you can see
+            them. We don&apos;t make up or estimate numbers.
+          </li>
+          <li>
             <b>Technical data:</b> your IP address is used briefly in memory to limit login, sign-up and contact attempts. Our hosting provider
             records standard server logs (such as IP address, device and browser type, and pages requested) to operate and secure the service.
           </li>
           <li>
             <b>Cookies and local storage:</b> we use only the cookies needed to keep you signed in. Your device also stores display preferences
-            (theme, motion, sound, background effect, app color and dismissed announcements) locally. We do not use advertising or analytics
-            cookies.
+            (theme, motion, sound, background effect, app color and dismissed announcements) and your &quot;recently viewed&quot; cosmetics
+            locally. Trying on a cosmetic happens only on your device. We do not use advertising or analytics cookies.
           </li>
         </ul>
 
@@ -66,7 +87,10 @@ export default function PrivacyPage() {
         <ul>
           <li>To create and secure your account and keep you signed in.</li>
           <li>To show your profile and content to other YORU members, deliver messages and send notifications.</li>
-          <li>To run features you use: feeds, trending tags, leaderboards (only if you opt in), levels, streaks and the AI Menace.</li>
+          <li>
+            To run features you use: feeds, trending tags, leaderboards (only if you opt in), levels, streaks, milestones, profile cosmetics,
+            scheduled posts, your private analytics and the AI Menace.
+          </li>
           <li>To keep YORU safe: enforce our Terms, review reports, prevent spam and abuse, and apply limits such as mutes and bans.</li>
           <li>To answer your support, privacy and deletion requests.</li>
         </ul>
@@ -81,9 +105,16 @@ export default function PrivacyPage() {
           <li>YORU is members-only: posts, comments, profiles and stories are visible to signed-in YORU members, not to the public web.</li>
           <li>Direct messages and private group chats are visible only to the people in that conversation.</li>
           <li>
-            Community admins can see reported content and use moderation tools. People who operate YORU can access stored data when needed to run,
-            secure or repair the service, or to respond to legal obligations.
+            Admins and moderators (members of the YORU team) can see reported content, content held for review and moderation records in
+            Watchtower. A reported direct or group message is shown to them; unreported messages are not. People who operate YORU can access
+            stored data when needed to run, secure or repair the service, or to respond to legal obligations.
           </li>
+          <li>
+            Cosmetics you equip (ring, banner, nameplate, badge, layout and featured milestone) and whether you have Pro are shown on your profile to
+            other members. Your milestone timeline is shown too unless you turn it off in the Pro hub. Your wishlist, drafts, scheduled posts,
+            settings and analytics are private to you.
+          </li>
+          <li>Staff cosmetics show that an account belongs to YORU staff. They are tied to the account&apos;s admin or founder role.</li>
           <li>If you block someone, you won&apos;t see each other&apos;s posts, comments or messages.</li>
         </ul>
 
@@ -98,7 +129,73 @@ export default function PrivacyPage() {
           on our own server instead.
         </p>
 
-        <h2>5. Service providers</h2>
+        <h3>Automated moderation (Night Watch)</h3>
+        <p>
+          Every new post, comment and story is checked by automated rules that run in our own database (for example slurs, scams, other
+          people&apos;s phone numbers and spam floods). When AI review is turned on, the text and any image are also sent to Anthropic&apos;s Claude
+          API before they are posted, to check them against our rules; the same happens to content someone reports, including a reported direct
+          or group message, and to the content and explanation in an appeal. Unreported messages are never sent for moderation. Under its
+          commercial terms Anthropic does not use these inputs to train its models.
+        </p>
+        <p>
+          We keep a record of each moderation decision (the rule, the decision, the reason, and an excerpt of up to 600 characters) and any
+          strikes. You can see the decisions about you in Account Standing. Closed records are deleted after a year; strikes a year after they
+          expire. When a file is removed, we keep its fingerprint (a one-way SHA-256 hash, not the file) so the same file can&apos;t be uploaded
+          again. If a post suggests you might be at risk, Night Watch sends you a private message with free helplines; it doesn&apos;t punish you.
+        </p>
+
+        <h3 id="atlas">Atlas, the AI assistant</h3>
+        <p>
+          Atlas is an optional assistant in its own section of YORU. When you use it, what you send it goes to an AI provider to get a reply: your
+          message, any photo or audio you attach (including voice recordings), your recent Atlas conversation (the text of up to 16 earlier
+          messages), and your display name, username, bio and status so it can help you with YORU; if you ask about what&apos;s trending, YORU&apos;s
+          current trending tags are included too. Voice, audio and photos go to Google&apos;s Gemini API. Text goes to the model you pick: Gemini, or
+          a free model offered through OpenRouter, which passes it to the company that runs that model. The Atlas buttons in the post composer,
+          comments, chat and bio editor send only the text in that box and your profile basics. Atlas never posts, sends or changes anything for you;
+          it only suggests, and you decide.
+        </p>
+        <p>
+          Atlas uses these providers&apos; <b>free tiers</b>. On free tiers, Google and some model providers may use what you send to improve their
+          products, and people at those companies may review it. Don&apos;t share passwords, private information or anything about other people that
+          they wouldn&apos;t want shared. YORU keeps the text of your Atlas conversation (your latest 200 messages) and your model and voice
+          settings, so Atlas can pick up where you left off; you can clear the conversation at any time in Atlas. YORU does not store the photos or
+          audio you send Atlas, only a note that something was attached. Spoken replies use your device&apos;s built-in voices; on some browsers
+          those voices are provided online by the browser&apos;s maker.
+        </p>
+
+        <h3 id="push">Push notifications</h3>
+        <p>
+          Push notifications are off until you turn them on and allow them on a device. On the website and the installed web app, your browser
+          gives YORU a push address at its push service (Google for Chrome, Mozilla for Firefox, Apple for Safari, Microsoft for Edge) and two
+          keys. YORU stores those with a short device name like &quot;Chrome on Windows&quot;. Each notification is encrypted so that only your
+          device can read it; the push service delivers it without being able to read it, though it can see that something was sent to your
+          device and when. Notifications follow your notification settings, and their text (for example a message preview) can appear on your
+          lock screen; your phone&apos;s settings control that. YORU deletes a device&apos;s push address when you turn notifications off there,
+          when you log out, when the push service says the device is gone, after repeated failed deliveries, or when you delete your account.
+        </p>
+        <p>
+          In the YORU Android app, notifications are shown by the app itself. It checks YORU for new notifications in the background (about every
+          15 minutes, using your sign-in on that phone) or, when YORU has turned on instant delivery, receives them through Google&apos;s Firebase
+          Cloud Messaging. For instant delivery YORU stores a Firebase token for the phone, and the notification&apos;s title and text pass through
+          Google to reach it (they are not end-to-end encrypted on that route).
+        </p>
+
+        <h3 id="app-permissions">Android app permissions</h3>
+        <p>
+          The first time you open the Android app it asks, with Android&apos;s own dialogs, for notifications, the microphone and the camera. You can
+          allow or refuse each one, and change them any time in your phone&apos;s Settings → Apps → YORU → Permissions. The microphone is only used
+          while you record a message to Atlas, and the camera only while you take a photo or video to attach. Nothing is recorded in the
+          background, and YORU&apos;s own pages are the only ones the app lets use them.
+        </p>
+
+        <h2>5. Payments</h2>
+        <p>
+          YORU Pro can&apos;t be bought yet, and YORU doesn&apos;t collect any payment or card information. Members who test Pro get it for free
+          from an admin. If paid Pro opens later, we&apos;ll name the payment provider and update this policy before any payment is taken. Card
+          details would be handled by that provider, not stored by YORU.
+        </p>
+
+        <h2>6. Service providers</h2>
         <p>We don&apos;t sell or rent personal information. We share it only with providers that run YORU for us, under their own security and privacy terms:</p>
         <table>
           <thead>
@@ -121,8 +218,28 @@ export default function PrivacyPage() {
             </tr>
             <tr>
               <td>Anthropic</td>
-              <td>AI comedy features (only when used)</td>
-              <td>The text described in section 4</td>
+              <td>AI comedy features (only when used) and automated moderation (when turned on)</td>
+              <td>The text and images described in section 4</td>
+            </tr>
+            <tr>
+              <td>Google (Gemini API)</td>
+              <td>Atlas: voice, audio, photos and text (only when you use Atlas)</td>
+              <td>What you send Atlas, as described in section 4</td>
+            </tr>
+            <tr>
+              <td>Your browser&apos;s push service (Google, Mozilla, Apple or Microsoft)</td>
+              <td>Delivers push notifications to your device (only if you turn them on)</td>
+              <td>An encrypted notification and your device&apos;s push address</td>
+            </tr>
+            <tr>
+              <td>Google (Firebase Cloud Messaging)</td>
+              <td>Instant notifications in the Android app (only if YORU turns it on and you allow notifications)</td>
+              <td>The notification&apos;s title and text, and the phone&apos;s Firebase token</td>
+            </tr>
+            <tr>
+              <td>OpenRouter</td>
+              <td>Atlas: routes text to the free model you pick (only when you use it)</td>
+              <td>What you send Atlas, as described in section 4</td>
             </tr>
           </tbody>
         </table>
@@ -131,13 +248,13 @@ export default function PrivacyPage() {
           operator (in which case this policy continues to apply).
         </p>
 
-        <h2>6. International transfers</h2>
+        <h2>7. International transfers</h2>
         <p>
           Our providers may store and process information in the United States and other countries, which may have different data protection laws
           than yours. We rely on their contractual safeguards for these transfers.
         </p>
 
-        <h2>7. How long we keep information</h2>
+        <h2>8. How long we keep information</h2>
         <ul>
           <li>We keep your account and content for as long as your account exists.</li>
           <li>
@@ -149,9 +266,15 @@ export default function PrivacyPage() {
             expire on their normal schedule.
           </li>
           <li>Stories expire from view after 24 hours. Support messages are kept as long as needed to handle your request.</li>
+          <li>Your Atlas conversation keeps your latest 200 messages until you clear it or delete your account. Photos and audio sent to Atlas are not stored by YORU.</li>
+          <li>Moderation records are deleted a year after the case is closed; strikes a year after they expire. Content removed by moderation is hidden, not erased, so it can be restored after an appeal or kept as evidence where the law requires.</li>
+          <li>
+            Drafts are kept until you post or delete them. Daily profile visit totals are kept while your account exists; the keys used to count
+            each visitor once are deleted after about two days.
+          </li>
         </ul>
 
-        <h2>8. Your choices and rights</h2>
+        <h2>9. Your choices and rights</h2>
         <ul>
           <li>
             <b>Access and correct:</b> view and edit your profile at any time. Ask us via the contact form for a copy of the personal data we hold
@@ -162,7 +285,8 @@ export default function PrivacyPage() {
             <Link href="/delete-account">yoru-social.vercel.app/delete-account</Link>.
           </li>
           <li>
-            <b>Control:</b> turn off personalized AI, being roasted, leaderboards and each type of notification in Settings; block or report anyone.
+            <b>Control:</b> turn off personalized AI, being roasted, leaderboards and each type of notification in Settings; hide your milestone
+            timeline and reset your look in the Pro hub; delete drafts and cancel scheduled posts at any time; block or report anyone.
           </li>
           <li>
             Depending on where you live (for example the EU, UK or California), you may also have rights to object to or restrict processing, to data
@@ -171,25 +295,25 @@ export default function PrivacyPage() {
           </li>
         </ul>
 
-        <h2>9. Security</h2>
+        <h2>10. Security</h2>
         <p>
           YORU uses encrypted HTTPS connections, hashed passwords, database row-level security so members can only read what they are allowed to,
           private file storage with short-lived links, and rate limits. No system is perfectly secure, so please use a unique password.
         </p>
 
-        <h2>10. Age requirement</h2>
+        <h2>11. Age requirement</h2>
         <p>
           YORU is for people aged 16 and older. We don&apos;t knowingly collect information from anyone under 16. If you believe someone under 16 has
           an account, contact us and we will delete it.
         </p>
 
-        <h2>11. Changes to this policy</h2>
+        <h2>12. Changes to this policy</h2>
         <p>
           We may update this policy as YORU changes. We&apos;ll update the date above and, for significant changes, announce them in the app before
           they take effect.
         </p>
 
-        <h2>12. Contact</h2>
+        <h2>13. Contact</h2>
         <p>
           Questions or requests: use the contact form at <Link href="/support">yoru-social.vercel.app/support</Link>
           {email ? (
